@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>سَبِيلُ المَجْدِ | رفيقك في الثانوية العامة</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Dark Theme (الافتراضي - فخم وغامق) */
+      --bg: #0d1117;
+      --bg2: #161b22;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(212, 175, 55, 0.15);
+      --gold: #f1c40f;
+      --primary: #2ea44f;
+      --text: #f0f6fc;
+      --text2: #8b949e;
+      --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .light {
+      /* Light Theme (النهاري المريح للعين) */
+      --bg: #f6f8fa;
+      --bg2: #ffffff;
+      --card: rgba(0, 0, 0, 0.02);
+      --border: rgba(139, 105, 20, 0.18);
+      --gold: #d4af37;
+      --primary: #2ea44f;
+      --text: #24292f;
+      --text2: #57606a;
+      --card-shadow: 0 8px 24px rgba(149, 157, 165, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+      padding-bottom: 40px;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      background: var(--bg2);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+    .header-title { font-size: 16px; font-weight: 800; color: var(--gold); }
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .container { max-width: 650px; margin: 0 auto; padding: 14px; }
+
+    /* ===== HERO BANNER & COUNTDOWN ===== */
+    .hero {
+      background: linear-gradient(135deg, rgba(241, 196, 15, 0.1), rgba(46, 164, 79, 0.08));
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: var(--card-shadow);
+    }
+    .hero h2 { font-size: 20px; font-weight: 800; color: var(--gold); margin-bottom: 6px; }
+    .hero p { font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+
+    .countdown-box {
+      display: flex; justify-content: center; gap: 10px; direction: ltr;
+    }
+    .count-unit {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      min-width: 60px;
+    }
+    .count-num { font-size: 20px; font-weight: 800; color: var(--gold); }
+    .count-label { font-size: 10px; color: var(--text2); font-family: 'Cairo', sans-serif; }
+
+    /* ===== SECTION TABS / SELECTOR ===== */
+    .section-title {
+      font-size: 14px; font-weight: 700; color: var(--gold);
+      margin: 16px 0 10px; border-right: 3px solid var(--gold); padding-right: 8px;
+    }
+
+    .branch-selector {
+      display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none;
+    }
+    .branch-btn {
+      flex: 1; padding: 10px 12px; border-radius: 14px;
+      border: 1px solid var(--border); background: var(--bg2);
+      color: var(--text2); font-size: 13px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; text-align: center;
+      transition: all 0.25s ease;
+      font-family: 'Cairo', sans-serif;
+    }
+    .branch-btn.active {
+      background: var(--gold); color: #111; border-color: var(--gold);
+      box-shadow: 0 4px 12px rgba(241, 196, 15, 0.3);
+    }
+
+    /* ===== COMPACT SUBJECT CARDS (كروت المواد الملمومة الشيك) ===== */
+    .subjects-grid { display: grid; gap: 10px; }
+
+    .subject-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .subject-card:active { transform: scale(0.98); }
+
+    .subj-info { display: flex; align-items: center; gap: 12px; }
+    .subj-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: rgba(241, 196, 15, 0.1);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .subj-name { font-size: 15px; font-weight: 700; color: var(--text); }
+    .subj-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+    .subj-actions { display: flex; gap: 6px; }
+    .action-btn {
+      padding: 6px 12px; border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--card); color: var(--text);
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: 'Cairo', sans-serif; transition: 0.2s;
+    }
+    .action-btn.primary {
+      background: rgba(46, 164, 79, 0.15); color: #2ea44f; border-color: #2ea44f;
+    }
+
+    /* ===== TIPS & ADVICE CARDS ===== */
+    .tips-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; }
+    .tip-card {
+      min-width: 240px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 14px; flex-shrink: 0;
+    }
+    .tip-tag { font-size: 10px; font-weight: 800; color: var(--gold); margin-bottom: 4px; }
+    .tip-txt { font-size: 12px; color: var(--text); line-height: 1.6; }
+
+    footer {
+      text-align: center; font-size: 11px; color: var(--text2); margin-top: 30px;
+      padding-top: 15px; border-top: 1px dashed var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-title">🎓 سَبِيلُ المَجْدِ</div>
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">☀️</button>
+  </div>
+
+  <div class="container">
+
+    <!-- HERO BANNER -->
+    <div class="hero">
+      <h2>🚀 حلمك يستاهل العُفرة!</h2>
+      <p>متبقي على انطلاق امتحانات الثانوية العامة:</p>
+      
+      <div class="countdown-box">
+        <div class="count-unit"><div class="count-num" id="cdSecs">00</div><div class="count-label">ثانية</div></div>
+        <div class="count-unit"><div class="count-num" id="cdMins">00</div><div class="count-label">دقيقة</div></div>
+        <div class="count-unit"><div class="count-num" id="cdHours">00</div><div class="count-label">ساعة</div></div>
+        <div class="count-unit"><div class="count-num" id="cdDays">00</div><div class="count-label">يوم</div></div>
+      </div>
+    </div>
+
+    <!-- TIPS SECTION -->
+    <div class="section-title">💡 كبسولات التفوق الذهبية</div>
+    <div class="tips-scroll">
+      <div class="tip-card">
+        <div class="tip-tag">⚡ تنظيم الوقت</div>
+        <div class="tip-txt">ذاكر بنظام Pomodoro (25 دقيقة مذاكرة تركيز + 5 دقائق راحة)، الموخ بيستوعب أكتر بكتير بالأسلوب ده.</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-tag">🧠 التكرار المتباعد</div>
+        <div class="tip-txt">حل الأسئلة والامتحانات أهم 3 أضعاف من مجرد قراءة الشرح ومراجعة النظري!</div>
+      </div>
+      <div class="tip-card">
+        <div class="tip-tag">🌿 صحتك النفسية</div>
+        <div class="tip-txt">النوم مش رفاهية، 7 ساعات نوم بليل هما الفرق بين طفل مشتت وطالب مركز بيقفل الامتحان.</div>
+      </div>
+    </div>
+
+    <!-- BRANCH SELECTOR -->
+    <div class="section-title">📚 اختر الشعبة الدراسية</div>
+    <div class="branch-selector">
+      <button class="branch-btn active" id="btn-علوم" onclick="switchBranch('علوم')">🔬 علمي علوم</button>
+      <button class="branch-btn" id="btn-رياضة" onclick="switchBranch('رياضة')">📐 علمي رياضة</button>
+      <button class="branch-btn" id="btn-أدبي" onclick="switchBranch('أدبي')">📜 أدبي</button>
+    </div>
+
+    <!-- SUBJECTS LIST -->
+    <div class="subjects-grid" id="subjectsContainer">
+      <!-- المواد بتترسم هنا تلقائياً بالجافا سكريبت -->
+    </div>
+
+    <footer>
+      © <span id="year"></span> تطبيق سبيل المجد - صُنِع بشغف لطلاب الثانوية العامة 🤍
+    </footer>
+
+  </div>
+
+  <script>
+    // ================= DATA =================
+    const subjectsData = {
+      // المواد المشتركة
+      common: [
+        { name: "اللغة العربية", icon: "📖", desc: "نحو، أدب، بلاغة، قراءة ونصوص" },
+        { name: "اللغة الإنجليزية", icon: "🇬🇧", desc: "Grammar, Vocab, Skills & Translation" },
+        { name: "اللغة الأجنبية الثانية", icon: "🇫🇷", desc: "فرنساوي / ألماني / إيطالي / إسباني" }
+      ],
+      // مواد علمي علوم
+      علوم: [
+        { name: "الأحياء", icon: "🧬", desc: "دعامة وحركة، هرمونات، DNA وتركيبيات" },
+        { name: "الجيولوجيا وعلوم البيئة", icon: "الجيولوجيا 🌋", desc: "صخور، معادن، وتوازن البيئة" },
+        { name: "الفيزياء", icon: "⚡", desc: "كهربية، حديثة، وقوانين أوم وكيرشوف" },
+        { name: "الكيمياء", icon: "🧪", desc: "عضوية، تحليلية، واتزان كيميائي" }
+      ],
+      // مواد علمي رياضة
+      رياضة: [
+        { name: "الرياضيات المحتوتة (تفاضل وتكامل)", icon: "📐", desc: "معدلات زمنية، نهايات، واشتقاق" },
+        { name: "الرياضيات التطبيقية (استاتيكا وديناميكا)", icon: "⚙️", desc: "قوانين نيوتن، الاحتكاك، والعزوم" },
+        { name: "الفيزياء", icon: "⚡", desc: "كهربية، حديثة، وقوانين أوم وكيرشوف" },
+        { name: "الكيمياء", icon: "🧪", desc: "عضوية، تحليلية، واتزان كيميائي" }
+      ],
+      // مواد أدبي
+      أدبي: [
+        { name: "التاريخ", icon: "🏛️", desc: "مصر الحديثة، الثورات، والتاريخ المعاصر" },
+        { name: "الجغرافيا السياسية", icon: "🗺️", desc: "الحدود، التكتلات الاقتصادية، والمقومات" },
+        { name: "الفلسفة والمنطق", icon: "💭", desc: "فلسفة البيئة، الأخلاق، والأساليب المنطقية" },
+        { name: "علم النفس والاجتماع", icon: "🧠", desc: "الذكاءات، التعلم، والعمليات الاجتماعية" }
+      ]
+    };
+
+    let activeBranch = localStorage.getItem('thanaweya_branch') || 'علوم';
+    let isDark = localStorage.getItem('thanaweya_theme') !== 'light';
+
+    // ================= THEME SYSTEM =================
+    function applyTheme() {
+      document.body.classList.toggle('light', !isDark);
+      document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('thanaweya_theme', isDark ? 'dark' : 'light');
+    }
+
+    function toggleTheme() {
+      isDark = !isDark;
+      applyTheme();
+    }
+
+    // ================= RENDER SUBJECTS =================
+    function renderSubjects() {
+      const container = document.getElementById('subjectsContainer');
+      const allSubjs = [...subjectsData.common, ...subjectsData[activeBranch]];
+
+      container.innerHTML = allSubjs.map(s => `
+        <div class="subject-card">
+          <div class="subj-info">
+            <div class="subj-icon">${s.icon}</div>
+            <div>
+              <div class="subj-name">${s.name}</div>
+              <div class="subj-desc">${s.desc}</div>
+            </div>
+          </div>
+          <div class="subj-actions">
+            <button class="action-btn primary" onclick="openSubject('${s.name}')">المصادر 📚</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchBranch(branch) {
+      activeBranch = branch;
+      localStorage.setItem('thanaweya_branch', branch);
+
+      document.querySelectorAll('.branch-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('btn-' + branch).classList.add('active');
+
+      renderSubjects();
+    }
+
+    function openSubject(name) {
+      alert(`📚 جاري فتح مصادر وملخصات مادة: ${name}`);
+    }
+
+    // ================= COUNTDOWN TIMER =================
+    function startCountdown() {
+      // موعد تقريبي لامتحانات الثانوية العامة (يونيو)
+      const examDate = new Date('June 10, 2027 09:00:00').getTime();
+
+      setInterval(() => {
+        const now = new Date().getTime();
+        const diff = examDate - now;
+
+        if (diff > 0) {
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+          document.getElementById('cdDays').textContent = days;
+          document.getElementById('cdHours').textContent = String(hours).padStart(2, '0');
+          document.getElementById('cdMins').textContent = String(mins).padStart(2, '0');
+          document.getElementById('cdSecs').textContent = String(secs).padStart(2, '0');
+        }
+      }, 1000);
+    }
+
+    // ================= INIT =================
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme();
+      switchBranch(activeBranch);
+      startCountdown();
+      document.getElementById('year').textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>
