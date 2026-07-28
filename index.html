@@ -219,7 +219,8 @@
       <button class="branch-btn" id="btn-رياضة" onclick="switchBranch('رياضة')">📐 علمي رياضة</button>
       <button class="branch-btn" id="btn-أدبي" onclick="switchBranch('أدبي')">📜 أدبي</button>
     </div>
-
+<div class="section-title">⏱️ جدول المذاكرة اليومي </div>
+<div id="scheduleContainer"></div>
     <!-- SUBJECTS LIST -->
     <div class="subjects-grid" id="subjectsContainer">
       <!-- المواد بتترسم هنا تلقائياً بالجافا سكريبت -->
@@ -344,5 +345,6 @@
       document.getElementById('year').textContent = new Date().getFullYear();
     });
   </script>
+  <script src="schedule.js"></script>
 </body>
 </html>
