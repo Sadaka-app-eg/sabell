@@ -224,10 +224,30 @@
 
   <div class="app-container">
 
-    <!-- ==================== الصفحة الرئيسية (HOME) ==================== -->
-    <div class="page active" id="homePage">
-      <div class="hero-banner">
-        <h2>🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</h2>
+ <!-- ==================== الصفحة الرئيسية (HOME) ==================== -->
+<div class="page active" id="homePage">
+
+  <!-- الكود الجديد هنا -->
+  <!-- ==================== كارت العداد الدائري للامتحانات (ستايل أثر) ==================== -->
+  <div class="athr-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(18,30,20,0.95) 100%); border-radius: 20px; padding: 18px 14px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; direction: rtl;">
+    
+    <!-- البيانات والنص على اليمين -->
+    <div style="text-align: right; flex: 1; padding-right: 6px;">
+      <div style="font-size: 16px; font-weight: bold; color: var(--gold); font-family: 'Amiri', serif;">🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</div>
+      <div style="font-size: 12px; color: var(--text2); margin-top: 4px;">متبقي على انطلاق امتحانات الثانوية العامة</div>
+      <div style="font-size: 11px; color: var(--green); margin-top: 8px; font-weight: bold;" id="cdDetailsText">جاري حساب الوقت...</div>
+    </div>
+
+    <!-- الدائرة المضيئة والعداد التنازلي الحقيقي على اليسار -->
+    <div style="position: relative; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 50%; border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.2); flex-shrink: 0;">
+      <div id="cdDaysCircle" style="font-size: 22px; font-weight: bold; color: var(--gold); font-family: monospace; line-height: 1;">000</div>
+      <div style="font-size: 10px; color: var(--text2); margin-top: 2px; font-weight: bold;">يَوْمًـا</div>
+    </div>
+
+  </div>
+
+  <div class="hero-banner">
+    <h2>🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</h2>
         <div class="branch-badge" id="currentBranchDisplay">الشعبة: جاري التحديد...</div>
         <p style="font-size: 12px; color: var(--text2); margin-top: 8px;">"وأن ليس للإنسان إلا ما سعى وأن سعيه سوف يرى"</p>
       </div>
@@ -325,30 +345,7 @@
     </button>
   </div>
 </div>
-<!-- ==================== كارت العداد التنازلي للامتحانات ==================== -->
-<div class="athr-card" style="text-align: center; border: 1px solid var(--border); padding: 16px 10px;">
-  <div style="font-size: 15px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</div>
-  <div style="font-size: 11px; color: var(--text2); margin-bottom: 12px;">متبقي على انطلاق امتحانات الثانوية العامة:</div>
 
-  <div style="display: flex; justify-content: center; gap: 8px; direction: ltr;">
-    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
-      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdSecs">00</div>
-      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">ثانية</div>
-    </div>
-    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
-      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdMins">00</div>
-      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">دقيقة</div>
-    </div>
-    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
-      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdHours">00</div>
-      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">ساعة</div>
-    </div>
-    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
-      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdDays">00</div>
-      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">يوم</div>
-    </div>
-  </div>
-</div>
     <!-- ==================== صفحة تايمر التركيز (FOCUS TIMER) ==================== -->
 <div class="page" id="focusPage">
   <div style="text-align: center; margin-bottom: 12px;">
@@ -1001,9 +998,9 @@ function resetCurrentPlan() {
     initPlanSetupUI();
   }
 }
-    // ================= ⏱️ العداد التنازلي للامتحانات =================
+// ================= ⏱️ محرك العداد الدائري للامتحانات =================
 function startExamCountdown() {
-  // ضبط الموعد التقديري للامتحانات (يونيو 2027 مثلاً)
+  // تحديد موعد الامتحانات (يونيو 2027 الساعة 9 صباحاً)
   const examTargetDate = new Date('June 10, 2027 09:00:00').getTime();
 
   function updateCD() {
@@ -1016,15 +1013,13 @@ function startExamCountdown() {
       const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const secs = Math.floor((diff % (1000 * 60)) / 1000);
 
-      const dEl = document.getElementById('cdDays');
-      const hEl = document.getElementById('cdHours');
-      const mEl = document.getElementById('cdMins');
-      const sEl = document.getElementById('cdSecs');
+      const circleEl = document.getElementById('cdDaysCircle');
+      const detailsEl = document.getElementById('cdDetailsText');
 
-      if (dEl) dEl.textContent = days;
-      if (hEl) hEl.textContent = String(hours).padStart(2, '0');
-      if (mEl) mEl.textContent = String(mins).padStart(2, '0');
-      if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+      if (circleEl) circleEl.textContent = days;
+      if (detailsEl) {
+        detailsEl.textContent = `⏱️ و ${String(hours).padStart(2, '0')} ساعة • ${String(mins).padStart(2, '0')} دقيقة • ${String(secs).padStart(2, '0')} ثانية`;
+      }
     }
   }
 
