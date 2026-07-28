@@ -7,6 +7,8 @@
   
   <!-- خط أميري وخط القاهرة -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- مكتبة Chart.js للرسم البياني -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     :root {
@@ -331,6 +333,33 @@
           </div>
         </div>
 
+        <!-- ==================== 📈 قسم الرسم البياني وتحليل المستوى الجديد ==================== -->
+        <div class="athr-card" style="margin-top: 14px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 14px; font-weight: bold; color: var(--gold); border-right: 3px solid var(--gold); padding-right: 6px;">
+              📈 مؤشر أداء ومستوى الالتزام
+            </span>
+            <span style="font-size: 11px; color: var(--text2);">مُقاس من إنجازك اليومي</span>
+          </div>
+
+          <!-- أزرار تبديل نطاق الرسم البياني (يومي / أسبوعي / شهري) -->
+          <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 12px;">
+            <button class="day-btn active" id="chartTab_daily" onclick="switchAnalyticsView('daily')">اليومي (الخطة)</button>
+            <button class="day-btn" id="chartTab_weekly" onclick="switchAnalyticsView('weekly')">الأسبوعي</button>
+            <button class="day-btn" id="chartTab_monthly" onclick="switchAnalyticsView('monthly')">الشهري</button>
+          </div>
+
+          <!-- مكان رسم الرسم البياني تفاعلياً -->
+          <div style="position: relative; height: 220px; width: 100%;">
+            <canvas id="progressChartCanvas"></canvas>
+          </div>
+
+          <!-- تقييم ذكي تحفيزي بناءً على الأداء -->
+          <div id="analyticsEvaluationBadge" style="margin-top: 12px; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px 12px; font-size: 12px; text-align: center; color: var(--text);">
+            جاري تحليل مستوى الالتزام...
+          </div>
+        </div>
+
         <button onclick="resetCurrentPlan()" style="width: 100%; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 12px; margin-top: 10px; font-family: 'Amiri', serif; cursor: pointer;">
           🔄 فسخ الخطة الحالية وبدء واحدة جديدة
         </button>
@@ -571,6 +600,8 @@
 
     let userBranch = localStorage.getItem('sm_user_branch') || null;
     let isDark = localStorage.getItem('sm_theme') !== 'light';
+    let myProgressChart = null;
+    let currentAnalyticsView = 'daily';
 
     // ================= 🚀 التشغيل المبدئي =================
     document.addEventListener('DOMContentLoaded', () => {
@@ -842,6 +873,130 @@
       const pct = Math.round((doneCount / totalCells) * 100);
       document.getElementById('planCommitmentPct').textContent = pct + "%";
       document.getElementById('planCompletedTasksCount').textContent = doneCount;
+
+      // تحديث الرسم البياني تلقائياً بعد أي تغيير بالجدول
+      renderProgressAnalyticsChart(plan);
+    }
+
+    // ================= 📈 المحرك التفاعلي للرسم البياني (Chart Analytics) =================
+    function switchAnalyticsView(viewMode) {
+      currentAnalyticsView = viewMode;
+      document.querySelectorAll('#schedulePage .day-btn').forEach(b => {
+        if(b.id && b.id.startsWith('chartTab_')) b.classList.remove('active');
+      });
+      document.getElementById('chartTab_' + viewMode).classList.add('active');
+
+      const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
+      if (plan) renderProgressAnalyticsChart(plan);
+    }
+
+    function renderProgressAnalyticsChart(plan) {
+      const ctx = document.getElementById('progressChartCanvas').getContext('2d');
+      if (!ctx) return;
+
+      let labels = [];
+      let dataPoints = [];
+      const totalTasksPerDay = plan.tasks.length || 1;
+
+      if (currentAnalyticsView === 'daily') {
+        // حساب نسبة الالتزام لكل يوم في الخطة الحالية
+        for (let d = 1; d <= plan.duration; d++) {
+          labels.push(`يوم ${d}`);
+          let dayDone = 0;
+          plan.tasks.forEach(t => {
+            if (plan.matrix[t] && plan.matrix[t][d] === 1) dayDone++;
+          });
+          let dayPct = Math.round((dayDone / totalTasksPerDay) * 100);
+          dataPoints.push(dayPct);
+        }
+      } else if (currentAnalyticsView === 'weekly') {
+        // تجميع الأداء حسب الأسابيع
+        let totalWeeks = Math.ceil(plan.duration / 7);
+        for (let w = 1; w <= totalWeeks; w++) {
+          labels.push(`الأسبوع ${w}`);
+          let weekDone = 0;
+          let weekTotal = 0;
+          let startDay = (w - 1) * 7 + 1;
+          let endDay = Math.min(w * 7, plan.duration);
+
+          for (let d = startDay; d <= endDay; d++) {
+            plan.tasks.forEach(t => {
+              weekTotal++;
+              if (plan.matrix[t] && plan.matrix[t][d] === 1) weekDone++;
+            });
+          }
+          let weekPct = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
+          dataPoints.push(weekPct);
+        }
+      } else if (currentAnalyticsView === 'monthly') {
+        // متوسط الأداء الشهري والإجمالي
+        labels = ['الربيع الأول', 'مرحلة المنتصف', 'المراجعة النهائية'];
+        let overallDone = 0;
+        let overallTotal = plan.duration * totalTasksPerDay;
+
+        plan.tasks.forEach(t => {
+          for (let d = 1; d <= plan.duration; d++) {
+            if (plan.matrix[t] && plan.matrix[t][d] === 1) overallDone++;
+          }
+        });
+        let totalPct = overallTotal > 0 ? Math.round((overallDone / overallTotal) * 100) : 0;
+        dataPoints = [Math.max(totalPct - 15, 0), totalPct, Math.min(totalPct + 10, 100)];
+      }
+
+      // حساب المتوسط للتقييم التحفيزي
+      const avgScore = dataPoints.length > 0 ? Math.round(dataPoints.reduce((a, b) => a + b, 0) / dataPoints.length) : 0;
+      const badgeEl = document.getElementById('analyticsEvaluationBadge');
+      if (badgeEl) {
+        if (avgScore >= 80) {
+          badgeEl.style.borderColor = "var(--green)";
+          badgeEl.innerHTML = `🏆 <b>أداء أسطوري (${avgScore}%):</b> أنت على الطريق المستقيم للتقفيل، استمر وبإذن الله حلمك مضمون!`;
+        } else if (avgScore >= 50) {
+          badgeEl.style.borderColor = "var(--gold)";
+          badgeEl.innerHTML = `⚡ <b>أداء جيد جداً (${avgScore}%):</b> التزامك ممتاز! حاول تركز أكتر على المهام اليومية المتبقية.`;
+        } else {
+          badgeEl.style.borderColor = "#ff6b6b";
+          badgeEl.innerHTML = `💪 <b>محتاج تعفر شوية (${avgScore}%):</b> البدايات صعبة بس العبرة بالخواتيم.. شد حيلك وما تستسلمش!`;
+        }
+      }
+
+      if (myProgressChart) myProgressChart.destroy();
+
+      myProgressChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'نسبة الالتزام %',
+            data: dataPoints,
+            borderColor: isDark ? '#d4af37' : '#8b6914',
+            backgroundColor: isDark ? 'rgba(212, 175, 55, 0.15)' : 'rgba(139, 105, 20, 0.15)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#6fbf73',
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { color: isDark ? '#9aa79c' : '#6e614c', callback: value => value + '%' },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            x: {
+              ticks: { color: isDark ? '#9aa79c' : '#6e614c' },
+              grid: { display: false }
+            }
+          }
+        }
+      });
     }
 
     function resetCurrentPlan() {
@@ -880,7 +1035,25 @@
       setInterval(updateCD, 1000);
     }
 
-    // ================= ⏱️ تايمر التركيز =================
+    // ================= ⏱️ صوت التكة وتنازل تايمر التركيز =================
+    function playTickSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.04);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.04);
+      } catch(e) {}
+    }
+
     let focusTimerInterval = null;
     let focusMode = 25;
     let focusSecondsLeft = 25 * 60;
@@ -928,22 +1101,21 @@
         startBtn.textContent = "⏸️ إيقاف مؤقت";
         document.getElementById('focusStatusLabel').textContent = "عاش يا بطل! التركيز شغال دلوقتي 🚀";
 
-focusTimerInterval = setInterval(() => {
-  if (focusMode === 'stopwatch') {
-    stopwatchElapsedSecs++;
-    updateFocusDisplay(stopwatchElapsedSecs);
-    playTickSound(); // 👈 تكة مع كل ثانية
-  } else {
-    if (focusSecondsLeft > 0) {
-      focusSecondsLeft--;
-      updateFocusDisplay(focusSecondsLeft);
-      playTickSound(); // 👈 تكة مع كل ثانية
-    } else {
-      completeFocusSession(focusMode);
-    }
-  }
-}, 1000);
-        
+        focusTimerInterval = setInterval(() => {
+          if (focusMode === 'stopwatch') {
+            stopwatchElapsedSecs++;
+            updateFocusDisplay(stopwatchElapsedSecs);
+            playTickSound();
+          } else {
+            if (focusSecondsLeft > 0) {
+              focusSecondsLeft--;
+              updateFocusDisplay(focusSecondsLeft);
+              playTickSound();
+            } else {
+              completeFocusSession(focusMode);
+            }
+          }
+        }, 1000);
       }
     }
 
@@ -1131,23 +1303,6 @@ focusTimerInterval = setInterval(() => {
       isDark = !isDark;
       applyTheme();
     }
-    function playTickSound() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, audioCtx.currentTime); // تردد التكة
-    gain.gain.setValueAtTime(0.05, audioCtx.currentTime); // صوت خفيف جداً للتكة
-    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
-    
-    osc.start();
-    osc.stop(audioCtx.currentTime + 0.05);
-  } catch(e) {}
-}
   </script>
 </body>
 </html>
