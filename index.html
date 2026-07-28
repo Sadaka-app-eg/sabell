@@ -205,15 +205,14 @@
   <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
 
   <!-- 2️⃣ DRAWER MENU -->
+<!-- القائمة الجانبية المحدثة والنظيفة -->
   <div class="tabs-drawer" id="tabsDrawer">
     <div class="drawer-header">القائمة الرئيسية</div>
     <div class="drawer-item active" onclick="showPage('homePage', this)">🏠 الرئيسية</div>
-    <div class="drawer-item" onclick="showPage('subjectsPage', this)">📚 المواد والنصائح</div>
-    <div class="drawer-item" onclick="showPage('schedulePage', this)">⏱️ جدول المذاكرة</div>
-    <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي المتكررة</div>
-    <div class="drawer-item" onclick="showPage('tipsPage', this)">💡 كبسولات التفوق</div>
+    <div class="drawer-item" onclick="showPage('schedulePage', this)">⏱️ خطة التفوق والجدول</div>
+    <div class="drawer-item" onclick="showPage('focusPage', this)">⏱️ تايمر التركيز</div>
+    <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
     <div class="drawer-item" onclick="openBranchChangeModal()">⚙️ تغيير الشعبة</div>
-    <div class="drawer-item" onclick="showPage('focusPage', this)">⏱️ تايمر التركيز والمذاكرة</div>
   </div>
 
   <!-- HEADER -->
@@ -467,59 +466,135 @@
 
   </div>
 
-  <!-- MODAL POPUP FOR SUBJECT TIPS -->
+<!-- النافذة المنبثقة الشاملة لتفاصيل المادة والمدرسين -->
   <div class="modal-overlay" id="subjectTipModal">
-    <div class="modal-box">
-      <h3 id="modalSubjTitle" style="color: var(--gold); margin-bottom: 8px;"></h3>
-      <div id="modalSubjContent" style="font-size: 14px; line-height: 1.9; color: var(--text); text-align: justify; margin-bottom: 15px;"></div>
-      <button onclick="closeTipModal()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 10px; border-radius: 12px; font-family: 'Amiri', serif; font-weight: bold; cursor: pointer;">إغلاق النافذة</button>
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+        <h3 id="modalSubjTitle" style="color: var(--gold); font-size: 17px; font-weight: bold;"></h3>
+        <button onclick="closeTipModal()" style="background: transparent; border: none; color: #ff6b6b; font-size: 18px; cursor: pointer; font-weight: bold;">✕</button>
+      </div>
+      
+      <div id="modalSubjContent" style="font-size: 13px; line-height: 1.8; color: var(--text);"></div>
+
+      <button onclick="closeTipModal()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 10px; border-radius: 12px; font-family: 'Amiri', serif; font-weight: bold; cursor: pointer; margin-top: 12px;">
+        إغلاق دليل المادة
+      </button>
     </div>
   </div>
 
   <script>
-    // ================= 📚 بيانات المواد والنصائح الخاصة لكل شعبة =================
-    const subjectTipsData = {
-      "اللغة العربية": {
-        icon: "📖",
-        sub: "نحو، بلاغة، أدب، قراءة ونصوص",
-        tips: "📌 **النحو:** حل بيدك ولا تكتفِ بالنظر! افهم الإعراب والكلمات المفتاحية.<br>📌 **الأدب:** ارطب الأدب بمدرسة النصوص المطابقة وحل أسئلة الاستنتاج المقالية والنصوص المتحررة."
-      },
-      "اللغة الإنجليزية": {
-        icon: "🇬🇧",
-        sub: "Grammar, Vocab, Translation & Skills",
-        tips: "📌 **الكلمات:** تحفظ بالدلالة والسياق في جمل كاملة.<br>📌 **القطع (Comprehension):** تدرب أسبوعياً على حل قطعتين على الأقل لتعتاد على التخمين وادخار الوقت."
-      },
-      "الفيزياء": {
-        icon: "⚡",
-        sub: "كهربية، حديثة، كيرشوف وأوم",
-        tips: "📌 **الكهربية:** افهم الرسم الهندسي للدائرة ورسم التوازي والتوالي بيدك.<br>📌 **الحديثة:** مضمونة ودرجاتها أسهل، ركّز في ظاهرة كومتون وكوليدج والفيزياء الرقمية."
-      },
-      "الكيمياء": {
-        icon: "🧪",
-        sub: "عضوية، معادلات، وتحليل كيميائي",
-        tips: "📌 **العضوية:** تمثل نِصف الامتحان! ارسم التفاعلات والمخططات بيدك يومياً.<br>📌 **الباب الثالث والرابع:** افهم قوانين الاتزان ومسائل الكهرومغناطيسية وجدول الجهود."
-      },
-      "الأحياء": {
-        icon: "🧬",
-        sub: "دعامة، حركة، هرمونات، DNA",
-        tips: "📌 **الرسومات:** افهم الرسومات والمخططات جيداً (تراكيب العظام، المفاصل، ورسومات الـ DNA).<br>📌 **الربط:** الربط بين جهاز الهرمونات والجهاز العصبي والتناسلي هو مفتاح الأسئلة العليمة."
-      },
-      "الرياضيات (تفاضل وتكامل)": {
-        icon: "📐",
-        sub: "معدلات زمنية، نهايات، سلوك الدالة",
-        tips: "📌 احفظ قوانين الاشتقاق والتكامل للـ الدوال المثلثية والدوال الأسية، وتدرب على مسائل المعدلات المرتبطة بالزمن."
-      },
-      "الرياضيات (جبر وهندسة فراغية)": {
-        icon: "📊",
-        sub: "تباديل وتوفيق، مصفوفات، كورة ومستويات",
-        tips: "📌 رسم المحاور الثلاثية (X, Y, Z) بدقة، وفهم نظرية ذات الحدين والمحددات يضمن لك أكثر من نصف الدرجة."
-      },
-      "الرياضيات (استاتيكا وديناميكا)": {
-        icon: "⚙️",
-        sub: "احتراك، عزوم، نيوتن، وشغل وقدرة",
-        tips: "📌 **الاستاتيكا:** تحديد اتجاه العزم والقوى قبل البدء بالحساب.<br>📌 **الديناميكا:** تحويل الوحدات (كيلوجرام، نيوتن، داين) هو السبب الأول لخطأ الطلاب، ركّز بالوحدات!"
-      }
-    };
+// ================= 📚 دليل المواد الشامل (أبواب + مدرسين + آراء + نصائح) =================
+const subjectFullDetailsData = {
+  "اللغة العربية": {
+    icon: "📖",
+    chapters: [
+      { name: "النحو", count: "7 وحدات شاملة القواعد والإعراب" },
+      { name: "البلاغة", count: "علم البيان، البديع، المعاني، والتجربة الشعريّة" },
+      { name: "الأدب", count: "6 مدارس شعرية + الفنون النثرية (الرواية والقصة)" },
+      { name: "النصوص والقراءة", count: "تطبيقات متحررة المحتوى" }
+    ],
+    teachers: [
+      { name: "أ/ رضا الفاروق", style: "شرح تفصيلي + حل مكثف وواجبات", review: "⭐ أسطورة العربي، بيقفل المنهج بفهم عميق وتأسيس قوي." },
+      { name: "أ/ محمد صلاح (خطة جلبرت)", style: "شرح مبسط، خرائط ذهنية، وسريع", review: "⭐ ممتاز في الضبط السريع ولم الدورات في أوقات قياسية." },
+      { name: "أ/ وليد محسن", style: "تركيز عالي جداً على تكّات النحو والتعبير", review: "⭐ رائع جداً في جزئية النحو والتركيبات الصعبة." }
+    ],
+    tips: "💡 **سر التقفيل:** النحو أسلوب حياة حل بيدك يومياً، والأدب يحفظ بالربط مع أبيات الشعر المتحررة."
+  },
+
+  "اللغة الإنجليزية": {
+    icon: "🇬🇧",
+    chapters: [
+      { name: "الجرامر (Grammar)", count: "12 وحدة قواعد زمنية وترتيبية" },
+      { name: "الكلمات (Vocabulary)", count: "12 وحدة كلمات ومصطلحات ومترادفات" },
+      { name: "المهارات (Skills)", count: "الترجمة، القطع (Comprehension)، والمقال" }
+    ],
+    teachers: [
+      { name: "مستر عمرو رجب", style: "شرح جرامر متكتك + حل كتاب العمالقة", review: "⭐ منظم جداً وبيفصّل قواعد الجرامر بدون تعقيد." },
+            { name: "مستر انجلشاوي", style: "شرح جرامر وكلمات وقصة وكله", review: "⭐ منظم جداً وبيشرح كإنه بيشرح لك قصه حياتيه اللهم بارك." },
+
+      { name: "مستر إسلام طاجن", style: "حل كميات كبيرة وتدريب على مهارات القطع", review: "⭐ متميز في حل أسئلة المستويات العليا والمفردات." },
+      { name: "مستر شريف المصري", style: "مراجعات ملخصة وتبسيط القواعد", review: "⭐ ممتاز للطلاب اللي محتاجين لم المادة بسرعة." }
+    ],
+    tips: "💡 **سر التقفيل:** حفظ الكلمات في جمل وسياق، وحل قطعتين فهم أسبوعياً لتنمية مهارة التخمين."
+  },
+
+  "الفيزياء": {
+    icon: "⚡",
+    chapters: [
+      { name: "الفيزياء الكهربية", count: "4 أبواب (أوم، كيرشوف، التأثير المغناطيسي، الحث، التيار المتردد)" },
+      { name: "الفيزياء الحديثة", count: "4 أبواب (إشعاع الجسم الأسود، التأثير الضوئي، الأطياف، الليزر، الإلكترونيات)" }
+    ],
+    teachers: [
+      { name: "م/ محمود مجدي", style: "فهم فيزيائي عميق + ربط القوانين بالرسم", review: "⭐ عبقري في تبسيط الفكرة الصعبة وحل مسائل كيرشوف." },
+      { name: "أ/ محمد عبد المعبود", style: "خبرة السنين، أسلوب ممتع وتثبيت معلومات", review: "⭐ بيخلي المادة ممتعة وبيشيل الخوف من الفيزياء." },
+      { name: "أ/ كيرلس بارودي", style: "حل أفكار امتحانات وأساليب سريعة", review: "⭐ متميز في حل أسئلة الكتب الخارجية والامتحانات." }
+    ],
+    tips: "💡 **سر التقفيل:** الفيزياء مش قوانين تحفظها، افهم الفكرة الفيزيائية وارسم الدائرة بيدك قبل ما تحسب."
+  },
+
+  "الكيمياء": {
+    icon: "🧪",
+    chapters: [
+      { name: "الكيمياء غير العضوية", count: "4 أبواب (العناصر الانتقالية، التحليل، الاتزان، الكهربية)" },
+      { name: "الكيمياء العضوية", count: "باب الشرف (الهيدروكربونات ومشتقاتها - نصف درجات المادة)" }
+    ],
+    teachers: [
+      { name: "د/ محمد عبد الجواد", style: "حماس جبار، ربط المعادلات، وأفكار وافية", review: "⭐ ملك العضوية بلا منازع، بيخلي الكيمياء أسهل مادة." },
+      { name: "أ/ خالد صقر", style: "شرح هادي ومنظم جداً وبسيط", review: "⭐ ممتاز للطالب اللي بيحب الشرح الهادئ المنظم حتة حتة." },
+      { name: "أ/ عبد الله حبشي", style: "حل أفكار ومسائل متنوعة", review: "⭐ قوي جداً في أفكار المسائل والتحليل الكمي." }
+    ],
+    tips: "💡 **سر التقفيل:** معادلات العضوية تتكتب وتترسم باليد يومياً، وجدول جهود التأكسد في الكهربية يتفهم كويس."
+  },
+
+  "الأحياء": {
+    icon: "🧬",
+    chapters: [
+      { name: "التركيب الوظيفي", count: "4 أبواب (الدعامة والحركة، الهرمونات، التكاثر، المناعة)" },
+      { name: "البيولوجية الجزئية", count: "بابين (DNA و RNA وتخليق البروتين)" }
+    ],
+    teachers: [
+      { name: "د/ أحمد الجوهري", style: "شرح طبي رسم دقيق وتوضيح بالأشكال", review: "⭐ بيشرح الأحياء بفهم طب وتفاصيل بتثبت في الدماغ." },
+      { name: "د/ محمد أيمن", style: "أسلوب ممتع، حل كتاب الامتحان والشامل", review: "⭐ قمة في الترتيب وحل الأفكار والربط بين الفصول." },
+      { name: "أ/ حسن محرم", style: "مدرس القناة التعليمية وخبرة امتحانات", review: "⭐ موجه ممتاز لأسئلة الامتحان الرسمية." }
+    ],
+    tips: "💡 **سر التقفيل:** التركيز على الرسومات ودلالات الهرمونات والربط بين جهاز المناعة والتكاثر."
+  },
+
+  "الرياضيات (تفاضل وتكامل)": {
+    icon: "📐",
+    chapters: [
+      { name: "التفاضل والتكامل", count: "4 أبواب (اشتقاق وتكامل الدوال، سلوك الدالة، والمساحات والحجوم)" }
+    ],
+    teachers: [
+      { name: "أ/ أحمد الفواخري", style: "تأسيس خطوة بخطوة وحل أفكار تراكيم", review: "⭐ من أفضل المدرسين في تبسيط التفاضل والتكامل." },
+      { name: "م/ ناجي نصر", style: "حل رياضي سريع واستراتيجيات إنجاز", review: "⭐ رائع في أفكار مستويات العليا والامتحانات." }
+    ],
+    tips: "💡 **سر التقفيل:** حفظ قوانين قواعد الاشتقاق والتكامل والتأكد من خطوة خطوات التعويض."
+  },
+
+  "الرياضيات (جبر وهندسة فراغية)": {
+    icon: "📊",
+    chapters: [
+      { name: "الجبر والهندسة الفراغية", count: "3 أبواب جبر + بابين هندسة فراغية ثلاثية الأبعاد" }
+    ],
+    teachers: [
+      { name: "أ/ أحمد الفواخري", style: "شرح فراغية مجسم وفهم المحاور", review: "⭐ بيسهل تخيل الهندسة الفراغية جداً." }
+    ],
+    tips: "💡 **سر التقفيل:** رسم المحاور الثلاثية وتخيل المستويات والكرات في الفراغ."
+  },
+
+  "الرياضيات (استاتيكا وديناميكا)": {
+    icon: "⚙️",
+    chapters: [
+      { name: "الاستاتيكا", count: "6 أبواب (الاحتكاك، العزوم، القوى المتوازية، الاتزان، والازدواج)" },
+      { name: "الديناميكا", count: "4 أبواب (الحركة، قوانين نيوتن، الدفع والزخم، الشغل والقدرة والطاقة)" }
+    ],
+    teachers: [
+      { name: "م/ أحمد عصام", style: "حل وتمارين مكثفة وتطبيقات عملي", review: "⭐ شاطر جداً في قوانين نيوتن والتحويلات." }
+    ],
+    tips: "💡 **سر التقفيل:** ركّز في تحويل الوحدات (نيوتن، داين، كجم) لأنها السبب الأول في أخطاء الديناميكا!"
+  }
+};
 
     // تقسيم المواد المعتمد لكل شعبة
     const branchSubjectsMapping = {
@@ -605,13 +680,44 @@
       }).join('');
     }
 
-    function openSubjectTips(sName) {
-      const item = subjectTipsData[sName];
-      if (!item) return;
-      document.getElementById('modalSubjTitle').innerHTML = `${item.icon} نصائح تفوق مادة: ${sName}`;
-      document.getElementById('modalSubjContent').innerHTML = item.tips;
-      document.getElementById('subjectTipModal').classList.add('show');
-    }
+// دالة فتح دليل المادة الشامل المحدثة
+function openSubjectTips(sName) {
+  const item = subjectFullDetailsData[sName];
+  if (!item) return;
+
+  document.getElementById('modalSubjTitle').innerHTML = `${item.icon} دليل مادة: ${sName}`;
+
+  let html = '';
+
+  // 1. تقسيم المنهج والأبواب
+  html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
+  html += `<div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">📖 تقسيم منهج المادة:</div>`;
+  item.chapters.forEach(c => {
+    html += `<div style="font-size:12px; margin-bottom:4px;">• <b>${c.name}:</b> <span style="color:var(--text2);">${c.count}</span></div>`;
+  });
+  html += `</div>`;
+
+  // 2. أفضل مدرسين اليوتيوب ورأي الطلاب
+  html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
+  html += `<div style="font-weight:bold; color:var(--green); margin-bottom:6px;">🎙️ أشهر مدرسين اليوتيوب ورأي الطلاب:</div>`;
+  item.teachers.forEach(t => {
+    html += `
+      <div style="border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:6px;">
+        <div style="font-weight:bold; color:var(--text);">${t.name} <small style="color:var(--gold);">(${t.style})</small></div>
+        <div style="font-size:11px; color:var(--text2); margin-top:2px;">${t.review}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // 3. نصائح التقفيل
+  html += `<div style="background:rgba(212,175,55,0.08); border:1px solid var(--gold); border-radius:12px; padding:10px;">`;
+  html += `<div style="font-size:12px; color:var(--text); line-height:1.7;">${item.tips}</div>`;
+  html += `</div>`;
+
+  document.getElementById('modalSubjContent').innerHTML = html;
+  document.getElementById('subjectTipModal').classList.add('show');
+}
 
     function closeTipModal() {
       document.getElementById('subjectTipModal').classList.remove('show');
