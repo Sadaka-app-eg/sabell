@@ -18,7 +18,11 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-
+// إذا فتحت الرابط كذا: yoursite.com/?admin=true
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('admin') === 'true') {
+    document.getElementById('adminSection').style.display = 'block';
+}
 // قائمة أشهر المدرسين
 const famousTeachersMap = {
   "اللغة العربية": ["أ/ رضا الفاروق", "أ/ محمد صلاح", "أ/ وليد محسن", ],
