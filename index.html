@@ -255,61 +255,99 @@
       <div id="fullSubjectsList"></div>
     </div>
 
-    <!-- ==================== صفحة جدول المذاكرة (SCHEDULE) ==================== -->
-    <div class="page" id="schedulePage">
-      <div style="text-align: center; margin-bottom: 12px;">
-        <h2 style="color: var(--gold); font-size: 20px;">⏱️ جَدْوَلُ المَذَاكَرَةِ اليَوْمِيِّ</h2>
-        <p style="font-size: 12px; color: var(--text2);">ثبّت ساعاتك بالدقيقة واعلم صح على الفترات المكتملة</p>
-      </div>
+  <!-- ==================== صفحة خطة التفوق والجدول (SCHEDULE) ==================== -->
+<div class="page" id="schedulePage">
+  <div style="text-align: center; margin-bottom: 12px;">
+    <h2 style="color: var(--gold); font-size: 20px;">🌿 خِطَّةُ التَّفَوُّقِ وَالطَّاعَةِ</h2>
+    <p style="font-size: 12px; color: var(--text2);">اختر مهامك الدراسية والإيمانية لبناء برنامجك المخصص ومتابعة التزامك يوماً بيوم</p>
+  </div>
 
-      <!-- أيام الأسبوع -->
-      <div class="day-tabs" id="dayTabs">
-        <button class="day-btn active" onclick="switchScheduleDay('السبت', this)">السبت</button>
-        <button class="day-btn" onclick="switchScheduleDay('الأحد', this)">الأحد</button>
-        <button class="day-btn" onclick="switchScheduleDay('الإثنين', this)">الإثنين</button>
-        <button class="day-btn" onclick="switchScheduleDay('الثلاثاء', this)">الثلاثاء</button>
-        <button class="day-btn" onclick="switchScheduleDay('الأربعاء', this)">الأربعاء</button>
-        <button class="day-btn" onclick="switchScheduleDay('الخميس', this)">الخميس</button>
-        <button class="day-btn" onclick="switchScheduleDay('الجمعة', this)">الجمعة</button>
-      </div>
-
-      <!-- نموذج إضافة فترة جديدة -->
-      <div class="athr-card">
-        <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;" id="addFormTitle">➕ إضافة فترة مذاكرة (السبت)</div>
-        
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-          <div>
-            <label style="font-size: 11px; color: var(--text2);">المادة:</label>
-            <select id="taskSubjSelect" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none;"></select>
-          </div>
-          <div>
-            <label style="font-size: 11px; color: var(--text2);">نوع المذاكرة:</label>
-            <select id="taskTypeSelect" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none;">
-              <option value="شرح وفهم 📖">شرح وفهم 📖</option>
-              <option value="حل أسئلة 📝">حل أسئلة 📝</option>
-              <option value="مراجعة 🔄">مراجعة 🔄</option>
-            </select>
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-          <div>
-            <label style="font-size: 11px; color: var(--text2);">من الساعة:</label>
-            <input type="time" id="taskStart" value="16:00" style="width: 100%; padding: 6px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: sans-serif;">
-          </div>
-          <div>
-            <label style="font-size: 11px; color: var(--text2);">إلى الساعة:</label>
-            <input type="time" id="taskEnd" value="17:30" style="width: 100%; padding: 6px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: sans-serif;">
-          </div>
-        </div>
-
-        <button onclick="saveNewTask()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">📌 تثبيت الفترة في الجدول</button>
-      </div>
-
-      <!-- قائمة فترات اليوم -->
-      <div id="scheduleTasksList"></div>
+  <!-- وعاء بناء الخطة وتحديد المهام (Wizard) -->
+  <div id="planSetupWizard" class="athr-card">
+    <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-right: 3px solid var(--gold); padding-right: 8px;">
+      📌 تخصيص وتحديد مهام خطتك:
     </div>
 
+    <!-- 1. قسم المواد المقررة (حسب شعبته) -->
+    <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin: 8px 0 6px;">📚 المواد الدراسية:</div>
+    <div id="planSubjPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
+
+    <!-- 2. قسم الطاعات والعبادات للبركة والبر والراحة النفسية -->
+    <div style="font-size: 12px; color: var(--green); font-weight: bold; margin: 10px 0 6px;">❤️ الأعمال الصالحة والبركة:</div>
+    <div id="planWorshipPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
+
+    <!-- 3. إضافة مهمة خاصة مخصصة -->
+    <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+      <input type="text" id="customTaskInp" placeholder="➕ إضافة مهمة أو درس مخصص..." style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
+      <button onclick="addCustomTaskToPlan()" class="btn-small">إضافة</button>
+    </div>
+
+    <!-- 4. تحديد مدة الخطة -->
+    <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin-bottom: 6px;">⏱️ مدة خطة التفوق:</div>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
+      <button class="day-btn active" id="duration_7" onclick="setPlanDuration(7)">7 أيام</button>
+      <button class="day-btn" id="duration_14" onclick="setPlanDuration(14)">14 يوماً</button>
+      <button class="day-btn" id="duration_30" onclick="setPlanDuration(30)">30 يوماً</button>
+    </div>
+
+    <button onclick="buildAndStartPlan()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px;">
+      🚀 اعتماد وبدء خطة التفوق والبركة
+    </button>
+  </div>
+
+  <!-- وعاء عرض جدول المتابعة الشبكي (Matrix Tracking Grid) -->
+  <div id="activePlanDisplay" style="display: none;">
+    <div class="athr-card" style="overflow-x: auto; padding: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <span style="font-size: 14px; font-weight: bold; color: var(--gold);">📊 جدول متابعة الخطة اليومية</span>
+        <span style="font-size: 11px; color: var(--text2);">اضغط: (✅ تم) - (❌ تقصير)</span>
+      </div>
+      
+      <!-- جدول الشبكة -->
+      <div id="planMatrixGridTable"></div>
+    </div>
+
+    <!-- كارت الإحصائيات -->
+    <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
+      <div>
+        <div style="font-size: 22px; font-weight: bold; color: var(--gold);" id="planCommitmentPct">0%</div>
+        <div style="font-size: 11px; color: var(--text2);">نسبة الالتزام الإجمالية</div>
+      </div>
+      <div>
+        <div style="font-size: 22px; font-weight: bold; color: var(--green);" id="planCompletedTasksCount">0</div>
+        <div style="font-size: 11px; color: var(--text2);">مهام مكتملة بنجاح</div>
+      </div>
+    </div>
+
+    <button onclick="resetCurrentPlan()" style="width: 100%; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 12px; margin-top: 10px; font-family: 'Amiri', serif; cursor: pointer;">
+      🔄 فسخ الخطة الحالية وبدء واحدة جديدة
+    </button>
+  </div>
+</div>
+<!-- ==================== كارت العداد التنازلي للامتحانات ==================== -->
+<div class="athr-card" style="text-align: center; border: 1px solid var(--border); padding: 16px 10px;">
+  <div style="font-size: 15px; font-weight: bold; color: var(--gold); margin-bottom: 4px;">🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</div>
+  <div style="font-size: 11px; color: var(--text2); margin-bottom: 12px;">متبقي على انطلاق امتحانات الثانوية العامة:</div>
+
+  <div style="display: flex; justify-content: center; gap: 8px; direction: ltr;">
+    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
+      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdSecs">00</div>
+      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">ثانية</div>
+    </div>
+    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
+      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdMins">00</div>
+      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">دقيقة</div>
+    </div>
+    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
+      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdHours">00</div>
+      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">ساعة</div>
+    </div>
+    <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 10px; min-width: 55px;">
+      <div style="font-size: 18px; font-weight: bold; color: var(--gold);" id="cdDays">00</div>
+      <div style="font-size: 9px; color: var(--text2); font-family: 'Amiri', serif;">يوم</div>
+    </div>
+  </div>
+</div>
     <!-- ==================== صفحة النصائح العامة (TIPS) ==================== -->
     <div class="page" id="tipsPage">
       <div style="text-align: center; margin-bottom: 12px;">
@@ -403,6 +441,7 @@
       } else {
         document.getElementById('firstTimeBranchModal').style.display = 'none';
         initAppUI();
+        startExamCountdown();
       }
     });
 
@@ -582,6 +621,207 @@
       isDark = !isDark;
       applyTheme();
     }
+    // ================= 🌿 نظام خطة التفوق والطاعة المتقدم =================
+const presetWorshipTasks = [
+  "صلاة الفجر في وقتها 🕌",
+  "أذكار الصباح والمساء 📿",
+  "ورد قرآن كريم 📖",
+  "بر الوالدين والدعاء 🤲",
+  "صلاة الضحى / قيام الليل ✨",
+  "الاستغفار والصلاة على النبي 🤍"
+];
+
+let selectedPlanTasks = [];
+let selectedPlanDuration = 7;
+
+function initPlanSetupUI() {
+  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+  
+  if (activePlan) {
+    document.getElementById('planSetupWizard').style.display = 'none';
+    document.getElementById('activePlanDisplay').style.display = 'block';
+    renderActivePlanGrid(activePlan);
+    return;
+  }
+
+  document.getElementById('planSetupWizard').style.display = 'block';
+  document.getElementById('activePlanDisplay').style.display = 'none';
+
+  // 1. صب المواد المعتمدة للشعبة
+  const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
+  const subjGrid = document.getElementById('planSubjPresetGrid');
+  
+  subjGrid.innerHTML = subjs.map(s => {
+    const isSelected = selectedPlanTasks.includes(s);
+    return `
+      <div onclick="togglePlanTaskSelection('${s}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:12px; padding:8px;">
+        ${isSelected ? '✓ ' : '+ '} ${s}
+      </div>
+    `;
+  }).join('');
+
+  // 2. صب قائمة العبادات
+  const worshipGrid = document.getElementById('planWorshipPresetGrid');
+  worshipGrid.innerHTML = presetWorshipTasks.map(w => {
+    const isSelected = selectedPlanTasks.includes(w);
+    return `
+      <div onclick="togglePlanTaskSelection('${w}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:11px; padding:8px; border-color:var(--green);">
+        ${isSelected ? '✓ ' : '+ '} ${w}
+      </div>
+    `;
+  }).join('');
+}
+
+function togglePlanTaskSelection(taskName) {
+  if (selectedPlanTasks.includes(taskName)) {
+    selectedPlanTasks = selectedPlanTasks.filter(t => t !== taskName);
+  } else {
+    selectedPlanTasks.push(taskName);
+  }
+  initPlanSetupUI();
+}
+
+function addCustomTaskToPlan() {
+  const inp = document.getElementById('customTaskInp');
+  const val = inp.value.trim();
+  if (!val) return;
+  if (!selectedPlanTasks.includes(val)) {
+    selectedPlanTasks.push(val);
+  }
+  inp.value = '';
+  initPlanSetupUI();
+}
+
+function setPlanDuration(days) {
+  selectedPlanDuration = days;
+  document.querySelectorAll('#planSetupWizard .day-btn').forEach(b => {
+    if(b.id && b.id.startsWith('duration_')) b.classList.remove('active');
+  });
+  document.getElementById('duration_' + days).classList.add('active');
+}
+
+function buildAndStartPlan() {
+  if (selectedPlanTasks.length === 0) {
+    alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
+    return;
+  }
+
+  const planData = {
+    createdAt: new Date().toISOString(),
+    duration: selectedPlanDuration,
+    tasks: selectedPlanTasks,
+    matrix: {} // { "taskName": { day1: 1, day2: 2 } } -> 1: تم, 2: لم يتم
+  };
+
+  localStorage.setItem('sm_active_plan', JSON.stringify(planData));
+  initPlanSetupUI();
+}
+
+function toggleMatrixCell(taskName, dayNum) {
+  const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
+  if (!plan) return;
+
+  if (!plan.matrix[taskName]) plan.matrix[taskName] = {};
+  
+  const currentVal = plan.matrix[taskName][dayNum] || 0;
+  // التبديل: 0 (فارغ) -> 1 (تم) -> 2 (لم يتم) -> 0
+  const nextVal = (currentVal + 1) % 3;
+  plan.matrix[taskName][dayNum] = nextVal;
+
+  localStorage.setItem('sm_active_plan', JSON.stringify(plan));
+  renderActivePlanGrid(plan);
+}
+
+function renderActivePlanGrid(plan) {
+  const container = document.getElementById('planMatrixGridTable');
+  
+  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
+  
+  // الهيدر (الأيام)
+  html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
+  html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
+  for (let d = 1; d <= plan.duration; d++) {
+    html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
+  }
+  html += `</tr>`;
+
+  let totalCells = plan.tasks.length * plan.duration;
+  let doneCount = 0;
+
+  // أسطر المهام
+  plan.tasks.forEach(task => {
+    html += `<tr style="border-bottom:1px dashed var(--border);">`;
+    html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
+    
+    for (let d = 1; d <= plan.duration; d++) {
+      const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
+      let symbol = "•";
+      let colorStyle = "color:var(--text2);";
+
+      if (val === 1) {
+        symbol = "✅";
+        colorStyle = "";
+        doneCount++;
+      } else if (val === 2) {
+        symbol = "❌";
+        colorStyle = "";
+      }
+
+      html += `
+        <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
+          ${symbol}
+        </td>
+      `;
+    }
+    html += `</tr>`;
+  });
+
+  html += `</table>`;
+  container.innerHTML = html;
+
+  // تحديث الإحصائيات
+  const pct = Math.round((doneCount / totalCells) * 100);
+  document.getElementById('planCommitmentPct').textContent = pct + "%";
+  document.getElementById('planCompletedTasksCount').textContent = doneCount;
+}
+
+function resetCurrentPlan() {
+  if (confirm("هل أنت متأكد من فسخ الخطة الحالية وبدء واحدة جديدة؟")) {
+    localStorage.removeItem('sm_active_plan');
+    selectedPlanTasks = [];
+    initPlanSetupUI();
+  }
+}
+    // ================= ⏱️ العداد التنازلي للامتحانات =================
+function startExamCountdown() {
+  // ضبط الموعد التقديري للامتحانات (يونيو 2027 مثلاً)
+  const examTargetDate = new Date('June 10, 2027 09:00:00').getTime();
+
+  function updateCD() {
+    const now = new Date().getTime();
+    const diff = examTargetDate - now;
+
+    if (diff > 0) {
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+      const dEl = document.getElementById('cdDays');
+      const hEl = document.getElementById('cdHours');
+      const mEl = document.getElementById('cdMins');
+      const sEl = document.getElementById('cdSecs');
+
+      if (dEl) dEl.textContent = days;
+      if (hEl) hEl.textContent = String(hours).padStart(2, '0');
+      if (mEl) mEl.textContent = String(mins).padStart(2, '0');
+      if (sEl) sEl.textContent = String(secs).padStart(2, '0');
+    }
+  }
+
+  updateCD();
+  setInterval(updateCD, 1000);
+}
   </script>
 </body>
 </html>
