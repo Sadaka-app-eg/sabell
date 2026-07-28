@@ -827,7 +827,107 @@ document.addEventListener('click', () => {
       "الاستغفار والصلاة على النبي 🤍"
     ];
 
-    let selectedPlanTasks = [];
+  // ✅ ضع الكود الجديد ده:
+let selectedPlanTasks = {}; // { "اسم المهمة": ["السبت", "الإثنين"] أو "daily" }
+
+// قائمة أيام الأسبوع للعموم
+const weekDaysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+
+function initPlanSetupUI() {
+  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+  
+  if (activePlan) {
+    document.getElementById('planSetupWizard').style.display = 'none';
+    document.getElementById('activePlanDisplay').style.display = 'block';
+    renderActivePlanGrid(activePlan);
+    return;
+  }
+
+  document.getElementById('planSetupWizard').style.display = 'block';
+  document.getElementById('activePlanDisplay').style.display = 'none';
+
+  const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
+  
+  // 1. عرض المواد مع خيارات التكرار
+  const subjGrid = document.getElementById('planSubjPresetGrid');
+  subjGrid.innerHTML = subjs.map(s => renderTaskConfigRow(s)).join('');
+
+  // 2. عرض الطاعات مع خيارات التكرار
+  const worshipGrid = document.getElementById('planWorshipPresetGrid');
+  worshipGrid.innerHTML = presetWorshipTasks.map(w => renderTaskConfigRow(w)).join('');
+}
+
+// دالة رسم سطر المهمة مع زرار تحديد الأيام
+function renderTaskConfigRow(taskName) {
+  const isSelected = !!selectedPlanTasks[taskName];
+  const mode = selectedPlanTasks[taskName] || 'daily'; // 'daily' أو array أيام
+
+  return `
+    <div style="background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; margin-bottom:6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:13px; font-weight:bold; color:var(--text);">${taskName}</span>
+        <button onclick="togglePlanTaskSelection('${taskName}')" class="btn-small" style="background:${isSelected ? 'var(--green)' : 'var(--card)'}; color:${isSelected ? '#fff' : 'var(--gold)'}; border:1px solid var(--gold);">
+          ${isSelected ? '✓ مضافة' : '+ إضافة'}
+        </button>
+      </div>
+      
+      ${isSelected ? `
+        <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
+          <div style="font-size:10px; color:var(--text2); margin-bottom:4px;">تكرار المهمة:</div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            <button onclick="setTaskFrequency('${taskName}', 'daily')" class="day-btn ${mode === 'daily' ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">يومياً</button>
+            <button onclick="setTaskFrequency('${taskName}', 'custom')" class="day-btn ${Array.isArray(mode) ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">أيام محددة</button>
+          </div>
+          
+          ${Array.isArray(mode) ? `
+            <div style="display:flex; gap:3px; margin-top:6px; overflow-x:auto;">
+              ${weekDaysList.map(day => `
+                <button onclick="toggleSpecificDay('${taskName}', '${day}')" class="day-btn ${mode.includes(day) ? 'active' : ''}" style="padding:2px 4px; font-size:9px; min-width:32px;">
+                  ${day.replace('الأربعاء', 'أربعاء')}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function togglePlanTaskSelection(taskName) {
+  if (selectedPlanTasks[taskName]) {
+    delete selectedPlanTasks[taskName];
+  } else {
+    selectedPlanTasks[taskName] = 'daily'; // الافتراضي يومياً
+  }
+  initPlanSetupUI();
+}
+
+function setTaskFrequency(taskName, freqType) {
+  if (freqType === 'daily') {
+    selectedPlanTasks[taskName] = 'daily';
+  } else {
+    selectedPlanTasks[taskName] = ["السبت", "الإثنين"]; // اختيار يومين كبداية
+  }
+  initPlanSetupUI();
+}
+
+function toggleSpecificDay(taskName, day) {
+  if (!Array.isArray(selectedPlanTasks[taskName])) {
+    selectedPlanTasks[taskName] = [];
+  }
+  
+  const arr = selectedPlanTasks[taskName];
+  const idx = arr.indexOf(day);
+  if (idx > -1) {
+    arr.splice(idx, 1);
+  } else {
+    arr.push(day);
+  }
+  initPlanSetupUI();
+}
+
+    
     let selectedPlanDuration = 7;
 
     function initPlanSetupUI() {
