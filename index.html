@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>سبيل المجد | الثانوية العامة</title>
   
-  <!-- خط أميري وخط القاهرة لإعطاء روح تطبيق أثر -->
+  <!-- خط أميري وخط القاهرة -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
@@ -62,7 +62,7 @@
       font-size: 16px; display: flex; align-items: center; justify-content: center;
     }
 
-    /* ===== DRAWER MENU (المنيو الجانبي زي أثر) ===== */
+    /* ===== DRAWER MENU ===== */
     .menu-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.6); z-index: 9998;
@@ -90,7 +90,7 @@
       color: var(--gold); background: rgba(212, 175, 55, 0.1); border-right: 4px solid var(--gold);
     }
 
-    /* ===== CONTAINER (ملموم وضيق للموبايل) ===== */
+    /* ===== CONTAINER ===== */
     .app-container {
       max-width: 520px;
       margin: 0 auto;
@@ -159,7 +159,7 @@
     }
     .task-item.done { opacity: 0.5; text-decoration: line-through; }
 
-    /* ===== FIRST TIME OVERLAY (شاشة اختيار الشعبة) ===== */
+    /* ===== FIRST TIME OVERLAY ===== */
     .branch-modal {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(11, 18, 12, 0.96); z-index: 99999;
@@ -191,7 +191,7 @@
 </head>
 <body>
 
-  <!-- 1️⃣ شاشة اختيار الشعبة لأول مرة (Modal) -->
+  <!-- 1️⃣ شاشة اختيار الشعبة -->
   <div class="branch-modal" id="firstTimeBranchModal">
     <div style="font-size: 50px; margin-bottom: 10px;">🎓</div>
     <h2>أهلاً بك في سَبِيلُ المَجْدِ</h2>
@@ -205,10 +205,10 @@
   <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
 
   <!-- 2️⃣ DRAWER MENU -->
-<!-- القائمة الجانبية المحدثة والنظيفة -->
   <div class="tabs-drawer" id="tabsDrawer">
     <div class="drawer-header">القائمة الرئيسية</div>
     <div class="drawer-item active" onclick="showPage('homePage', this)">🏠 الرئيسية</div>
+    <div class="drawer-item" onclick="showPage('subjectsPage', this)">📚 المواد والنصائح</div>
     <div class="drawer-item" onclick="showPage('schedulePage', this)">⏱️ خطة التفوق والجدول</div>
     <div class="drawer-item" onclick="showPage('focusPage', this)">⏱️ تايمر التركيز</div>
     <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
@@ -224,30 +224,27 @@
 
   <div class="app-container">
 
- <!-- ==================== الصفحة الرئيسية (HOME) ==================== -->
-<div class="page active" id="homePage">
+    <!-- ==================== الصفحة الرئيسية (HOME) ==================== -->
+    <div class="page active" id="homePage">
 
-  <!-- الكود الجديد هنا -->
-  <!-- ==================== كارت العداد الدائري للامتحانات (ستايل أثر) ==================== -->
-  <div class="athr-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(18,30,20,0.95) 100%); border-radius: 20px; padding: 18px 14px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; direction: rtl;">
-    
-    <!-- البيانات والنص على اليمين -->
-    <div style="text-align: right; flex: 1; padding-right: 6px;">
-      <div style="font-size: 16px; font-weight: bold; color: var(--gold); font-family: 'Amiri', serif;">🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</div>
-      <div style="font-size: 12px; color: var(--text2); margin-top: 4px;">متبقي على انطلاق امتحانات الثانوية العامة</div>
-      <div style="font-size: 11px; color: var(--green); margin-top: 8px; font-weight: bold;" id="cdDetailsText">جاري حساب الوقت...</div>
-    </div>
+      <!-- كارت العداد الدائري للامتحانات -->
+      <div class="athr-card" style="background: linear-gradient(135deg, rgba(212,175,55,0.12) 0%, rgba(18,30,20,0.95) 100%); border-radius: 20px; padding: 18px 14px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; direction: rtl;">
+        
+        <div style="text-align: right; flex: 1; padding-right: 6px;">
+          <div style="font-size: 16px; font-weight: bold; color: var(--gold); font-family: 'Amiri', serif;">🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</div>
+          <div style="font-size: 12px; color: var(--text2); margin-top: 4px;">متبقي على انطلاق امتحانات الثانوية العامة</div>
+          <div style="font-size: 11px; color: var(--green); margin-top: 8px; font-weight: bold;" id="cdDetailsText">جاري حساب الوقت...</div>
+        </div>
 
-    <!-- الدائرة المضيئة والعداد التنازلي الحقيقي على اليسار -->
-    <div style="position: relative; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 50%; border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.2); flex-shrink: 0;">
-      <div id="cdDaysCircle" style="font-size: 22px; font-weight: bold; color: var(--gold); font-family: monospace; line-height: 1;">000</div>
-      <div style="font-size: 10px; color: var(--text2); margin-top: 2px; font-weight: bold;">يَوْمًـا</div>
-    </div>
+        <div style="position: relative; width: 100px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 50%; border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.2); flex-shrink: 0;">
+          <div id="cdDaysCircle" style="font-size: 22px; font-weight: bold; color: var(--gold); font-family: monospace; line-height: 1;">000</div>
+          <div style="font-size: 10px; color: var(--text2); margin-top: 2px; font-weight: bold;">يَوْمًـا</div>
+        </div>
 
-  </div>
+      </div>
 
-  <div class="hero-banner">
-    <h2>🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</h2>
+      <div class="hero-banner">
+        <h2>🚀 حُلْمُكَ يَسْتَاهِلُ العُفْرَة!</h2>
         <div class="branch-badge" id="currentBranchDisplay">الشعبة: جاري التحديد...</div>
         <p style="font-size: 12px; color: var(--text2); margin-top: 8px;">"وأن ليس للإنسان إلا ما سعى وأن سعيه سوف يرى"</p>
       </div>
@@ -276,198 +273,162 @@
       <div id="fullSubjectsList"></div>
     </div>
 
-<!-- ==================== صفحة جدول المذاكرة والتتبع الحي (SCHEDULE) ==================== -->
-<div class="page" id="schedulePage">
-  <div style="text-align: center; margin-bottom: 12px;">
-    <h2 style="color: var(--gold); font-size: 20px;">⏱️ جَدْوَلُ المَذَاكَرَةِ وَالتَّتَبُّعِ الحَيِّ</h2>
-    <p style="font-size: 12px; color: var(--text2);">حدد فتراتك بالساعة والدقيقة للأيام التي تريدها فقط خلال الأسبوع</p>
-  </div>
-
-  <!-- الوعاء الذي سيتم صب الجدول الذكي والتتبع الحي فيه ديناميكياً -->
-  <div id="scheduleContainer"></div>
-</div>
-
-  <!-- وعاء بناء الخطة وتحديد المهام (Wizard) -->
-  <div id="planSetupWizard" class="athr-card">
-    <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-right: 3px solid var(--gold); padding-right: 8px;">
-      📌 تخصيص وتحديد مهام خطتك:
-    </div>
-
-    <!-- 1. قسم المواد المقررة (حسب شعبته) -->
-    <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin: 8px 0 6px;">📚 المواد الدراسية:</div>
-    <div id="planSubjPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
-
-    <!-- 2. قسم الطاعات والعبادات للبركة والبر والراحة النفسية -->
-    <div style="font-size: 12px; color: var(--green); font-weight: bold; margin: 10px 0 6px;">❤️ الأعمال الصالحة والبركة:</div>
-    <div id="planWorshipPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
-
-    <!-- 3. إضافة مهمة خاصة مخصصة -->
-    <div style="display: flex; gap: 6px; margin-bottom: 14px;">
-      <input type="text" id="customTaskInp" placeholder="➕ إضافة مهمة أو درس مخصص..." style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
-      <button onclick="addCustomTaskToPlan()" class="btn-small">إضافة</button>
-    </div>
-
-    <!-- 4. تحديد مدة الخطة -->
-    <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin-bottom: 6px;">⏱️ مدة خطة التفوق:</div>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
-      <button class="day-btn active" id="duration_7" onclick="setPlanDuration(7)">7 أيام</button>
-      <button class="day-btn" id="duration_14" onclick="setPlanDuration(14)">14 يوماً</button>
-      <button class="day-btn" id="duration_30" onclick="setPlanDuration(30)">30 يوماً</button>
-    </div>
-
-    <button onclick="buildAndStartPlan()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px;">
-      🚀 اعتماد وبدء خطة التفوق والبركة
-    </button>
-  </div>
-
-  <!-- وعاء عرض جدول المتابعة الشبكي (Matrix Tracking Grid) -->
-  <div id="activePlanDisplay" style="display: none;">
-    <div class="athr-card" style="overflow-x: auto; padding: 10px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <span style="font-size: 14px; font-weight: bold; color: var(--gold);">📊 جدول متابعة الخطة اليومية</span>
-        <span style="font-size: 11px; color: var(--text2);">اضغط: (✅ تم) - (❌ تقصير)</span>
+    <!-- ==================== صفحة خطة التفوق والجدول (SCHEDULE) ==================== -->
+    <div class="page" id="schedulePage">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <h2 style="color: var(--gold); font-size: 20px;">🌿 خِطَّةُ التَّفَوُّقِ وَالطَّاعَةِ</h2>
+        <p style="font-size: 12px; color: var(--text2);">اختر مهامك الدراسية والإيمانية لبناء برنامجك المخصص ومتابعة التزامك يوماً بيوم</p>
       </div>
-      
-      <!-- جدول الشبكة -->
-      <div id="planMatrixGridTable"></div>
-    </div>
 
-    <!-- كارت الإحصائيات -->
-    <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
-      <div>
-        <div style="font-size: 22px; font-weight: bold; color: var(--gold);" id="planCommitmentPct">0%</div>
-        <div style="font-size: 11px; color: var(--text2);">نسبة الالتزام الإجمالية</div>
+      <!-- وعاء بناء الخطة وتحديد المهام -->
+      <div id="planSetupWizard" class="athr-card">
+        <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 10px; border-right: 3px solid var(--gold); padding-right: 8px;">
+          📌 تخصيص وتحديد مهام خطتك:
+        </div>
+
+        <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin: 8px 0 6px;">📚 المواد الدراسية:</div>
+        <div id="planSubjPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
+
+        <div style="font-size: 12px; color: var(--green); font-weight: bold; margin: 10px 0 6px;">❤️ الأعمال الصالحة والبركة:</div>
+        <div id="planWorshipPresetGrid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;"></div>
+
+        <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+          <input type="text" id="customTaskInp" placeholder="➕ إضافة مهمة أو درس مخصص..." style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
+          <button onclick="addCustomTaskToPlan()" class="btn-small">إضافة</button>
+        </div>
+
+        <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin-bottom: 6px;">⏱️ مدة خطة التفوق:</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px;">
+          <button class="day-btn active" id="duration_7" onclick="setPlanDuration(7)">7 أيام</button>
+          <button class="day-btn" id="duration_14" onclick="setPlanDuration(14)">14 يوماً</button>
+          <button class="day-btn" id="duration_30" onclick="setPlanDuration(30)">30 يوماً</button>
+        </div>
+
+        <button onclick="buildAndStartPlan()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px;">
+          🚀 اعتماد وبدء خطة التفوق والبركة
+        </button>
       </div>
-      <div>
-        <div style="font-size: 22px; font-weight: bold; color: var(--green);" id="planCompletedTasksCount">0</div>
-        <div style="font-size: 11px; color: var(--text2);">مهام مكتملة بنجاح</div>
+
+      <!-- وعاء عرض جدول المتابعة الشبكي -->
+      <div id="activePlanDisplay" style="display: none;">
+        <div class="athr-card" style="overflow-x: auto; padding: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 14px; font-weight: bold; color: var(--gold);">📊 جدول متابعة الخطة اليومية</span>
+            <span style="font-size: 11px; color: var(--text2);">اضغط: (✅ تم) - (❌ تقصير)</span>
+          </div>
+          
+          <div id="planMatrixGridTable"></div>
+        </div>
+
+        <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
+          <div>
+            <div style="font-size: 22px; font-weight: bold; color: var(--gold);" id="planCommitmentPct">0%</div>
+            <div style="font-size: 11px; color: var(--text2);">نسبة الالتزام الإجمالية</div>
+          </div>
+          <div>
+            <div style="font-size: 22px; font-weight: bold; color: var(--green);" id="planCompletedTasksCount">0</div>
+            <div style="font-size: 11px; color: var(--text2);">مهام مكتملة بنجاح</div>
+          </div>
+        </div>
+
+        <button onclick="resetCurrentPlan()" style="width: 100%; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 12px; margin-top: 10px; font-family: 'Amiri', serif; cursor: pointer;">
+          🔄 فسخ الخطة الحالية وبدء واحدة جديدة
+        </button>
       </div>
     </div>
-
-    <button onclick="resetCurrentPlan()" style="width: 100%; background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 10px; border-radius: 12px; margin-top: 10px; font-family: 'Amiri', serif; cursor: pointer;">
-      🔄 فسخ الخطة الحالية وبدء واحدة جديدة
-    </button>
-  </div>
-</div>
 
     <!-- ==================== صفحة تايمر التركيز (FOCUS TIMER) ==================== -->
-<div class="page" id="focusPage">
-  <div style="text-align: center; margin-bottom: 12px;">
-    <h2 style="color: var(--gold); font-size: 20px;">⏱️ جَلَسَاتُ التَّرْكِيزِ الصَّافِي</h2>
-    <p style="font-size: 12px; color: var(--text2);">حدد وقت مذاكرتك، افصل عن المشتتات، وابدأ العُفرة!</p>
-  </div>
-
-  <!-- كارت العداد الرئيسي -->
-  <div class="athr-card" style="text-align: center; padding: 24px 14px;">
-    <!-- أزرار اختيار المدة السريعة -->
-    <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 16px;">
-      <button class="day-btn active" id="fMode_25" onclick="setFocusMode(25)">25 دقيقة</button>
-      <button class="day-btn" id="fMode_45" onclick="setFocusMode(45)">45 دقيقة</button>
-      <button class="day-btn" id="fMode_60" onclick="setFocusMode(60)">60 دقيقة</button>
-      <button class="day-btn" id="fMode_stopwatch" onclick="setFocusMode('stopwatch')">⏱️ مفتوح</button>
-    </div>
-
-    <!-- شاشة أرقام العداد -->
-    <div style="font-size: 52px; font-weight: bold; color: var(--gold); font-family: monospace; letter-spacing: 2px; margin: 10px 0;" id="focusTimerDisplay">
-      25:00
-    </div>
-    <div style="font-size: 12px; color: var(--text2); margin-bottom: 20px;" id="focusStatusLabel">
-      جاهز للبدء؟ اضغط ابدأ واقفل أي حاجة تشغلك.
-    </div>
-
-    <!-- أزرار التحكم -->
-    <div style="display: flex; gap: 10px; justify-content: center;">
-      <button id="focusStartBtn" onclick="toggleFocusTimer()" style="background: var(--gold); color: #111; border: none; padding: 12px 30px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px; flex: 2;">
-        ⚡ ابدأ الجلسة
-      </button>
-      <button onclick="resetFocusTimer()" style="background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 18px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 14px; flex: 1;">
-        ↺ إعادة
-      </button>
-    </div>
-  </div>
-<!-- ==================== صفحة دفتر الأخطاء (MISTAKES LOG) ==================== -->
-<div class="page" id="mistakesPage">
-  <div style="text-align: center; margin-bottom: 12px;">
-    <h2 style="color: var(--gold); font-size: 20px;">📝 دَفْتَرُ أَخْطَائِي وَتَرِكَاتِي</h2>
-    <p style="font-size: 12px; color: var(--text2);">سجّل السؤال اللي غلطت فيه وصورته عشان تراجعه قبل امتحانات الشامل ونهاية السنة</p>
-  </div>
-
-  <!-- نموذج إضافة خطأ جديد -->
-  <div class="athr-card">
-    <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">➕ تسجيل سؤال / فكرة جديدة</div>
-
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-      <div>
-        <label style="font-size: 11px; color: var(--text2);">المادة:</label>
-        <select id="mistakeSubjSelect" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none;"></select>
-      </div>
-      <div>
-        <label style="font-size: 11px; color: var(--text2);">الباب / الدرس:</label>
-        <input type="text" id="mistakeChapterInp" placeholder="مثلاً: الباب الأول - كيرشوف" style="width: 100%; padding: 7px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
-      </div>
-    </div>
-
-    <!-- نص السؤال أو الملاحظة -->
-    <textarea id="mistakeTextInp" placeholder="اكتب فكرة السؤال أو سبب غلطتك هنا..." style="width: 100%; min-height: 60px; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 13px; resize: vertical; margin-bottom: 8px;"></textarea>
-
-    <!-- رفع صورة للسؤال -->
-    <div style="margin-bottom: 10px;">
-      <label style="font-size: 11px; color: var(--gold); display: block; margin-bottom: 4px;">🖼️ مرفق صورة السؤال/الحل (اختياري):</label>
-      <input type="file" id="mistakeImgInput" accept="image/*" style="display: none;" onchange="handleMistakeImageUpload(this)">
-      <button onclick="document.getElementById('mistakeImgInput').click()" style="width: 100%; background: var(--card); border: 1px dashed var(--gold); color: var(--text); padding: 8px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: 'Amiri', serif;">
-        📷 اختيار صورة من الهاتف
-      </button>
-      <div id="mistakeImgPreviewName" style="font-size: 11px; color: var(--green); margin-top: 4px; display: none;"></div>
-    </div>
-
-    <button onclick="saveNewMistake()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
-      💾 حفظ السؤال في دفتر الأخطاء
-    </button>
-  </div>
-
-  <!-- فلترة الأخطاء حسب المادة -->
-  <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin: 14px 0 8px; border-right: 3px solid var(--gold); padding-right: 8px;">
-    🔍 تصفية أخطائك المسجلة:
-  </div>
-  <div style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 12px;" id="mistakesFilterBar"></div>
-
-  <!-- قائمة الأخطاء المصبوبة -->
-  <div id="mistakesListContainer"></div>
-</div>
-  <!-- كارت إحصائيات المذاكرة اليومية -->
-  <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
-    <div>
-      <div style="font-size: 22px; font-weight: bold; color: var(--gold);" id="todayFocusMins">0</div>
-      <div style="font-size: 11px; color: var(--text2);">دقائق تركيز النهاردة</div>
-    </div>
-    <div>
-      <div style="font-size: 22px; font-weight: bold; color: var(--green);" id="todayFocusSessions">0</div>
-      <div style="font-size: 11px; color: var(--text2);">جلسات مكتملة 🚀</div>
-    </div>
-  </div>
-</div>
-    <!-- ==================== صفحة النصائح العامة (TIPS) ==================== -->
-    <div class="page" id="tipsPage">
+    <div class="page" id="focusPage">
       <div style="text-align: center; margin-bottom: 12px;">
-        <h2 style="color: var(--gold); font-size: 20px;">💡 كَبْسُولَاتُ التَّفَوُّقِ الذهبية</h2>
+        <h2 style="color: var(--gold); font-size: 20px;">⏱️ جَلَسَاتُ التَّرْكِيزِ الصَّافِي</h2>
+        <p style="font-size: 12px; color: var(--text2);">حدد وقت مذاكرتك، افصل عن المشتتات، وابدأ العُفرة!</p>
       </div>
-      <div class="athr-card" style="border-right: 4px solid var(--gold);">
-        <div style="color: var(--gold); font-weight: bold; font-size: 15px;">⚡ قاعدة الـ 25 دقيقة (Pomodoro)</div>
-        <p style="font-size: 13px; color: var(--text2); line-height: 1.8; margin-top: 4px;">ذاكر بتركيز مطلق لمدة 25 دقيقة وافصل تماماً عن التليفون، ثم خد 5 دقائق راحة. الأسلوب ده بيمنع إجهاد المخ وبيضاعف تحصيلك.</p>
+
+      <div class="athr-card" style="text-align: center; padding: 24px 14px;">
+        <div style="display: flex; gap: 6px; justify-content: center; margin-bottom: 16px;">
+          <button class="day-btn active" id="fMode_25" onclick="setFocusMode(25)">25 دقيقة</button>
+          <button class="day-btn" id="fMode_45" onclick="setFocusMode(45)">45 دقيقة</button>
+          <button class="day-btn" id="fMode_60" onclick="setFocusMode(60)">60 دقيقة</button>
+          <button class="day-btn" id="fMode_stopwatch" onclick="setFocusMode('stopwatch')">⏱️ مفتوح</button>
+        </div>
+
+        <div style="font-size: 52px; font-weight: bold; color: var(--gold); font-family: monospace; letter-spacing: 2px; margin: 10px 0;" id="focusTimerDisplay">
+          25:00
+        </div>
+        <div style="font-size: 12px; color: var(--text2); margin-bottom: 20px;" id="focusStatusLabel">
+          جاهز للبدء؟ اضغط ابدأ واقفل أي حاجة تشغلك.
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button id="focusStartBtn" onclick="toggleFocusTimer()" style="background: var(--gold); color: #111; border: none; padding: 12px 30px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px; flex: 2;">
+            ⚡ ابدأ الجلسة
+          </button>
+          <button onclick="resetFocusTimer()" style="background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 18px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 14px; flex: 1;">
+            ↺ إعادة
+          </button>
+        </div>
       </div>
-      <div class="athr-card" style="border-right: 4px solid var(--green);">
-        <div style="color: var(--green); font-weight: bold; font-size: 15px;">📝 سر التقفيل: "كشكول الملاحظات"</div>
-        <p style="font-size: 13px; color: var(--text2); line-height: 1.8; margin-top: 4px;">أي سؤال تغلط فيه في الشامل أو كتاب الامتحان، ما تعديهوش! اكتب فكرته بالظبط في كشكول خاص لكل مادة، واقرأ الكشكول ده ليلة كل امتحان.</p>
+
+      <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
+        <div>
+          <div style="font-size: 22px; font-weight: bold; color: var(--gold);" id="todayFocusMins">0</div>
+          <div style="font-size: 11px; color: var(--text2);">دقائق تركيز النهاردة</div>
+        </div>
+        <div>
+          <div style="font-size: 22px; font-weight: bold; color: var(--green);" id="todayFocusSessions">0</div>
+          <div style="font-size: 11px; color: var(--text2);">جلسات مكتملة 🚀</div>
+        </div>
       </div>
-      <div class="athr-card" style="border-right: 4px solid #e07b9d;">
-        <div style="color: #e07b9d; font-weight: bold; font-size: 15px;">🌿 النوم والتركيز</div>
-        <p style="font-size: 13px; color: var(--text2); line-height: 1.8; margin-top: 4px;">المذاكرة بليل مع السهر بتدمر الذاكرة طويلة المدى. أفضل وقت للمذاكرة واستيعاب الفيزياء والرياضيات والأحياء هو من بعد الفجر مباشرة.</p>
+    </div>
+
+    <!-- ==================== صفحة دفتر الأخطاء (MISTAKES LOG) ==================== -->
+    <div class="page" id="mistakesPage">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <h2 style="color: var(--gold); font-size: 20px;">📝 دَفْتَرُ أَخْطَائِي وَتَرِكَاتِي</h2>
+        <p style="font-size: 12px; color: var(--text2);">سجّل السؤال اللي غلطت فيه وصورته عشان تراجعه قبل امتحانات الشامل ونهاية السنة</p>
       </div>
+
+      <div class="athr-card">
+        <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">➕ تسجيل سؤال / فكرة جديدة</div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label style="font-size: 11px; color: var(--text2);">المادة:</label>
+            <select id="mistakeSubjSelect" style="width: 100%; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none;"></select>
+          </div>
+          <div>
+            <label style="font-size: 11px; color: var(--text2);">الباب / الدرس:</label>
+            <input type="text" id="mistakeChapterInp" placeholder="مثلاً: الباب الأول - كيرشوف" style="width: 100%; padding: 7px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
+          </div>
+        </div>
+
+        <textarea id="mistakeTextInp" placeholder="اكتب فكرة السؤال أو سبب غلطتك هنا..." style="width: 100%; min-height: 60px; padding: 8px; border-radius: 8px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 13px; resize: vertical; margin-bottom: 8px;"></textarea>
+
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 11px; color: var(--gold); display: block; margin-bottom: 4px;">🖼️ مرفق صورة السؤال/الحل (اختياري):</label>
+          <input type="file" id="mistakeImgInput" accept="image/*" style="display: none;" onchange="handleMistakeImageUpload(this)">
+          <button onclick="document.getElementById('mistakeImgInput').click()" style="width: 100%; background: var(--card); border: 1px dashed var(--gold); color: var(--text); padding: 8px; border-radius: 8px; font-size: 12px; cursor: pointer; font-family: 'Amiri', serif;">
+            📷 اختيار صورة من الهاتف
+          </button>
+          <div id="mistakeImgPreviewName" style="font-size: 11px; color: var(--green); margin-top: 4px; display: none;"></div>
+        </div>
+
+        <button onclick="saveNewMistake()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 10px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
+          💾 حفظ السؤال في دفتر الأخطاء
+        </button>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin: 14px 0 8px; border-right: 3px solid var(--gold); padding-right: 8px;">
+        🔍 تصفية أخطائك المسجلة:
+      </div>
+      <div style="display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 12px;" id="mistakesFilterBar"></div>
+
+      <div id="mistakesListContainer"></div>
     </div>
 
   </div>
 
-<!-- النافذة المنبثقة الشاملة لتفاصيل المادة والمدرسين -->
+  <!-- النافذة المنبثقة لتفاصيل المادة -->
   <div class="modal-overlay" id="subjectTipModal">
     <div class="modal-box" style="max-width: 480px;">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
@@ -484,118 +445,123 @@
   </div>
 
   <script>
-// ================= 📚 دليل المواد الشامل (أبواب + مدرسين + آراء + نصائح) =================
-const subjectFullDetailsData = {
-  "اللغة العربية": {
-    icon: "📖",
-    chapters: [
-      { name: "النحو", count: "7 وحدات شاملة القواعد والإعراب" },
-      { name: "البلاغة", count: "علم البيان، البديع، المعاني، والتجربة الشعريّة" },
-      { name: "الأدب", count: "6 مدارس شعرية + الفنون النثرية (الرواية والقصة)" },
-      { name: "النصوص والقراءة", count: "تطبيقات متحررة المحتوى" }
-    ],
-    teachers: [
-      { name: "أ/ رضا الفاروق", style: "شرح تفصيلي + حل مكثف وواجبات", review: "⭐ أسطورة العربي، بيقفل المنهج بفهم عميق وتأسيس قوي." },
-      { name: "أ/ محمد صلاح (خطة جلبرت)", style: "شرح مبسط، خرائط ذهنية، وسريع", review: "⭐ ممتاز في الضبط السريع ولم الدورات في أوقات قياسية." },
-      { name: "أ/ وليد محسن", style: "تركيز عالي جداً على تكّات النحو والتعبير", review: "⭐ رائع جداً في جزئية النحو والتركيبات الصعبة." }
-    ],
-    tips: "💡 **سر التقفيل:** النحو أسلوب حياة حل بيدك يومياً، والأدب يحفظ بالربط مع أبيات الشعر المتحررة."
-  },
+    // ================= 📚 دليل المواد الشامل =================
+    const subjectFullDetailsData = {
+      "اللغة العربية": {
+        icon: "📖",
+        sub: "النحو، الأدب، البلاغة، والقراءة",
+        chapters: [
+          { name: "النحو", count: "7 وحدات شاملة القواعد والإعراب" },
+          { name: "البلاغة", count: "علم البيان، البديع، المعاني، والتجربة الشعريّة" },
+          { name: "الأدب", count: "6 مدارس شعرية + الفنون النثرية (الرواية والقصة)" },
+          { name: "النصوص والقراءة", count: "تطبيقات متحررة المحتوى" }
+        ],
+        teachers: [
+          { name: "أ/ رضا الفاروق", style: "شرح تفصيلي + حل مكثف وواجبات", review: "⭐ أسطورة العربي، بيقفل المنهج بفهم عميق وتأسيس قوي." },
+          { name: "أ/ محمد صلاح", style: "شرح مبسط، خرائط ذهنية، وسريع", review: "⭐ ممتاز في الضبط السريع ولم الدورات في أوقات قياسية." },
+          { name: "أ/ وليد محسن", style: "تركيز عالي جداً على تكّات النحو والتعبير", review: "⭐ رائع جداً في جزئية النحو والتركيبات الصعبة." }
+        ],
+        tips: "💡 **سر التقفيل:** النحو أسلوب حياة حل بيدك يومياً، والأدب يحفظ بالربط مع أبيات الشعر المتحررة."
+      },
 
-  "اللغة الإنجليزية": {
-    icon: "🇬🇧",
-    chapters: [
-      { name: "الجرامر (Grammar)", count: "12 وحدة قواعد زمنية وترتيبية" },
-      { name: "الكلمات (Vocabulary)", count: "12 وحدة كلمات ومصطلحات ومترادفات" },
-      { name: "المهارات (Skills)", count: "الترجمة، القطع (Comprehension)، والمقال" }
-    ],
-    teachers: [
-      { name: "مستر عمرو رجب", style: "شرح جرامر متكتك + حل كتاب العمالقة", review: "⭐ منظم جداً وبيفصّل قواعد الجرامر بدون تعقيد." },
-            { name: "مستر انجلشاوي", style: "شرح جرامر وكلمات وقصة وكله", review: "⭐ منظم جداً وبيشرح كإنه بيشرح لك قصه حياتيه اللهم بارك." },
+      "اللغة الإنجليزية": {
+        icon: "🇬🇧",
+        sub: "Grammar, Vocab & Skills",
+        chapters: [
+          { name: "الجرامر (Grammar)", count: "12 وحدة قواعد زمنية وترتيبية" },
+          { name: "الكلمات (Vocabulary)", count: "12 وحدة كلمات ومصطلحات ومترادفات" },
+          { name: "المهارات (Skills)", count: "الترجمة، القطع (Comprehension)، والمقال" }
+        ],
+        teachers: [
+          { name: "مستر عمرو رجب", style: "شرح جرامر متكتك + حل كتاب العمالقة", review: "⭐ منظم جداً وبيفصّل قواعد الجرامر بدون تعقيد." },
+          { name: "مستر انجلشاوي", style: "شرح جرامر وكلمات وقصة وكله", review: "⭐ منظم جداً وبيشرح كإنه بيشرح لك قصه حياتيه." },
+          { name: "مستر إسلام طاجن", style: "حل كميات كبيرة وتدريب على مهارات القطع", review: "⭐ متميز في حل أسئلة المستويات العليا والمفردات." }
+        ],
+        tips: "💡 **سر التقفيل:** حفظ الكلمات في جمل وسياق، وحل قطعتين فهم أسبوعياً لتنمية مهارة التخمين."
+      },
 
-      { name: "مستر إسلام طاجن", style: "حل كميات كبيرة وتدريب على مهارات القطع", review: "⭐ متميز في حل أسئلة المستويات العليا والمفردات." },
-      { name: "مستر شريف المصري", style: "مراجعات ملخصة وتبسيط القواعد", review: "⭐ ممتاز للطلاب اللي محتاجين لم المادة بسرعة." }
-    ],
-    tips: "💡 **سر التقفيل:** حفظ الكلمات في جمل وسياق، وحل قطعتين فهم أسبوعياً لتنمية مهارة التخمين."
-  },
+      "الفيزياء": {
+        icon: "⚡",
+        sub: "الكهربية والفيزياء الحديثة",
+        chapters: [
+          { name: "الفيزياء الكهربية", count: "4 أبواب (أوم، كيرشوف، التأثير المغناطيسي، الحث، التيار المتردد)" },
+          { name: "الفيزياء الحديثة", count: "4 أبواب (إشعاع الجسم الأسود، التأثير الضوئي، الأطياف، الليزر، الإلكترونيات)" }
+        ],
+        teachers: [
+          { name: "م/ محمود مجدي", style: "فهم فيزيائي عميق + ربط القوانين بالرسم", review: "⭐ عبقري في تبسيط الفكرة الصعبة وحل مسائل كيرشوف." },
+          { name: "أ/ محمد عبد المعبود", style: "خبرة السنين، أسلوب ممتع وتثبيت معلومات", review: "⭐ بيخلي المادة ممتعة وبيشيل الخوف من الفيزياء." },
+          { name: "أ/ كيرلس بارودي", style: "حل أفكار امتحانات وأساليب سريعة", review: "⭐ متميز في حل أسئلة الكتب الخارجية والامتحانات." }
+        ],
+        tips: "💡 **سر التقفيل:** الفيزياء مش قوانين تحفظها، افهم الفكرة الفيزيائية وارسم الدائرة بيدك قبل ما تحسب."
+      },
 
-  "الفيزياء": {
-    icon: "⚡",
-    chapters: [
-      { name: "الفيزياء الكهربية", count: "4 أبواب (أوم، كيرشوف، التأثير المغناطيسي، الحث، التيار المتردد)" },
-      { name: "الفيزياء الحديثة", count: "4 أبواب (إشعاع الجسم الأسود، التأثير الضوئي، الأطياف، الليزر، الإلكترونيات)" }
-    ],
-    teachers: [
-      { name: "م/ محمود مجدي", style: "فهم فيزيائي عميق + ربط القوانين بالرسم", review: "⭐ عبقري في تبسيط الفكرة الصعبة وحل مسائل كيرشوف." },
-      { name: "أ/ محمد عبد المعبود", style: "خبرة السنين، أسلوب ممتع وتثبيت معلومات", review: "⭐ بيخلي المادة ممتعة وبيشيل الخوف من الفيزياء." },
-      { name: "أ/ كيرلس بارودي", style: "حل أفكار امتحانات وأساليب سريعة", review: "⭐ متميز في حل أسئلة الكتب الخارجية والامتحانات." }
-    ],
-    tips: "💡 **سر التقفيل:** الفيزياء مش قوانين تحفظها، افهم الفكرة الفيزيائية وارسم الدائرة بيدك قبل ما تحسب."
-  },
+      "الكيمياء": {
+        icon: "🧪",
+        sub: "الكيمياء غير العضوية والعضوية",
+        chapters: [
+          { name: "الكيمياء غير العضوية", count: "4 أبواب (العناصر الانتقالية، التحليل، الاتزان، الكهربية)" },
+          { name: "الكيمياء العضوية", count: "باب الشرف (الهيدروكربونات ومشتقاتها - نصف درجات المادة)" }
+        ],
+        teachers: [
+          { name: "د/ محمد عبد الجواد", style: "حماس جبار، ربط المعادلات، وأفكار وافية", review: "⭐ ملك العضوية بلا منازع، بيخلي الكيمياء أسهل مادة." },
+          { name: "أ/ خالد صقر", style: "شرح هادي ومنظم جداً وبسيط", review: "⭐ ممتاز للطالب اللي بيحب الشرح الهادئ المنظم حتة حتة." },
+          { name: "أ/ عبد الله حبشي", style: "حل أفكار ومسائل متنوعة", review: "⭐ قوي جداً في أفكار المسائل والتحليل الكمي." }
+        ],
+        tips: "💡 **سر التقفيل:** معادلات العضوية تتكتب وتترسم باليد يومياً، وجدول جهود التأكسد في الكهربية يتفهم كويس."
+      },
 
-  "الكيمياء": {
-    icon: "🧪",
-    chapters: [
-      { name: "الكيمياء غير العضوية", count: "4 أبواب (العناصر الانتقالية، التحليل، الاتزان، الكهربية)" },
-      { name: "الكيمياء العضوية", count: "باب الشرف (الهيدروكربونات ومشتقاتها - نصف درجات المادة)" }
-    ],
-    teachers: [
-      { name: "د/ محمد عبد الجواد", style: "حماس جبار، ربط المعادلات، وأفكار وافية", review: "⭐ ملك العضوية بلا منازع، بيخلي الكيمياء أسهل مادة." },
-      { name: "أ/ خالد صقر", style: "شرح هادي ومنظم جداً وبسيط", review: "⭐ ممتاز للطالب اللي بيحب الشرح الهادئ المنظم حتة حتة." },
-      { name: "أ/ عبد الله حبشي", style: "حل أفكار ومسائل متنوعة", review: "⭐ قوي جداً في أفكار المسائل والتحليل الكمي." }
-    ],
-    tips: "💡 **سر التقفيل:** معادلات العضوية تتكتب وتترسم باليد يومياً، وجدول جهود التأكسد في الكهربية يتفهم كويس."
-  },
+      "الأحياء": {
+        icon: "🧬",
+        sub: "التركيب الوظيفي والبيولوجيا الجزئية",
+        chapters: [
+          { name: "التركيب الوظيفي", count: "4 أبواب (الدعامة والحركة، الهرمونات، التكاثر، المناعة)" },
+          { name: "البيولوجية الجزئية", count: "بابين (DNA و RNA وتخليق البروتين)" }
+        ],
+        teachers: [
+          { name: "د/ أحمد الجوهري", style: "شرح طبي رسم دقيق وتوضيح بالأشكال", review: "⭐ بيشرح الأحياء بفهم طب وتفاصيل بتثبت في الدماغ." },
+          { name: "د/ محمد أيمن", style: "أسلوب ممتع، حل كتاب الامتحان والشامل", review: "⭐ قمة في الترتيب وحل الأفكار والربط بين الفصول." }
+        ],
+        tips: "💡 **سر التقفيل:** التركيز على الرسومات ودلالات الهرمونات والربط بين جهاز المناعة والتكاثر."
+      },
 
-  "الأحياء": {
-    icon: "🧬",
-    chapters: [
-      { name: "التركيب الوظيفي", count: "4 أبواب (الدعامة والحركة، الهرمونات، التكاثر، المناعة)" },
-      { name: "البيولوجية الجزئية", count: "بابين (DNA و RNA وتخليق البروتين)" }
-    ],
-    teachers: [
-      { name: "د/ أحمد الجوهري", style: "شرح طبي رسم دقيق وتوضيح بالأشكال", review: "⭐ بيشرح الأحياء بفهم طب وتفاصيل بتثبت في الدماغ." },
-      { name: "د/ محمد أيمن", style: "أسلوب ممتع، حل كتاب الامتحان والشامل", review: "⭐ قمة في الترتيب وحل الأفكار والربط بين الفصول." },
-      { name: "أ/ حسن محرم", style: "مدرس القناة التعليمية وخبرة امتحانات", review: "⭐ موجه ممتاز لأسئلة الامتحان الرسمية." }
-    ],
-    tips: "💡 **سر التقفيل:** التركيز على الرسومات ودلالات الهرمونات والربط بين جهاز المناعة والتكاثر."
-  },
+      "الرياضيات (تفاضل وتكامل)": {
+        icon: "📐",
+        sub: "اشتقاق، تكامل، وسلوك الدالة",
+        chapters: [
+          { name: "التفاضل والتكامل", count: "4 أبواب (اشتقاق وتكامل الدوال، سلوك الدالة، والمساحات والحجوم)" }
+        ],
+        teachers: [
+          { name: "أ/ أحمد الفواخري", style: "تأسيس خطوة بخطوة وحل أفكار تراكيم", review: "⭐ من أفضل المدرسين في تبسيط التفاضل والتكامل." },
+          { name: "م/ ناجي نصر", style: "حل رياضي سريع واستراتيجيات إنجاز", review: "⭐ رائع في أفكار مستويات العليا والامتحانات." }
+        ],
+        tips: "💡 **سر التقفيل:** حفظ قوانين قواعد الاشتقاق والتكامل والتأكد من خطوة خطوات التعويض."
+      },
 
-  "الرياضيات (تفاضل وتكامل)": {
-    icon: "📐",
-    chapters: [
-      { name: "التفاضل والتكامل", count: "4 أبواب (اشتقاق وتكامل الدوال، سلوك الدالة، والمساحات والحجوم)" }
-    ],
-    teachers: [
-      { name: "أ/ أحمد الفواخري", style: "تأسيس خطوة بخطوة وحل أفكار تراكيم", review: "⭐ من أفضل المدرسين في تبسيط التفاضل والتكامل." },
-      { name: "م/ ناجي نصر", style: "حل رياضي سريع واستراتيجيات إنجاز", review: "⭐ رائع في أفكار مستويات العليا والامتحانات." }
-    ],
-    tips: "💡 **سر التقفيل:** حفظ قوانين قواعد الاشتقاق والتكامل والتأكد من خطوة خطوات التعويض."
-  },
+      "الرياضيات (جبر وهندسة فراغية)": {
+        icon: "📊",
+        sub: "المحددات والمصفوفات والهندسة الثلاثية",
+        chapters: [
+          { name: "الجبر والهندسة الفراغية", count: "3 أبواب جبر + بابين هندسة فراغية ثلاثية الأبعاد" }
+        ],
+        teachers: [
+          { name: "أ/ أحمد الفواخري", style: "شرح فراغية مجسم وفهم المحاور", review: "⭐ بيسهل تخيل الهندسة الفراغية جداً." }
+        ],
+        tips: "💡 **سر التقفيل:** رسم المحاور الثلاثية وتخيل المستويات والكرات في الفراغ."
+      },
 
-  "الرياضيات (جبر وهندسة فراغية)": {
-    icon: "📊",
-    chapters: [
-      { name: "الجبر والهندسة الفراغية", count: "3 أبواب جبر + بابين هندسة فراغية ثلاثية الأبعاد" }
-    ],
-    teachers: [
-      { name: "أ/ أحمد الفواخري", style: "شرح فراغية مجسم وفهم المحاور", review: "⭐ بيسهل تخيل الهندسة الفراغية جداً." }
-    ],
-    tips: "💡 **سر التقفيل:** رسم المحاور الثلاثية وتخيل المستويات والكرات في الفراغ."
-  },
-
-  "الرياضيات (استاتيكا وديناميكا)": {
-    icon: "⚙️",
-    chapters: [
-      { name: "الاستاتيكا", count: "6 أبواب (الاحتكاك، العزوم، القوى المتوازية، الاتزان، والازدواج)" },
-      { name: "الديناميكا", count: "4 أبواب (الحركة، قوانين نيوتن، الدفع والزخم، الشغل والقدرة والطاقة)" }
-    ],
-    teachers: [
-      { name: "م/ أحمد عصام", style: "حل وتمارين مكثفة وتطبيقات عملي", review: "⭐ شاطر جداً في قوانين نيوتن والتحويلات." }
-    ],
-    tips: "💡 **سر التقفيل:** ركّز في تحويل الوحدات (نيوتن، داين، كجم) لأنها السبب الأول في أخطاء الديناميكا!"
-  }
-};
+      "الرياضيات (استاتيكا وديناميكا)": {
+        icon: "⚙️",
+        sub: "الاحتكاك، نيوتن، والشغل والطاقة",
+        chapters: [
+          { name: "الاستاتيكا", count: "6 أبواب (الاحتكاك، العزوم، القوى المتوازية، الاتزان، والازدواج)" },
+          { name: "الديناميكا", count: "4 أبواب (الحركة، قوانين نيوتن، الدفع والزخم، الشغل والقدرة والطاقة)" }
+        ],
+        teachers: [
+          { name: "م/ أحمد عصام", style: "حل وتمارين مكثفة وتطبيقات عملي", review: "⭐ شاطر جداً في قوانين نيوتن والتحويلات." }
+        ],
+        tips: "💡 **سر التقفيل:** ركّز في تحويل الوحدات (نيوتن، داين، كجم) لأنها السبب الأول في أخطاء الديناميكا!"
+      }
+    };
 
     // تقسيم المواد المعتمد لكل شعبة
     const branchSubjectsMapping = {
@@ -604,10 +570,9 @@ const subjectFullDetailsData = {
     };
 
     let userBranch = localStorage.getItem('sm_user_branch') || null;
-    let selectedScheduleDay = "السبت";
     let isDark = localStorage.getItem('sm_theme') !== 'light';
 
-    // ================= 🚀 التشغيل المبدئي عند الفتح =================
+    // ================= 🚀 التشغيل المبدئي =================
     document.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       if (!userBranch) {
@@ -615,7 +580,6 @@ const subjectFullDetailsData = {
       } else {
         document.getElementById('firstTimeBranchModal').style.display = 'none';
         initAppUI();
-
       }
     });
 
@@ -634,13 +598,10 @@ const subjectFullDetailsData = {
     function initAppUI() {
       document.getElementById('currentBranchDisplay').textContent = "الشعبة: " + userBranch;
       renderSubjectsList();
-      populateTaskSubjSelect();
-      renderScheduleTasks();
-              renderMistakesList();
-              updateFocusStatsUI();
-        startExamCountdown();
-
-
+      initPlanSetupUI();
+      renderMistakesList();
+      updateFocusStatsUI();
+      startExamCountdown();
     }
 
     // ================= 📚 رسم المواد والنصائح =================
@@ -650,7 +611,7 @@ const subjectFullDetailsData = {
       // 1. القائمة السريعة بالرئيسية
       const homeQuick = document.getElementById('homeQuickSubjects');
       homeQuick.innerHTML = subjs.map(sName => {
-        const item = subjectTipsData[sName] || { icon: "📘", sub: "مادة مقررة" };
+        const item = subjectFullDetailsData[sName] || { icon: "📘", sub: "مادة مقررة" };
         return `
           <div class="subj-card">
             <div style="display:flex; align-items:center; gap:10px;">
@@ -668,7 +629,7 @@ const subjectFullDetailsData = {
       // 2. قائمة صفحة المواد الشاملة
       const fullList = document.getElementById('fullSubjectsList');
       fullList.innerHTML = subjs.map(sName => {
-        const item = subjectTipsData[sName] || { icon: "📘", sub: "مادة مقررة" };
+        const item = subjectFullDetailsData[sName] || { icon: "📘", sub: "مادة مقررة" };
         return `
           <div class="athr-card" style="margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -681,130 +642,469 @@ const subjectFullDetailsData = {
       }).join('');
     }
 
-// دالة فتح دليل المادة الشامل المحدثة
-function openSubjectTips(sName) {
-  const item = subjectFullDetailsData[sName];
-  if (!item) return;
+    function openSubjectTips(sName) {
+      const item = subjectFullDetailsData[sName];
+      if (!item) return;
 
-  document.getElementById('modalSubjTitle').innerHTML = `${item.icon} دليل مادة: ${sName}`;
+      document.getElementById('modalSubjTitle').innerHTML = `${item.icon} دليل مادة: ${sName}`;
 
-  let html = '';
+      let html = '';
 
-  // 1. تقسيم المنهج والأبواب
-  html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
-  html += `<div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">📖 تقسيم منهج المادة:</div>`;
-  item.chapters.forEach(c => {
-    html += `<div style="font-size:12px; margin-bottom:4px;">• <b>${c.name}:</b> <span style="color:var(--text2);">${c.count}</span></div>`;
-  });
-  html += `</div>`;
+      // 1. تقسيم المنهج والأبواب
+      html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
+      html += `<div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">📖 تقسيم منهج المادة:</div>`;
+      item.chapters.forEach(c => {
+        html += `<div style="font-size:12px; margin-bottom:4px;">• <b>${c.name}:</b> <span style="color:var(--text2);">${c.count}</span></div>`;
+      });
+      html += `</div>`;
 
-  // 2. أفضل مدرسين اليوتيوب ورأي الطلاب
-  html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
-  html += `<div style="font-weight:bold; color:var(--green); margin-bottom:6px;">🎙️ أشهر مدرسين اليوتيوب ورأي الطلاب:</div>`;
-  item.teachers.forEach(t => {
-    html += `
-      <div style="border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:6px;">
-        <div style="font-weight:bold; color:var(--text);">${t.name} <small style="color:var(--gold);">(${t.style})</small></div>
-        <div style="font-size:11px; color:var(--text2); margin-top:2px;">${t.review}</div>
-      </div>
-    `;
-  });
-  html += `</div>`;
+      // 2. أفضل مدرسين اليوتيوب
+      html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
+      html += `<div style="font-weight:bold; color:var(--green); margin-bottom:6px;">🎙️ أشهر مدرسين اليوتيوب ورأي الطلاب:</div>`;
+      item.teachers.forEach(t => {
+        html += `
+          <div style="border-bottom:1px dashed var(--border); padding-bottom:6px; margin-bottom:6px;">
+            <div style="font-weight:bold; color:var(--text);">${t.name} <small style="color:var(--gold);">(${t.style})</small></div>
+            <div style="font-size:11px; color:var(--text2); margin-top:2px;">${t.review}</div>
+          </div>
+        `;
+      });
+      html += `</div>`;
 
-  // 3. نصائح التقفيل
-  html += `<div style="background:rgba(212,175,55,0.08); border:1px solid var(--gold); border-radius:12px; padding:10px;">`;
-  html += `<div style="font-size:12px; color:var(--text); line-height:1.7;">${item.tips}</div>`;
-  html += `</div>`;
+      // 3. نصائح التقفيل
+      html += `<div style="background:rgba(212,175,55,0.08); border:1px solid var(--gold); border-radius:12px; padding:10px;">`;
+      html += `<div style="font-size:12px; color:var(--text); line-height:1.7;">${item.tips}</div>`;
+      html += `</div>`;
 
-  document.getElementById('modalSubjContent').innerHTML = html;
-  document.getElementById('subjectTipModal').classList.add('show');
-}
+      document.getElementById('modalSubjContent').innerHTML = html;
+      document.getElementById('subjectTipModal').classList.add('show');
+    }
 
     function closeTipModal() {
       document.getElementById('subjectTipModal').classList.remove('show');
     }
 
-    // ================= ⏱️ إدارة جدول المذاكرة =================
-    function populateTaskSubjSelect() {
-      const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
-      const select = document.getElementById('taskSubjSelect');
-      select.innerHTML = subjs.map(s => `<option value="${s}">${s}</option>`).join('');
-    }
+    // ================= 🌿 نظام خطة التفوق والجدول =================
+    const presetWorshipTasks = [
+      "صلاة الفجر في وقتها 🕌",
+      "أذكار الصباح والمساء 📿",
+      "ورد قرآن كريم 📖",
+      "بر الوالدين والدعاء 🤲",
+      "صلاة الضحى / قيام الليل ✨",
+      "الاستغفار والصلاة على النبي 🤍"
+    ];
 
-    function switchScheduleDay(day, btnEl) {
-      selectedScheduleDay = day;
-      document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
-      if(btnEl) btnEl.classList.add('active');
-      document.getElementById('addFormTitle').textContent = `➕ إضافة فترة مذاكرة (${day})`;
-      renderScheduleTasks();
-    }
+    let selectedPlanTasks = [];
+    let selectedPlanDuration = 7;
 
-    function getTasksFromStorage() {
-      return JSON.parse(localStorage.getItem('sm_schedule_tasks') || '[]');
-    }
-
-    function saveNewTask() {
-      const subj = document.getElementById('taskSubjSelect').value;
-      const type = document.getElementById('taskTypeSelect').value;
-      const start = document.getElementById('taskStart').value;
-      const end = document.getElementById('taskEnd').value;
-
-      if (!start || !end) { alert("من فضلك حدد الوقت مظبوط"); return; }
-
-      const tasks = getTasksFromStorage();
-      tasks.push({
-        id: Date.now(),
-        day: selectedScheduleDay,
-        subj: subj,
-        type: type,
-        start: start,
-        end: end,
-        done: false
-      });
-
-      localStorage.setItem('sm_schedule_tasks', JSON.stringify(tasks));
-      renderScheduleTasks();
-    }
-
-    function toggleTaskDone(id) {
-      let tasks = getTasksFromStorage();
-      tasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
-      localStorage.setItem('sm_schedule_tasks', JSON.stringify(tasks));
-      renderScheduleTasks();
-    }
-
-    function deleteTask(id) {
-      let tasks = getTasksFromStorage();
-      tasks = tasks.filter(t => t.id !== id);
-      localStorage.setItem('sm_schedule_tasks', JSON.stringify(tasks));
-      renderScheduleTasks();
-    }
-
-    function renderScheduleTasks() {
-      const tasks = getTasksFromStorage();
-      const dayTasks = tasks.filter(t => t.day === selectedScheduleDay);
-      const container = document.getElementById('scheduleTasksList');
-
-      if (dayTasks.length === 0) {
-        container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--text2); font-size:12px;">لا توجد فترات ذاكرة مسجلة ليوم ${selectedScheduleDay}</div>`;
+    function initPlanSetupUI() {
+      const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+      
+      if (activePlan) {
+        document.getElementById('planSetupWizard').style.display = 'none';
+        document.getElementById('activePlanDisplay').style.display = 'block';
+        renderActivePlanGrid(activePlan);
         return;
       }
 
-      container.innerHTML = dayTasks.map(t => `
-        <div class="task-item ${t.done ? 'done' : ''}">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTaskDone(${t.id})" style="width:18px; height:18px; accent-color:var(--gold); cursor:pointer;">
-            <div>
-              <div style="font-size:14px; font-weight:bold; color:var(--text);">${t.subj} <span style="font-size:11px; color:var(--gold);">(${t.type})</span></div>
-              <div style="font-size:11px; color:var(--text2);">⏱️ من ${t.start} إلى ${t.end}</div>
-            </div>
+      document.getElementById('planSetupWizard').style.display = 'block';
+      document.getElementById('activePlanDisplay').style.display = 'none';
+
+      // 1. صب المواد المعتمدة للشعبة
+      const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
+      const subjGrid = document.getElementById('planSubjPresetGrid');
+      
+      subjGrid.innerHTML = subjs.map(s => {
+        const isSelected = selectedPlanTasks.includes(s);
+        return `
+          <div onclick="togglePlanTaskSelection('${s}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:12px; padding:8px;">
+            ${isSelected ? '✓ ' : '+ '} ${s}
           </div>
-          <button onclick="deleteTask(${t.id})" style="background:transparent; border:none; color:#ff6b6b; font-size:15px; cursor:pointer;">✕</button>
+        `;
+      }).join('');
+
+      // 2. صب قائمة العبادات
+      const worshipGrid = document.getElementById('planWorshipPresetGrid');
+      worshipGrid.innerHTML = presetWorshipTasks.map(w => {
+        const isSelected = selectedPlanTasks.includes(w);
+        return `
+          <div onclick="togglePlanTaskSelection('${w}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:11px; padding:8px; border-color:var(--green);">
+            ${isSelected ? '✓ ' : '+ '} ${w}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePlanTaskSelection(taskName) {
+      if (selectedPlanTasks.includes(taskName)) {
+        selectedPlanTasks = selectedPlanTasks.filter(t => t !== taskName);
+      } else {
+        selectedPlanTasks.push(taskName);
+      }
+      initPlanSetupUI();
+    }
+
+    function addCustomTaskToPlan() {
+      const inp = document.getElementById('customTaskInp');
+      const val = inp.value.trim();
+      if (!val) return;
+      if (!selectedPlanTasks.includes(val)) {
+        selectedPlanTasks.push(val);
+      }
+      inp.value = '';
+      initPlanSetupUI();
+    }
+
+    function setPlanDuration(days) {
+      selectedPlanDuration = days;
+      document.querySelectorAll('#planSetupWizard .day-btn').forEach(b => {
+        if(b.id && b.id.startsWith('duration_')) b.classList.remove('active');
+      });
+      document.getElementById('duration_' + days).classList.add('active');
+    }
+
+    function buildAndStartPlan() {
+      if (selectedPlanTasks.length === 0) {
+        alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
+        return;
+      }
+
+      const planData = {
+        createdAt: new Date().toISOString(),
+        duration: selectedPlanDuration,
+        tasks: selectedPlanTasks,
+        matrix: {}
+      };
+
+      localStorage.setItem('sm_active_plan', JSON.stringify(planData));
+      initPlanSetupUI();
+    }
+
+    function toggleMatrixCell(taskName, dayNum) {
+      const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
+      if (!plan) return;
+
+      if (!plan.matrix[taskName]) plan.matrix[taskName] = {};
+      
+      const currentVal = plan.matrix[taskName][dayNum] || 0;
+      const nextVal = (currentVal + 1) % 3;
+      plan.matrix[taskName][dayNum] = nextVal;
+
+      localStorage.setItem('sm_active_plan', JSON.stringify(plan));
+      renderActivePlanGrid(plan);
+    }
+
+    function renderActivePlanGrid(plan) {
+      const container = document.getElementById('planMatrixGridTable');
+      
+      let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
+      
+      html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
+      html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
+      for (let d = 1; d <= plan.duration; d++) {
+        html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
+      }
+      html += `</tr>`;
+
+      let totalCells = plan.tasks.length * plan.duration;
+      let doneCount = 0;
+
+      plan.tasks.forEach(task => {
+        html += `<tr style="border-bottom:1px dashed var(--border);">`;
+        html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
+        
+        for (let d = 1; d <= plan.duration; d++) {
+          const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
+          let symbol = "•";
+          let colorStyle = "color:var(--text2);";
+
+          if (val === 1) {
+            symbol = "✅";
+            colorStyle = "";
+            doneCount++;
+          } else if (val === 2) {
+            symbol = "❌";
+            colorStyle = "";
+          }
+
+          html += `
+            <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
+              ${symbol}
+            </td>
+          `;
+        }
+        html += `</tr>`;
+      });
+
+      html += `</table>`;
+      container.innerHTML = html;
+
+      const pct = Math.round((doneCount / totalCells) * 100);
+      document.getElementById('planCommitmentPct').textContent = pct + "%";
+      document.getElementById('planCompletedTasksCount').textContent = doneCount;
+    }
+
+    function resetCurrentPlan() {
+      if (confirm("هل أنت متأكد من فسخ الخطة الحالية وبدء واحدة جديدة؟")) {
+        localStorage.removeItem('sm_active_plan');
+        selectedPlanTasks = [];
+        initPlanSetupUI();
+      }
+    }
+
+    // ================= ⏱️ العداد التنازلي للامتحانات =================
+    function startExamCountdown() {
+      const examTargetDate = new Date('June 10, 2027 09:00:00').getTime();
+
+      function updateCD() {
+        const now = new Date().getTime();
+        const diff = examTargetDate - now;
+
+        if (diff > 0) {
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+          const circleEl = document.getElementById('cdDaysCircle');
+          const detailsEl = document.getElementById('cdDetailsText');
+
+          if (circleEl) circleEl.textContent = days;
+          if (detailsEl) {
+            detailsEl.textContent = `⏱️ و ${String(hours).padStart(2, '0')} ساعة • ${String(mins).padStart(2, '0')} دقيقة • ${String(secs).padStart(2, '0')} ثانية`;
+          }
+        }
+      }
+
+      updateCD();
+      setInterval(updateCD, 1000);
+    }
+
+    // ================= ⏱️ تايمر التركيز =================
+    let focusTimerInterval = null;
+    let focusMode = 25;
+    let focusSecondsLeft = 25 * 60;
+    let isFocusRunning = false;
+    let stopwatchElapsedSecs = 0;
+
+    function setFocusMode(mode) {
+      if (isFocusRunning) resetFocusTimer();
+      
+      focusMode = mode;
+      document.querySelectorAll('#focusPage .day-btn').forEach(b => b.classList.remove('active'));
+      
+      const activeBtn = document.getElementById('fMode_' + mode);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      if (mode === 'stopwatch') {
+        focusSecondsLeft = 0;
+        stopwatchElapsedSecs = 0;
+        document.getElementById('focusTimerDisplay').textContent = "00:00";
+        document.getElementById('focusStatusLabel').textContent = "وضع الستوب ووتش المفتوح ⏱️";
+      } else {
+        focusSecondsLeft = mode * 60;
+        updateFocusDisplay(focusSecondsLeft);
+        document.getElementById('focusStatusLabel').textContent = `جلسة تركيز ${mode} دقيقة.`;
+      }
+    }
+
+    function updateFocusDisplay(totalSecs) {
+      const mins = Math.floor(totalSecs / 60);
+      const secs = totalSecs % 60;
+      const str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      document.getElementById('focusTimerDisplay').textContent = str;
+    }
+
+    function toggleFocusTimer() {
+      const startBtn = document.getElementById('focusStartBtn');
+
+      if (isFocusRunning) {
+        clearInterval(focusTimerInterval);
+        isFocusRunning = false;
+        startBtn.textContent = "⚡ استكمال الجلسة";
+        document.getElementById('focusStatusLabel').textContent = "الجلسة متوقفة مؤقتاً ⏸️";
+      } else {
+        isFocusRunning = true;
+        startBtn.textContent = "⏸️ إيقاف مؤقت";
+        document.getElementById('focusStatusLabel').textContent = "عاش يا بطل! التركيز شغال دلوقتي 🚀";
+
+focusTimerInterval = setInterval(() => {
+  if (focusMode === 'stopwatch') {
+    stopwatchElapsedSecs++;
+    updateFocusDisplay(stopwatchElapsedSecs);
+    playTickSound(); // 👈 تكة مع كل ثانية
+  } else {
+    if (focusSecondsLeft > 0) {
+      focusSecondsLeft--;
+      updateFocusDisplay(focusSecondsLeft);
+      playTickSound(); // 👈 تكة مع كل ثانية
+    } else {
+      completeFocusSession(focusMode);
+    }
+  }
+}, 1000);
+        
+      }
+    }
+
+    function resetFocusTimer() {
+      clearInterval(focusTimerInterval);
+      isFocusRunning = false;
+      document.getElementById('focusStartBtn').textContent = "⚡ ابدأ الجلسة";
+      setFocusMode(focusMode);
+    }
+
+    function completeFocusSession(minsCount) {
+      resetFocusTimer();
+      alert("🎉 الله ينور يا بطل! أتممت جلسة التركيز بنجاح. خُد 5 دقائق راحة ورست دماغك ✨");
+
+      const today = new Date().toLocaleDateString('en-CA');
+      let stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+      
+      if (!stats[today]) stats[today] = { mins: 0, sessions: 0 };
+      
+      stats[today].mins += (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
+      stats[today].sessions += 1;
+
+      localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
+      updateFocusStatsUI();
+    }
+
+    function updateFocusStatsUI() {
+      const today = new Date().toLocaleDateString('en-CA');
+      const stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+      const todayData = stats[today] || { mins: 0, sessions: 0 };
+
+      document.getElementById('todayFocusMins').textContent = todayData.mins;
+      document.getElementById('todayFocusSessions').textContent = todayData.sessions;
+    }
+
+    // ================= 📝 دفتر الأخطاء =================
+    let currentMistakeImageBase64 = null;
+    let activeMistakeFilterSubj = "الكل";
+
+    function populateMistakeSubjSelect() {
+      const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
+      const select = document.getElementById('mistakeSubjSelect');
+      if (select) {
+        select.innerHTML = subjs.map(s => `<option value="${s}">${s}</option>`).join('');
+      }
+    }
+
+    function handleMistakeImageUpload(fileInput) {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentMistakeImageBase64 = e.target.result;
+        const nameEl = document.getElementById('mistakeImgPreviewName');
+        if (nameEl) {
+          nameEl.style.display = 'block';
+          nameEl.textContent = "✅ تم اختيار الصورة بنجاح: " + file.name;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveNewMistake() {
+      const subj = document.getElementById('mistakeSubjSelect').value;
+      const chapter = document.getElementById('mistakeChapterInp').value.trim() || "عام";
+      const text = document.getElementById('mistakeTextInp').value.trim();
+
+      if (!text && !currentMistakeImageBase64) {
+        alert("من فضلك اكتب الملاحظة أو ارفع صورة السؤال على الأقل 🙏");
+        return;
+      }
+
+      const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+      
+      mistakes.push({
+        id: Date.now(),
+        subj: subj,
+        chapter: chapter,
+        text: text,
+        image: currentMistakeImageBase64,
+        date: new Date().toLocaleDateString('ar-EG'),
+        understood: false
+      });
+
+      localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
+
+      document.getElementById('mistakeTextInp').value = '';
+      document.getElementById('mistakeChapterInp').value = '';
+      document.getElementById('mistakeImgInput').value = '';
+      document.getElementById('mistakeImgPreviewName').style.display = 'none';
+      currentMistakeImageBase64 = null;
+
+      renderMistakesList();
+    }
+
+    function toggleMistakeUnderstood(id) {
+      let mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+      mistakes = mistakes.map(m => m.id === id ? { ...m, understood: !m.understood } : m);
+      localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
+      renderMistakesList();
+    }
+
+    function deleteMistake(id) {
+      if (confirm("هل تريد حذف هذا السؤال من دفتر الأخطاء؟")) {
+        let mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+        mistakes = mistakes.filter(m => m.id !== id);
+        localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
+        renderMistakesList();
+      }
+    }
+
+    function renderMistakesList() {
+      populateMistakeSubjSelect();
+
+      const subjs = ["الكل", ...(branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"])];
+      
+      const filterBar = document.getElementById('mistakesFilterBar');
+      if (filterBar) {
+        filterBar.innerHTML = subjs.map(s => `
+          <button class="day-btn ${activeMistakeFilterSubj === s ? 'active' : ''}" onclick="activeMistakeFilterSubj='${s}'; renderMistakesList();">
+            ${s}
+          </button>
+        `).join('');
+      }
+
+      const allMistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+      let filtered = activeMistakeFilterSubj === "الكل" 
+        ? allMistakes 
+        : allMistakes.filter(m => m.subj === activeMistakeFilterSubj);
+
+      const container = document.getElementById('mistakesListContainer');
+      if (!container) return;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text2); font-size:12px;">لا توجد أخطاء مسجلة في هذا القسم بعد 🌿</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.reverse().map(m => `
+        <div class="athr-card" style="${m.understood ? 'opacity:0.6;' : ''} margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <span style="font-size:13px; font-weight:bold; color:var(--gold);">${m.subj} • <small style="color:var(--text2);">${m.chapter}</small></span>
+            <button onclick="deleteMistake(${m.id})" style="background:transparent; border:none; color:#ff6b6b; font-size:14px; cursor:pointer;">✕</button>
+          </div>
+
+          ${m.text ? `<div style="font-size:13px; color:var(--text); line-height:1.7; margin-bottom:8px;">${m.text}</div>` : ''}
+
+          ${m.image ? `<img src="${m.image}" style="width:100%; max-height:220px; object-fit:contain; border-radius:10px; border:1px solid var(--border); margin-bottom:8px;">` : ''}
+
+          <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border); padding-top:6px; font-size:11px;">
+            <span style="color:var(--text2);">${m.date}</span>
+            <button onclick="toggleMistakeUnderstood(${m.id})" class="btn-small" style="background:${m.understood ? 'var(--green)' : 'var(--card)'}; color:${m.understood ? '#fff' : 'var(--text)'};">
+              ${m.understood ? '✅ تم الفهم والتجاوز' : '🎯 اعلم عليها كـ (فهمتها)'}
+            </button>
+          </div>
         </div>
       `).join('');
     }
 
-    // ================= NAVIGATION & THEME =================
+    // ================= NAV & THEME =================
     function toggleMenu() {
       document.getElementById('tabsDrawer').classList.toggle('open');
       document.getElementById('menuOverlay').classList.toggle('show');
@@ -831,448 +1131,22 @@ function openSubjectTips(sName) {
       isDark = !isDark;
       applyTheme();
     }
-    // ================= 🌿 نظام خطة التفوق والطاعة المتقدم =================
-const presetWorshipTasks = [
-  "صلاة الفجر في وقتها 🕌",
-  "أذكار الصباح والمساء 📿",
-  "ورد قرآن كريم 📖",
-  "بر الوالدين والدعاء 🤲",
-  "صلاة الضحى / قيام الليل ✨",
-  "الاستغفار والصلاة على النبي 🤍"
-];
-
-let selectedPlanTasks = [];
-let selectedPlanDuration = 7;
-
-function initPlanSetupUI() {
-  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
-  
-  if (activePlan) {
-    document.getElementById('planSetupWizard').style.display = 'none';
-    document.getElementById('activePlanDisplay').style.display = 'block';
-    renderActivePlanGrid(activePlan);
-    return;
-  }
-
-  document.getElementById('planSetupWizard').style.display = 'block';
-  document.getElementById('activePlanDisplay').style.display = 'none';
-
-  // 1. صب المواد المعتمدة للشعبة
-  const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
-  const subjGrid = document.getElementById('planSubjPresetGrid');
-  
-  subjGrid.innerHTML = subjs.map(s => {
-    const isSelected = selectedPlanTasks.includes(s);
-    return `
-      <div onclick="togglePlanTaskSelection('${s}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:12px; padding:8px;">
-        ${isSelected ? '✓ ' : '+ '} ${s}
-      </div>
-    `;
-  }).join('');
-
-  // 2. صب قائمة العبادات
-  const worshipGrid = document.getElementById('planWorshipPresetGrid');
-  worshipGrid.innerHTML = presetWorshipTasks.map(w => {
-    const isSelected = selectedPlanTasks.includes(w);
-    return `
-      <div onclick="togglePlanTaskSelection('${w}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:11px; padding:8px; border-color:var(--green);">
-        ${isSelected ? '✓ ' : '+ '} ${w}
-      </div>
-    `;
-  }).join('');
-}
-
-function togglePlanTaskSelection(taskName) {
-  if (selectedPlanTasks.includes(taskName)) {
-    selectedPlanTasks = selectedPlanTasks.filter(t => t !== taskName);
-  } else {
-    selectedPlanTasks.push(taskName);
-  }
-  initPlanSetupUI();
-}
-
-function addCustomTaskToPlan() {
-  const inp = document.getElementById('customTaskInp');
-  const val = inp.value.trim();
-  if (!val) return;
-  if (!selectedPlanTasks.includes(val)) {
-    selectedPlanTasks.push(val);
-  }
-  inp.value = '';
-  initPlanSetupUI();
-}
-
-function setPlanDuration(days) {
-  selectedPlanDuration = days;
-  document.querySelectorAll('#planSetupWizard .day-btn').forEach(b => {
-    if(b.id && b.id.startsWith('duration_')) b.classList.remove('active');
-  });
-  document.getElementById('duration_' + days).classList.add('active');
-}
-
-function buildAndStartPlan() {
-  if (selectedPlanTasks.length === 0) {
-    alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
-    return;
-  }
-
-  const planData = {
-    createdAt: new Date().toISOString(),
-    duration: selectedPlanDuration,
-    tasks: selectedPlanTasks,
-    matrix: {} // { "taskName": { day1: 1, day2: 2 } } -> 1: تم, 2: لم يتم
-  };
-
-  localStorage.setItem('sm_active_plan', JSON.stringify(planData));
-  initPlanSetupUI();
-}
-
-function toggleMatrixCell(taskName, dayNum) {
-  const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
-  if (!plan) return;
-
-  if (!plan.matrix[taskName]) plan.matrix[taskName] = {};
-  
-  const currentVal = plan.matrix[taskName][dayNum] || 0;
-  // التبديل: 0 (فارغ) -> 1 (تم) -> 2 (لم يتم) -> 0
-  const nextVal = (currentVal + 1) % 3;
-  plan.matrix[taskName][dayNum] = nextVal;
-
-  localStorage.setItem('sm_active_plan', JSON.stringify(plan));
-  renderActivePlanGrid(plan);
-}
-
-function renderActivePlanGrid(plan) {
-  const container = document.getElementById('planMatrixGridTable');
-  
-  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
-  
-  // الهيدر (الأيام)
-  html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
-  html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
-  for (let d = 1; d <= plan.duration; d++) {
-    html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
-  }
-  html += `</tr>`;
-
-  let totalCells = plan.tasks.length * plan.duration;
-  let doneCount = 0;
-
-  // أسطر المهام
-  plan.tasks.forEach(task => {
-    html += `<tr style="border-bottom:1px dashed var(--border);">`;
-    html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
-    
-    for (let d = 1; d <= plan.duration; d++) {
-      const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
-      let symbol = "•";
-      let colorStyle = "color:var(--text2);";
-
-      if (val === 1) {
-        symbol = "✅";
-        colorStyle = "";
-        doneCount++;
-      } else if (val === 2) {
-        symbol = "❌";
-        colorStyle = "";
-      }
-
-      html += `
-        <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
-          ${symbol}
-        </td>
-      `;
-    }
-    html += `</tr>`;
-  });
-
-  html += `</table>`;
-  container.innerHTML = html;
-
-  // تحديث الإحصائيات
-  const pct = Math.round((doneCount / totalCells) * 100);
-  document.getElementById('planCommitmentPct').textContent = pct + "%";
-  document.getElementById('planCompletedTasksCount').textContent = doneCount;
-}
-
-function resetCurrentPlan() {
-  if (confirm("هل أنت متأكد من فسخ الخطة الحالية وبدء واحدة جديدة؟")) {
-    localStorage.removeItem('sm_active_plan');
-    selectedPlanTasks = [];
-    initPlanSetupUI();
-  }
-}
-// ================= ⏱️ محرك العداد الدائري للامتحانات =================
-function startExamCountdown() {
-  // تحديد موعد الامتحانات (يونيو 2027 الساعة 9 صباحاً)
-  const examTargetDate = new Date('June 10, 2027 09:00:00').getTime();
-
-  function updateCD() {
-    const now = new Date().getTime();
-    const diff = examTargetDate - now;
-
-    if (diff > 0) {
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const secs = Math.floor((diff % (1000 * 60)) / 1000);
-
-      const circleEl = document.getElementById('cdDaysCircle');
-      const detailsEl = document.getElementById('cdDetailsText');
-
-      if (circleEl) circleEl.textContent = days;
-      if (detailsEl) {
-        detailsEl.textContent = `⏱️ و ${String(hours).padStart(2, '0')} ساعة • ${String(mins).padStart(2, '0')} دقيقة • ${String(secs).padStart(2, '0')} ثانية`;
-      }
-    }
-  }
-
-  updateCD();
-  setInterval(updateCD, 1000);
-}
-    // ================= ⏱️ منطق تايمر التركيز والإحصائيات =================
-let focusTimerInterval = null;
-let focusMode = 25; // عدد الدقائق أو 'stopwatch'
-let focusSecondsLeft = 25 * 60;
-let isFocusRunning = false;
-let stopwatchElapsedSecs = 0;
-
-function setFocusMode(mode) {
-  if (isFocusRunning) resetFocusTimer();
-  
-  focusMode = mode;
-  document.querySelectorAll('#focusPage .day-btn').forEach(b => b.classList.remove('active'));
-  
-  const activeBtn = document.getElementById('fMode_' + mode);
-  if (activeBtn) activeBtn.classList.add('active');
-
-  if (mode === 'stopwatch') {
-    focusSecondsLeft = 0;
-    stopwatchElapsedSecs = 0;
-    document.getElementById('focusTimerDisplay').textContent = "00:00";
-    document.getElementById('focusStatusLabel').textContent = "وضع الستوب ووتش المفتوح ⏱️";
-  } else {
-    focusSecondsLeft = mode * 60;
-    updateFocusDisplay(focusSecondsLeft);
-    document.getElementById('focusStatusLabel').textContent = `جلسة تركيز ${mode} دقيقة.`;
-  }
-}
-
-function updateFocusDisplay(totalSecs) {
-  const mins = Math.floor(totalSecs / 60);
-  const secs = totalSecs % 60;
-  const str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  document.getElementById('focusTimerDisplay').textContent = str;
-}
-
-function toggleFocusTimer() {
-  const startBtn = document.getElementById('focusStartBtn');
-
-  if (isFocusRunning) {
-    // إيقاف مؤقت
-    clearInterval(focusTimerInterval);
-    isFocusRunning = false;
-    startBtn.textContent = "⚡ استكمال الجلسة";
-    document.getElementById('focusStatusLabel').textContent = "الجلسة متوقفة مؤقتاً ⏸️";
-  } else {
-    // بدء التشغيل
-    isFocusRunning = true;
-    startBtn.textContent = "⏸️ إيقاف مؤقت";
-    document.getElementById('focusStatusLabel').textContent = "عاش يا بطل! التركيز شغال دلوقتي 🚀";
-
-    focusTimerInterval = setInterval(() => {
-      if (focusMode === 'stopwatch') {
-        stopwatchElapsedSecs++;
-        updateFocusDisplay(stopwatchElapsedSecs);
-      } else {
-        if (focusSecondsLeft > 0) {
-          focusSecondsLeft--;
-          updateFocusDisplay(focusSecondsLeft);
-        } else {
-          // انتهى الوقت!
-          completeFocusSession(focusMode);
-        }
-      }
-    }, 1000);
-  }
-}
-
-function resetFocusTimer() {
-  clearInterval(focusTimerInterval);
-  isFocusRunning = false;
-  document.getElementById('focusStartBtn').textContent = "⚡ ابدأ الجلسة";
-  setFocusMode(focusMode);
-}
-
-function playAlarmSound() {
-  // صوت تنبيه ناعم ومريح عن طريق الصوتيات المدمجة
+    function playTickSound() {
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
     gain.connect(audioCtx.destination);
+    
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // نغمة D5
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime); // تردد التكة
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime); // صوت خفيف جداً للتكة
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.05);
+    
     osc.start();
-    osc.stop(audioCtx.currentTime + 1.2);
+    osc.stop(audioCtx.currentTime + 0.05);
   } catch(e) {}
-}
-
-function completeFocusSession(minsCount) {
-  resetFocusTimer();
-  playAlarmSound();
-
-  // إظهار رسالة تهنئة
-  alert("🎉 الله ينور يا بطل! أتممت جلسة التركيز بنجاح. خُد 5 دقائق راحة ورست دماغك ✨");
-
-  // حفظ الإحصائيات
-  const today = new Date().toLocaleDateString('en-CA');
-  let stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-  
-  if (!stats[today]) stats[today] = { mins: 0, sessions: 0 };
-  
-  stats[today].mins += (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
-  stats[today].sessions += 1;
-
-  localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
-  updateFocusStatsUI();
-}
-
-function updateFocusStatsUI() {
-  const today = new Date().toLocaleDateString('en-CA');
-  const stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-  const todayData = stats[today] || { mins: 0, sessions: 0 };
-
-  document.getElementById('todayFocusMins').textContent = todayData.mins;
-  document.getElementById('todayFocusSessions').textContent = todayData.sessions;
-}
-    // ================= 📝 نظام دفتر الأخطاء الشامل =================
-let currentMistakeImageBase64 = null;
-let activeMistakeFilterSubj = "الكل";
-
-function populateMistakeSubjSelect() {
-  const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
-  const select = document.getElementById('mistakeSubjSelect');
-  if (select) {
-    select.innerHTML = subjs.map(s => `<option value="${s}">${s}</option>`).join('');
-  }
-}
-
-function handleMistakeImageUpload(fileInput) {
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    currentMistakeImageBase64 = e.target.result;
-    const nameEl = document.getElementById('mistakeImgPreviewName');
-    if (nameEl) {
-      nameEl.style.display = 'block';
-      nameEl.textContent = "✅ تم اختيار الصورة بنجاح: " + file.name;
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-function saveNewMistake() {
-  const subj = document.getElementById('mistakeSubjSelect').value;
-  const chapter = document.getElementById('mistakeChapterInp').value.trim() || "عام";
-  const text = document.getElementById('mistakeTextInp').value.trim();
-
-  if (!text && !currentMistakeImageBase64) {
-    alert("من فضلك اكتب الملاحظة أو ارفع صورة السؤال على الأقل 🙏");
-    return;
-  }
-
-  const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
-  
-  mistakes.push({
-    id: Date.now(),
-    subj: subj,
-    chapter: chapter,
-    text: text,
-    image: currentMistakeImageBase64,
-    date: new Date().toLocaleDateString('ar-EG'),
-    understood: false
-  });
-
-  localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
-
-  // تفريغ الحقول
-  document.getElementById('mistakeTextInp').value = '';
-  document.getElementById('mistakeChapterInp').value = '';
-  document.getElementById('mistakeImgInput').value = '';
-  document.getElementById('mistakeImgPreviewName').style.display = 'none';
-  currentMistakeImageBase64 = null;
-
-  renderMistakesList();
-}
-
-function toggleMistakeUnderstood(id) {
-  let mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
-  mistakes = mistakes.map(m => m.id === id ? { ...m, understood: !m.understood } : m);
-  localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
-  renderMistakesList();
-}
-
-function deleteMistake(id) {
-  if (confirm("هل تريد حذف هذا السؤال من دفتر الأخطاء؟")) {
-    let mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
-    mistakes = mistakes.filter(m => m.id !== id);
-    localStorage.setItem('sm_user_mistakes', JSON.stringify(mistakes));
-    renderMistakesList();
-  }
-}
-
-function renderMistakesList() {
-  populateMistakeSubjSelect();
-
-  const subjs = ["الكل", ...(branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"])];
-  
-  // رسم شريط الفلترة
-  const filterBar = document.getElementById('mistakesFilterBar');
-  if (filterBar) {
-    filterBar.innerHTML = subjs.map(s => `
-      <button class="day-btn ${activeMistakeFilterSubj === s ? 'active' : ''}" onclick="activeMistakeFilterSubj='${s}'; renderMistakesList();">
-        ${s}
-      </button>
-    `).join('');
-  }
-
-  const allMistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
-  let filtered = activeMistakeFilterSubj === "الكل" 
-    ? allMistakes 
-    : allMistakes.filter(m => m.subj === activeMistakeFilterSubj);
-
-  const container = document.getElementById('mistakesListContainer');
-  if (!container) return;
-
-  if (filtered.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text2); font-size:12px;">لا توجد أخطاء مسجلة في هذا القسم بعد 🌿</div>`;
-    return;
-  }
-
-  container.innerHTML = filtered.reverse().map(m => `
-    <div class="athr-card" style="${m.understood ? 'opacity:0.6;' : ''} margin-bottom:10px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-        <span style="font-size:13px; font-weight:bold; color:var(--gold);">${m.subj} • <small style="color:var(--text2);">${m.chapter}</small></span>
-        <button onclick="deleteMistake(${m.id})" style="background:transparent; border:none; color:#ff6b6b; font-size:14px; cursor:pointer;">✕</button>
-      </div>
-
-      ${m.text ? `<div style="font-size:13px; color:var(--text); line-height:1.7; margin-bottom:8px;">${m.text}</div>` : ''}
-
-      ${m.image ? `<img src="${m.image}" style="width:100%; max-height:220px; object-fit:contain; border-radius:10px; border:1px solid var(--border); margin-bottom:8px;">` : ''}
-
-      <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px dashed var(--border); padding-top:6px; font-size:11px;">
-        <span style="color:var(--text2);">${m.date}</span>
-        <button onclick="toggleMistakeUnderstood(${m.id})" class="btn-small" style="background:${m.understood ? 'var(--green)' : 'var(--card)'}; color:${m.understood ? '#fff' : 'var(--text)'};">
-          ${m.understood ? '✅ تم الفهم والتجاوز' : '🎯 اعلم عليها كـ (فهمتها)'}
-        </button>
-      </div>
-    </div>
-  `).join('');
 }
   </script>
 </body>
