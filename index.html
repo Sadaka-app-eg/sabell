@@ -584,7 +584,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
     // ================= 📚 دليل المواد الشامل =================
     const subjectFullDetailsData = {
       "اللغة العربية": {
@@ -703,27 +703,40 @@
       }
     };
 
-    // تقسيم المواد المعتمد لكل شعبة
     const branchSubjectsMapping = {
       "علمي علوم": ["اللغة العربية", "اللغة الإنجليزية", "الفيزياء", "الكيمياء", "الأحياء"],
       "علمي رياضة": ["اللغة العربية", "اللغة الإنجليزية", "الفيزياء", "الكيمياء", "الرياضيات (تفاضل وتكامل)", "الرياضيات (جبر وهندسة فراغية)", "الرياضيات (استاتيكا وديناميكا)"]
     };
 
+    const presetWorshipTasks = [
+      "صلاة الفجر في وقتها 🕌",
+      "أذكار الصباح والمساء 📿",
+      "ورد قرآن كريم 📖",
+      "بر الوالدين والدعاء 🤲",
+      "صلاة الضحى / قيام الليل ✨",
+      "الاستغفار والصلاة على النبي 🤍"
+    ];
+
+    const weekDaysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
+
     let userBranch = localStorage.getItem('sm_user_branch') || null;
     let isDark = localStorage.getItem('sm_theme') !== 'light';
     let myProgressChart = null;
     let currentAnalyticsView = 'daily';
+    let selectedPlanTasks = {}; // { "اسم المهمة": "daily" أو ["السبت", "الأحد"] }
+    let selectedPlanDuration = 7;
 
     // ================= 🚀 التشغيل المبدئي =================
     document.addEventListener('DOMContentLoaded', () => {
       applyTheme();
       setTimeout(() => {
-  const splash = document.getElementById('splashScreen');
-  if (splash) {
-    splash.style.opacity = '0';
-    splash.style.visibility = 'hidden';
-  }
-}, 3000); // 3000 ملي ثانية = 3 ثواني
+        const splash = document.getElementById('splashScreen');
+        if (splash) {
+          splash.style.opacity = '0';
+          splash.style.visibility = 'hidden';
+        }
+      }, 3000);
+
       if (!userBranch) {
         document.getElementById('firstTimeBranchModal').style.display = 'flex';
       } else {
@@ -731,21 +744,18 @@
         initAppUI();
       }
     });
-document.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(() => {});
-  }
-}, { once: true });
+
+    document.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    }, { once: true });
+
     function selectInitialBranch(branchName) {
       userBranch = branchName;
       localStorage.setItem('sm_user_branch', branchName);
       document.getElementById('firstTimeBranchModal').style.display = 'none';
       initAppUI();
-    }
-
-    function openBranchChangeModal() {
-      toggleMenu();
-      document.getElementById('firstTimeBranchModal').style.display = 'flex';
     }
 
     function initAppUI() {
@@ -761,7 +771,6 @@ document.addEventListener('click', () => {
     function renderSubjectsList() {
       const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
       
-      // 1. القائمة السريعة بالرئيسية
       const homeQuick = document.getElementById('homeQuickSubjects');
       homeQuick.innerHTML = subjs.map(sName => {
         const item = subjectFullDetailsData[sName] || { icon: "📘", sub: "مادة مقررة" };
@@ -779,7 +788,6 @@ document.addEventListener('click', () => {
         `;
       }).join('');
 
-      // 2. قائمة صفحة المواد الشاملة
       const fullList = document.getElementById('fullSubjectsList');
       fullList.innerHTML = subjs.map(sName => {
         const item = subjectFullDetailsData[sName] || { icon: "📘", sub: "مادة مقررة" };
@@ -801,17 +809,13 @@ document.addEventListener('click', () => {
 
       document.getElementById('modalSubjTitle').innerHTML = `${item.icon} دليل مادة: ${sName}`;
 
-      let html = '';
-
-      // 1. تقسيم المنهج والأبواب
-      html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
+      let html = `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
       html += `<div style="font-weight:bold; color:var(--gold); margin-bottom:6px;">📖 تقسيم منهج المادة:</div>`;
       item.chapters.forEach(c => {
         html += `<div style="font-size:12px; margin-bottom:4px;">• <b>${c.name}:</b> <span style="color:var(--text2);">${c.count}</span></div>`;
       });
       html += `</div>`;
 
-      // 2. أفضل مدرسين اليوتيوب
       html += `<div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px; margin-bottom:10px;">`;
       html += `<div style="font-weight:bold; color:var(--green); margin-bottom:6px;">🎙️ أشهر مدرسين اليوتيوب ورأي الطلاب:</div>`;
       item.teachers.forEach(t => {
@@ -824,7 +828,6 @@ document.addEventListener('click', () => {
       });
       html += `</div>`;
 
-      // 3. نصائح التقفيل
       html += `<div style="background:rgba(212,175,55,0.08); border:1px solid var(--gold); border-radius:12px; padding:10px;">`;
       html += `<div style="font-size:12px; color:var(--text); line-height:1.7;">${item.tips}</div>`;
       html += `</div>`;
@@ -838,118 +841,6 @@ document.addEventListener('click', () => {
     }
 
     // ================= 🌿 نظام خطة التفوق والجدول =================
-    const presetWorshipTasks = [
-      "صلاة الفجر في وقتها 🕌",
-      "أذكار الصباح والمساء 📿",
-      "ورد قرآن كريم 📖",
-      "بر الوالدين والدعاء 🤲",
-      "صلاة الضحى / قيام الليل ✨",
-      "الاستغفار والصلاة على النبي 🤍"
-    ];
-
-  // ✅ ضع الكود الجديد ده:
-let selectedPlanTasks = {}; // { "اسم المهمة": ["السبت", "الإثنين"] أو "daily" }
-
-// قائمة أيام الأسبوع للعموم
-const weekDaysList = ["السبت", "الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة"];
-
-function initPlanSetupUI() {
-  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
-  
-  if (activePlan) {
-    document.getElementById('planSetupWizard').style.display = 'none';
-    document.getElementById('activePlanDisplay').style.display = 'block';
-    renderActivePlanGrid(activePlan);
-    return;
-  }
-
-  document.getElementById('planSetupWizard').style.display = 'block';
-  document.getElementById('activePlanDisplay').style.display = 'none';
-
-  const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
-  
-  // 1. عرض المواد مع خيارات التكرار
-  const subjGrid = document.getElementById('planSubjPresetGrid');
-  subjGrid.innerHTML = subjs.map(s => renderTaskConfigRow(s)).join('');
-
-  // 2. عرض الطاعات مع خيارات التكرار
-  const worshipGrid = document.getElementById('planWorshipPresetGrid');
-  worshipGrid.innerHTML = presetWorshipTasks.map(w => renderTaskConfigRow(w)).join('');
-}
-
-// دالة رسم سطر المهمة مع زرار تحديد الأيام
-function renderTaskConfigRow(taskName) {
-  const isSelected = !!selectedPlanTasks[taskName];
-  const mode = selectedPlanTasks[taskName] || 'daily'; // 'daily' أو array أيام
-
-  return `
-    <div style="background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; margin-bottom:6px;">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:13px; font-weight:bold; color:var(--text);">${taskName}</span>
-        <button onclick="togglePlanTaskSelection('${taskName}')" class="btn-small" style="background:${isSelected ? 'var(--green)' : 'var(--card)'}; color:${isSelected ? '#fff' : 'var(--gold)'}; border:1px solid var(--gold);">
-          ${isSelected ? '✓ مضافة' : '+ إضافة'}
-        </button>
-      </div>
-      
-      ${isSelected ? `
-        <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
-          <div style="font-size:10px; color:var(--text2); margin-bottom:4px;">تكرار المهمة:</div>
-          <div style="display:flex; gap:4px; flex-wrap:wrap;">
-            <button onclick="setTaskFrequency('${taskName}', 'daily')" class="day-btn ${mode === 'daily' ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">يومياً</button>
-            <button onclick="setTaskFrequency('${taskName}', 'custom')" class="day-btn ${Array.isArray(mode) ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">أيام محددة</button>
-          </div>
-          
-          ${Array.isArray(mode) ? `
-            <div style="display:flex; gap:3px; margin-top:6px; overflow-x:auto;">
-              ${weekDaysList.map(day => `
-                <button onclick="toggleSpecificDay('${taskName}', '${day}')" class="day-btn ${mode.includes(day) ? 'active' : ''}" style="padding:2px 4px; font-size:9px; min-width:32px;">
-                  ${day.replace('الأربعاء', 'أربعاء')}
-                </button>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
-      ` : ''}
-    </div>
-  `;
-}
-
-function togglePlanTaskSelection(taskName) {
-  if (selectedPlanTasks[taskName]) {
-    delete selectedPlanTasks[taskName];
-  } else {
-    selectedPlanTasks[taskName] = 'daily'; // الافتراضي يومياً
-  }
-  initPlanSetupUI();
-}
-
-function setTaskFrequency(taskName, freqType) {
-  if (freqType === 'daily') {
-    selectedPlanTasks[taskName] = 'daily';
-  } else {
-    selectedPlanTasks[taskName] = ["السبت", "الإثنين"]; // اختيار يومين كبداية
-  }
-  initPlanSetupUI();
-}
-
-function toggleSpecificDay(taskName, day) {
-  if (!Array.isArray(selectedPlanTasks[taskName])) {
-    selectedPlanTasks[taskName] = [];
-  }
-  
-  const arr = selectedPlanTasks[taskName];
-  const idx = arr.indexOf(day);
-  if (idx > -1) {
-    arr.splice(idx, 1);
-  } else {
-    arr.push(day);
-  }
-  initPlanSetupUI();
-}
-
-    
-    let selectedPlanDuration = 7;
-
     function initPlanSetupUI() {
       const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
       
@@ -963,36 +854,80 @@ function toggleSpecificDay(taskName, day) {
       document.getElementById('planSetupWizard').style.display = 'block';
       document.getElementById('activePlanDisplay').style.display = 'none';
 
-      // 1. صب المواد المعتمدة للشعبة
       const subjs = branchSubjectsMapping[userBranch] || branchSubjectsMapping["علمي علوم"];
-      const subjGrid = document.getElementById('planSubjPresetGrid');
       
-      subjGrid.innerHTML = subjs.map(s => {
-        const isSelected = selectedPlanTasks.includes(s);
-        return `
-          <div onclick="togglePlanTaskSelection('${s}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:12px; padding:8px;">
-            ${isSelected ? '✓ ' : '+ '} ${s}
-          </div>
-        `;
-      }).join('');
+      const subjGrid = document.getElementById('planSubjPresetGrid');
+      subjGrid.innerHTML = subjs.map(s => renderTaskConfigRow(s)).join('');
 
-      // 2. صب قائمة العبادات
       const worshipGrid = document.getElementById('planWorshipPresetGrid');
-      worshipGrid.innerHTML = presetWorshipTasks.map(w => {
-        const isSelected = selectedPlanTasks.includes(w);
-        return `
-          <div onclick="togglePlanTaskSelection('${w}')" class="day-btn ${isSelected ? 'active' : ''}" style="text-align:right; font-size:11px; padding:8px; border-color:var(--green);">
-            ${isSelected ? '✓ ' : '+ '} ${w}
+      worshipGrid.innerHTML = presetWorshipTasks.map(w => renderTaskConfigRow(w)).join('');
+    }
+
+    function renderTaskConfigRow(taskName) {
+      const isSelected = !!selectedPlanTasks[taskName];
+      const mode = selectedPlanTasks[taskName] || 'daily';
+
+      return `
+        <div style="background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; font-weight:bold; color:var(--text);">${taskName}</span>
+            <button onclick="togglePlanTaskSelection('${taskName}')" class="btn-small" style="background:${isSelected ? 'var(--green)' : 'var(--card)'}; color:${isSelected ? '#fff' : 'var(--gold)'}; border:1px solid var(--gold);">
+              ${isSelected ? '✓ مضافة' : '+ إضافة'}
+            </button>
           </div>
-        `;
-      }).join('');
+          
+          ${isSelected ? `
+            <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
+              <div style="font-size:10px; color:var(--text2); margin-bottom:4px;">تكرار المهمة:</div>
+              <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                <button onclick="setTaskFrequency('${taskName}', 'daily')" class="day-btn ${mode === 'daily' ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">يومياً</button>
+                <button onclick="setTaskFrequency('${taskName}', 'custom')" class="day-btn ${Array.isArray(mode) ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">أيام محددة</button>
+              </div>
+              
+              ${Array.isArray(mode) ? `
+                <div style="display:flex; gap:3px; margin-top:6px; overflow-x:auto;">
+                  ${weekDaysList.map(day => `
+                    <button onclick="toggleSpecificDay('${taskName}', '${day}')" class="day-btn ${mode.includes(day) ? 'active' : ''}" style="padding:2px 4px; font-size:9px; min-width:32px;">
+                      ${day.replace('الأربعاء', 'أربعاء')}
+                    </button>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
 
     function togglePlanTaskSelection(taskName) {
-      if (selectedPlanTasks.includes(taskName)) {
-        selectedPlanTasks = selectedPlanTasks.filter(t => t !== taskName);
+      if (selectedPlanTasks[taskName]) {
+        delete selectedPlanTasks[taskName];
       } else {
-        selectedPlanTasks.push(taskName);
+        selectedPlanTasks[taskName] = 'daily';
+      }
+      initPlanSetupUI();
+    }
+
+    function setTaskFrequency(taskName, freqType) {
+      if (freqType === 'daily') {
+        selectedPlanTasks[taskName] = 'daily';
+      } else {
+        selectedPlanTasks[taskName] = ["السبت", "الإثنين"];
+      }
+      initPlanSetupUI();
+    }
+
+    function toggleSpecificDay(taskName, day) {
+      if (!Array.isArray(selectedPlanTasks[taskName])) {
+        selectedPlanTasks[taskName] = [];
+      }
+      
+      const arr = selectedPlanTasks[taskName];
+      const idx = arr.indexOf(day);
+      if (idx > -1) {
+        arr.splice(idx, 1);
+      } else {
+        arr.push(day);
       }
       initPlanSetupUI();
     }
@@ -1001,8 +936,8 @@ function toggleSpecificDay(taskName, day) {
       const inp = document.getElementById('customTaskInp');
       const val = inp.value.trim();
       if (!val) return;
-      if (!selectedPlanTasks.includes(val)) {
-        selectedPlanTasks.push(val);
+      if (!selectedPlanTasks[val]) {
+        selectedPlanTasks[val] = 'daily';
       }
       inp.value = '';
       initPlanSetupUI();
@@ -1011,28 +946,28 @@ function toggleSpecificDay(taskName, day) {
     function setPlanDuration(days) {
       selectedPlanDuration = days;
       document.querySelectorAll('#planSetupWizard .day-btn').forEach(b => {
-        if(b.id && b.id.startsWith('duration_')) b.classList.remove('active');
+        if (b.id && b.id.startsWith('duration_')) b.classList.remove('active');
       });
       document.getElementById('duration_' + days).classList.add('active');
     }
 
-function buildAndStartPlan() {
-  const taskKeys = Object.keys(selectedPlanTasks);
-  if (taskKeys.length === 0) {
-    alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
-    return;
-  }
+    function buildAndStartPlan() {
+      const taskKeys = Object.keys(selectedPlanTasks);
+      if (taskKeys.length === 0) {
+        alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
+        return;
+      }
 
-  const planData = {
-    createdAt: new Date().toISOString(),
-    duration: selectedPlanDuration,
-    tasksConfig: selectedPlanTasks, // حفظ إعدادات الأيام لكل مادة
-    matrix: {}
-  };
+      const planData = {
+        createdAt: new Date().toISOString(),
+        duration: selectedPlanDuration,
+        tasksConfig: selectedPlanTasks,
+        matrix: {}
+      };
 
-  localStorage.setItem('sm_active_plan', JSON.stringify(planData));
-  initPlanSetupUI();
-}
+      localStorage.setItem('sm_active_plan', JSON.stringify(planData));
+      initPlanSetupUI();
+    }
 
     function toggleMatrixCell(taskName, dayNum) {
       const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
@@ -1048,80 +983,75 @@ function buildAndStartPlan() {
       renderActivePlanGrid(plan);
     }
 
-function renderActivePlanGrid(plan) {
-  const container = document.getElementById('planMatrixGridTable');
-  const tasksConfig = plan.tasksConfig || {};
-  const taskNames = Object.keys(tasksConfig);
-  
-  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
-  
-  html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
-  html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
-  for (let d = 1; d <= plan.duration; d++) {
-    html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
-  }
-  html += `</tr>`;
-
-  let totalActiveCells = 0;
-  let doneCount = 0;
-
-  taskNames.forEach(task => {
-    const config = tasksConfig[task]; // إما 'daily' أو أصل الأيام
-    
-    html += `<tr style="border-bottom:1px dashed var(--border);">`;
-    html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
-    
-    for (let d = 1; d <= plan.duration; d++) {
-      // تحديد هل اليوم ده مقرر فيه المادة ولا راحة
-      const dayName = weekDaysList[(d - 1) % 7];
-      const isTaskActiveToday = (config === 'daily') || (Array.isArray(config) && config.includes(dayName));
-
-      if (isTaskActiveToday) {
-        totalActiveCells++;
-        const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
-        let symbol = "•";
-        let colorStyle = "color:var(--text2);";
-
-        if (val === 1) {
-          symbol = "✅";
-          colorStyle = "";
-          doneCount++;
-        } else if (val === 2) {
-          symbol = "❌";
-          colorStyle = "";
-        }
-
-        html += `
-          <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
-            ${symbol}
-          </td>
-        `;
-      } else {
-        // يوم راحة لهذه المادة
-        html += `<td style="padding:6px; opacity:0.25; font-size:11px; user-select:none;">☕ راحة</td>`;
+    function renderActivePlanGrid(plan) {
+      const container = document.getElementById('planMatrixGridTable');
+      const tasksConfig = plan.tasksConfig || {};
+      const taskNames = Object.keys(tasksConfig);
+      
+      let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
+      
+      html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
+      html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
+      for (let d = 1; d <= plan.duration; d++) {
+        html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
       }
+      html += `</tr>`;
+
+      let totalActiveCells = 0;
+      let doneCount = 0;
+
+      taskNames.forEach(task => {
+        const config = tasksConfig[task];
+        
+        html += `<tr style="border-bottom:1px dashed var(--border);">`;
+        html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
+        
+        for (let d = 1; d <= plan.duration; d++) {
+          const dayName = weekDaysList[(d - 1) % 7];
+          const isTaskActiveToday = (config === 'daily') || (Array.isArray(config) && config.includes(dayName));
+
+          if (isTaskActiveToday) {
+            totalActiveCells++;
+            const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
+            let symbol = "•";
+            let colorStyle = "color:var(--text2);";
+
+            if (val === 1) {
+              symbol = "✅";
+              colorStyle = "";
+              doneCount++;
+            } else if (val === 2) {
+              symbol = "❌";
+              colorStyle = "";
+            }
+
+            html += `
+              <td onclick="toggleMatrixCell('${task.replace(/'/g, "\\'")}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
+                ${symbol}
+              </td>
+            `;
+          } else {
+            html += `<td style="padding:6px; opacity:0.25; font-size:11px; user-select:none;">☕ راحة</td>`;
+          }
+        }
+        html += `</tr>`;
+      });
+
+      html += `</table>`;
+      container.innerHTML = html;
+
+      const pct = totalActiveCells > 0 ? Math.round((doneCount / totalActiveCells) * 100) : 0;
+      document.getElementById('planCommitmentPct').textContent = pct + "%";
+      document.getElementById('planCompletedTasksCount').textContent = doneCount;
+
+      renderProgressAnalyticsChart(plan);
     }
-    html += `</tr>`;
-  });
 
-  html += `</table>`;
-  container.innerHTML = html;
-
-  // نسبة الالتزام تحسب فقط من الأيام المقررة فعلياً!
-  const pct = totalActiveCells > 0 ? Math.round((doneCount / totalActiveCells) * 100) : 0;
-  document.getElementById('planCommitmentPct').textContent = pct + "%";
-  document.getElementById('planCompletedTasksCount').textContent = doneCount;
-
-  if (typeof renderProgressAnalyticsChart === 'function') {
-    renderProgressAnalyticsChart(plan);
-  }
-}
-
-    // ================= 📈 المحرك التفاعلي للرسم البياني (Chart Analytics) =================
+    // ================= 📈 الرسم البياني (Chart Analytics) =================
     function switchAnalyticsView(viewMode) {
       currentAnalyticsView = viewMode;
       document.querySelectorAll('#schedulePage .day-btn').forEach(b => {
-        if(b.id && b.id.startsWith('chartTab_')) b.classList.remove('active');
+        if (b.id && b.id.startsWith('chartTab_')) b.classList.remove('active');
       });
       document.getElementById('chartTab_' + viewMode).classList.add('active');
 
@@ -1130,26 +1060,35 @@ function renderActivePlanGrid(plan) {
     }
 
     function renderProgressAnalyticsChart(plan) {
-      const ctx = document.getElementById('progressChartCanvas').getContext('2d');
+      const canvasEl = document.getElementById('progressChartCanvas');
+      if (!canvasEl) return;
+      const ctx = canvasEl.getContext('2d');
       if (!ctx) return;
 
       let labels = [];
       let dataPoints = [];
-      const totalTasksPerDay = plan.tasks.length || 1;
+      const tasksConfig = plan.tasksConfig || {};
+      const taskNames = Object.keys(tasksConfig);
 
       if (currentAnalyticsView === 'daily') {
-        // حساب نسبة الالتزام لكل يوم في الخطة الحالية
         for (let d = 1; d <= plan.duration; d++) {
           labels.push(`يوم ${d}`);
+          let activeCount = 0;
           let dayDone = 0;
-          plan.tasks.forEach(t => {
-            if (plan.matrix[t] && plan.matrix[t][d] === 1) dayDone++;
+          const dayName = weekDaysList[(d - 1) % 7];
+
+          taskNames.forEach(t => {
+            const config = tasksConfig[t];
+            if (config === 'daily' || (Array.isArray(config) && config.includes(dayName))) {
+              activeCount++;
+              if (plan.matrix[t] && plan.matrix[t][d] === 1) dayDone++;
+            }
           });
-          let dayPct = Math.round((dayDone / totalTasksPerDay) * 100);
+
+          let dayPct = activeCount > 0 ? Math.round((dayDone / activeCount) * 100) : 0;
           dataPoints.push(dayPct);
         }
       } else if (currentAnalyticsView === 'weekly') {
-        // تجميع الأداء حسب الأسابيع
         let totalWeeks = Math.ceil(plan.duration / 7);
         for (let w = 1; w <= totalWeeks; w++) {
           labels.push(`الأسبوع ${w}`);
@@ -1159,30 +1098,37 @@ function renderActivePlanGrid(plan) {
           let endDay = Math.min(w * 7, plan.duration);
 
           for (let d = startDay; d <= endDay; d++) {
-            plan.tasks.forEach(t => {
-              weekTotal++;
-              if (plan.matrix[t] && plan.matrix[t][d] === 1) weekDone++;
+            const dayName = weekDaysList[(d - 1) % 7];
+            taskNames.forEach(t => {
+              const config = tasksConfig[t];
+              if (config === 'daily' || (Array.isArray(config) && config.includes(dayName))) {
+                weekTotal++;
+                if (plan.matrix[t] && plan.matrix[t][d] === 1) weekDone++;
+              }
             });
           }
           let weekPct = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
           dataPoints.push(weekPct);
         }
       } else if (currentAnalyticsView === 'monthly') {
-        // متوسط الأداء الشهري والإجمالي
         labels = ['الربيع الأول', 'مرحلة المنتصف', 'المراجعة النهائية'];
         let overallDone = 0;
-        let overallTotal = plan.duration * totalTasksPerDay;
+        let overallTotal = 0;
 
-        plan.tasks.forEach(t => {
-          for (let d = 1; d <= plan.duration; d++) {
-            if (plan.matrix[t] && plan.matrix[t][d] === 1) overallDone++;
-          }
-        });
+        for (let d = 1; d <= plan.duration; d++) {
+          const dayName = weekDaysList[(d - 1) % 7];
+          taskNames.forEach(t => {
+            const config = tasksConfig[t];
+            if (config === 'daily' || (Array.isArray(config) && config.includes(dayName))) {
+              overallTotal++;
+              if (plan.matrix[t] && plan.matrix[t][d] === 1) overallDone++;
+            }
+          });
+        }
         let totalPct = overallTotal > 0 ? Math.round((overallDone / overallTotal) * 100) : 0;
         dataPoints = [Math.max(totalPct - 15, 0), totalPct, Math.min(totalPct + 10, 100)];
       }
 
-      // حساب المتوسط للتقييم التحفيزي
       const avgScore = dataPoints.length > 0 ? Math.round(dataPoints.reduce((a, b) => a + b, 0) / dataPoints.length) : 0;
       const badgeEl = document.getElementById('analyticsEvaluationBadge');
       if (badgeEl) {
@@ -1219,9 +1165,7 @@ function renderActivePlanGrid(plan) {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
+          plugins: { legend: { display: false } },
           scales: {
             y: {
               min: 0,
@@ -1241,12 +1185,12 @@ function renderActivePlanGrid(plan) {
     function resetCurrentPlan() {
       if (confirm("هل أنت متأكد من فسخ الخطة الحالية وبدء واحدة جديدة؟")) {
         localStorage.removeItem('sm_active_plan');
-        selectedPlanTasks = [];
+        selectedPlanTasks = {};
         initPlanSetupUI();
       }
     }
 
-    // ================= ⏱️ العداد التنازلي للامتحانات =================
+    // ================= ⏱️ العداد التنازلي =================
     function startExamCountdown() {
       const examTargetDate = new Date('June 10, 2027 09:00:00').getTime();
 
@@ -1274,7 +1218,7 @@ function renderActivePlanGrid(plan) {
       setInterval(updateCD, 1000);
     }
 
-    // ================= ⏱️ صوت التكة وتنازل تايمر التركيز =================
+    // ================= ⏱️ تايمر التركيز =================
     function playTickSound() {
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
