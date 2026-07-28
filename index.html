@@ -302,7 +302,6 @@
   <div class="tabs-drawer" id="tabsDrawer">
     <div class="drawer-header">القائمة الرئيسية</div>
     <div class="drawer-item active" onclick="showPage('homePage', this)">🏠 الرئيسية</div>
-    <div class="drawer-item" onclick="showPage('subjectsPage', this)">📚 المواد والنصائح</div>
     <div class="drawer-item" onclick="showPage('schedulePage', this)">⏱️ خطة التفوق والجدول</div>
     <div class="drawer-item" onclick="showPage('focusPage', this)">⏱️ تايمر التركيز</div>
     <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
@@ -897,22 +896,23 @@ document.addEventListener('click', () => {
       document.getElementById('duration_' + days).classList.add('active');
     }
 
-    function buildAndStartPlan() {
-      if (selectedPlanTasks.length === 0) {
-        alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
-        return;
-      }
+function buildAndStartPlan() {
+  const taskKeys = Object.keys(selectedPlanTasks);
+  if (taskKeys.length === 0) {
+    alert("من فضلك اختر مهمة واحدة على الأقل لخطتك 🙏");
+    return;
+  }
 
-      const planData = {
-        createdAt: new Date().toISOString(),
-        duration: selectedPlanDuration,
-        tasks: selectedPlanTasks,
-        matrix: {}
-      };
+  const planData = {
+    createdAt: new Date().toISOString(),
+    duration: selectedPlanDuration,
+    tasksConfig: selectedPlanTasks, // حفظ إعدادات الأيام لكل مادة
+    matrix: {}
+  };
 
-      localStorage.setItem('sm_active_plan', JSON.stringify(planData));
-      initPlanSetupUI();
-    }
+  localStorage.setItem('sm_active_plan', JSON.stringify(planData));
+  initPlanSetupUI();
+}
 
     function toggleMatrixCell(taskName, dayNum) {
       const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
@@ -928,58 +928,74 @@ document.addEventListener('click', () => {
       renderActivePlanGrid(plan);
     }
 
-    function renderActivePlanGrid(plan) {
-      const container = document.getElementById('planMatrixGridTable');
-      
-      let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
-      
-      html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
-      html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
-      for (let d = 1; d <= plan.duration; d++) {
-        html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
-      }
-      html += `</tr>`;
+function renderActivePlanGrid(plan) {
+  const container = document.getElementById('planMatrixGridTable');
+  const tasksConfig = plan.tasksConfig || {};
+  const taskNames = Object.keys(tasksConfig);
+  
+  let html = `<table style="width:100%; border-collapse:collapse; font-size:12px; text-align:center;">`;
+  
+  html += `<tr style="border-bottom:1px solid var(--border); color:var(--gold);">`;
+  html += `<th style="padding:8px; text-align:right; min-width:110px;">المهمة / اليوم</th>`;
+  for (let d = 1; d <= plan.duration; d++) {
+    html += `<th style="padding:6px; min-width:32px;">يوم ${d}</th>`;
+  }
+  html += `</tr>`;
 
-      let totalCells = plan.tasks.length * plan.duration;
-      let doneCount = 0;
+  let totalActiveCells = 0;
+  let doneCount = 0;
 
-      plan.tasks.forEach(task => {
-        html += `<tr style="border-bottom:1px dashed var(--border);">`;
-        html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
-        
-        for (let d = 1; d <= plan.duration; d++) {
-          const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
-          let symbol = "•";
-          let colorStyle = "color:var(--text2);";
+  taskNames.forEach(task => {
+    const config = tasksConfig[task]; // إما 'daily' أو أصل الأيام
+    
+    html += `<tr style="border-bottom:1px dashed var(--border);">`;
+    html += `<td style="padding:8px; text-align:right; font-weight:bold; color:var(--text); white-space:nowrap;">${task}</td>`;
+    
+    for (let d = 1; d <= plan.duration; d++) {
+      // تحديد هل اليوم ده مقرر فيه المادة ولا راحة
+      const dayName = weekDaysList[(d - 1) % 7];
+      const isTaskActiveToday = (config === 'daily') || (Array.isArray(config) && config.includes(dayName));
 
-          if (val === 1) {
-            symbol = "✅";
-            colorStyle = "";
-            doneCount++;
-          } else if (val === 2) {
-            symbol = "❌";
-            colorStyle = "";
-          }
+      if (isTaskActiveToday) {
+        totalActiveCells++;
+        const val = (plan.matrix[task] && plan.matrix[task][d]) || 0;
+        let symbol = "•";
+        let colorStyle = "color:var(--text2);";
 
-          html += `
-            <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
-              ${symbol}
-            </td>
-          `;
+        if (val === 1) {
+          symbol = "✅";
+          colorStyle = "";
+          doneCount++;
+        } else if (val === 2) {
+          symbol = "❌";
+          colorStyle = "";
         }
-        html += `</tr>`;
-      });
 
-      html += `</table>`;
-      container.innerHTML = html;
-
-      const pct = Math.round((doneCount / totalCells) * 100);
-      document.getElementById('planCommitmentPct').textContent = pct + "%";
-      document.getElementById('planCompletedTasksCount').textContent = doneCount;
-
-      // تحديث الرسم البياني تلقائياً بعد أي تغيير بالجدول
-      renderProgressAnalyticsChart(plan);
+        html += `
+          <td onclick="toggleMatrixCell('${task}', ${d})" style="padding:6px; cursor:pointer; font-size:14px; user-select:none; ${colorStyle}">
+            ${symbol}
+          </td>
+        `;
+      } else {
+        // يوم راحة لهذه المادة
+        html += `<td style="padding:6px; opacity:0.25; font-size:11px; user-select:none;">☕ راحة</td>`;
+      }
     }
+    html += `</tr>`;
+  });
+
+  html += `</table>`;
+  container.innerHTML = html;
+
+  // نسبة الالتزام تحسب فقط من الأيام المقررة فعلياً!
+  const pct = totalActiveCells > 0 ? Math.round((doneCount / totalActiveCells) * 100) : 0;
+  document.getElementById('planCommitmentPct').textContent = pct + "%";
+  document.getElementById('planCompletedTasksCount').textContent = doneCount;
+
+  if (typeof renderProgressAnalyticsChart === 'function') {
+    renderProgressAnalyticsChart(plan);
+  }
+}
 
     // ================= 📈 المحرك التفاعلي للرسم البياني (Chart Analytics) =================
     function switchAnalyticsView(viewMode) {
