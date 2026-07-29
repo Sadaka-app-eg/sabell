@@ -398,42 +398,58 @@ lastUpdate: now.toISOString(),
     }
   };
 
-  window.logoutGoogle = function() {
-    if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
-      signOut(auth);
-    }
-  };
+window.logoutGoogle = function() {
+  if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
+    signOut(auth).then(() => {
+      // إعادة تحميل الصفحة لتطهير العرض للحساب الجديد
+      window.location.reload();
+    });
+  }
+};
 
   // 🔄 4. عند تغير حالة الدخول
-// 🔄 4. عند تغير حالة الدخول
-  onAuthStateChanged(auth, (user) => {
-    const loginBtn = document.getElementById('googleLoginBtn');
-    const userProfile = document.getElementById('userProfileInfo');
-    const welcomeText = document.getElementById('headerWelcomeText');
+onAuthStateChanged(auth, (user) => {
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const userProfile = document.getElementById('userProfileInfo');
+  const welcomeText = document.getElementById('headerWelcomeText');
 
-    if (user) {
-const studentCode = getOrCreateStudentCode(user);      
-      if (loginBtn) loginBtn.style.display = 'none';
-      if (userProfile) {
-        userProfile.style.display = 'flex';
-        // عرض الاسم الكامل + الكود عند تحريك الماوس أو الضغط
-        document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
-        document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
-      }
-
-      if (welcomeText) {
-        welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
-      }
-
-      // مزامنة البيانات مع السحاب وإظهار تنبيه نجاح
-      window.syncStudentDataToCloud();
-            listenToParentMessages(studentCode);
-    } else {
-      if (loginBtn) loginBtn.style.display = 'flex';
-      if (userProfile) userProfile.style.display = 'none';
-      if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
+  if (user) {
+    const studentCode = getOrCreateStudentCode(user);
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userProfile) {
+      userProfile.style.display = 'flex';
+      document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
+      document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
     }
-  });
+
+    if (welcomeText) {
+      welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
+    }
+
+    // جلب/فصل خطة الحساب الحالي بناءً على الـ UID
+    const userPlanKey = 'sm_active_plan_' + user.uid;
+    const currentPlan = localStorage.getItem(userPlanKey);
+    if (currentPlan) {
+      localStorage.setItem('sm_active_plan', currentPlan);
+    } else {
+      localStorage.removeItem('sm_active_plan'); // تصفير الجدول للحساب الجديد
+    }
+
+    // إعادة تهيئة الواجهة للجدول
+    if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
+
+    window.syncStudentDataToCloud();
+    if (typeof listenToParentMessages === 'function') listenToParentMessages(studentCode);
+  } else {
+    if (loginBtn) loginBtn.style.display = 'flex';
+    if (userProfile) userProfile.style.display = 'none';
+    if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
+
+    // تصفير العرض في حالة الخروج
+    localStorage.removeItem('sm_active_plan');
+    if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
+  }
+});
 </script>
 <!-- 🌟 شاشة الترحيب الافتتاحية (Splash Screen) -->
 <div id="splashScreen">
@@ -1295,6 +1311,11 @@ function toggleMatrixCell(taskName, dayNum) {
   
   // 🚀 رفع التغيير فوراً لوالي الأمر!
   if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
+  // داخل buildAndStartPlan و toggleMatrixCell بعد التعديل:
+const user = auth.currentUser;
+if (user) {
+  localStorage.setItem('sm_active_plan_' + user.uid, JSON.stringify(planData));
+}
 }
 
     function renderActivePlanGrid(plan) {
