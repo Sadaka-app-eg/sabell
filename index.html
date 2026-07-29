@@ -276,11 +276,13 @@
 </head>
 <body>
   <!-- Firebase App (الخدمة الأساسية) -->
+<!-- Firebase App & Auth Services -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-  // إعدادات مشروعك الخاصة
+  // إعدادات المشروع
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
     authDomain: "sabeel-almajd.firebaseapp.com",
@@ -291,9 +293,52 @@
     measurementId: "G-205TS725KB"
   };
 
-  // تهيئة التطبيق
+  // تهيئة التطبيق والمصادقة
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // جعل الدوال معرّفة على مستوى الـ Window لاستدعائها من الـ HTML
+  window.loginWithGoogle = async function() {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      alert("حدث خطأ في تسجيل الدخول: " + error.message);
+    }
+  };
+
+  window.logoutGoogle = function() {
+    if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
+      signOut(auth);
+    }
+  };
+
+  // متابعة وتحديث حالة تسجيل الدخول تلقائياً
+  onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('googleLoginBtn');
+    const userProfile = document.getElementById('userProfileInfo');
+    const welcomeText = document.getElementById('headerWelcomeText');
+
+    if (user) {
+      if (loginBtn) loginBtn.style.display = 'none';
+      if (userProfile) {
+        userProfile.style.display = 'flex';
+        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+        document.getElementById('userNameDisplay').textContent = firstName;
+        document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
+      }
+
+      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+      if (welcomeText) {
+        welcomeText.textContent = `🌙 أهلاً ${firstName}`;
+      }
+    } else {
+      if (loginBtn) loginBtn.style.display = 'flex';
+      if (userProfile) userProfile.style.display = 'none';
+      if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
+    }
+  });
 </script>
 <!-- 🌟 شاشة الترحيب الافتتاحية (Splash Screen) -->
 <div id="splashScreen">
@@ -337,11 +382,11 @@
     <!-- زر الثيم (ليلي / نهاري) -->
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
 
-    <!-- زر تسجيل الدخول بجوجل (يظهر قبل التسجيل) -->
-    <button id="googleLoginBtn" style="display: flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 14px; height: 14px;">
-      دخول
-    </button>
+<!-- زر تسجيل الدخول بجوجل -->
+<button id="googleLoginBtn" onclick="loginWithGoogle()" style="display: flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
+  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 14px; height: 14px;">
+  دخول
+</button>
 
     <!-- بروفايل المستخدم (يظهر بعد تسجيل الدخول) -->
     <div id="userProfileInfo" style="display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; cursor: pointer;" onclick="logoutGoogle()">
@@ -1510,55 +1555,7 @@
       isDark = !isDark;
       applyTheme();
     }
- // متابعة وتحديث حالة تسجيل الدخول تلقائياً
-onAuthStateChanged(auth, (user) => {
-  const loginBtn = document.getElementById('googleLoginBtn');
-  const userProfile = document.getElementById('userProfileInfo');
-  const welcomeText = document.getElementById('headerWelcomeText');
 
-  if (user) {
-    // 1. إخفاء زر التسجيل وإظهار صورة البروفايل
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (userProfile) {
-      userProfile.style.display = 'flex';
-      // استخراج الاسم الأول فقط ليكون شكله شيك زي (أهلاً أحمد)
-      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
-      
-      document.getElementById('userNameDisplay').textContent = firstName;
-      document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
-    }
-
-    // 2. تحديث الترحيب الملكي في المنتصف
-    const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
-    if (welcomeText) {
-      welcomeText.textContent = `🌙 أهلاً ${firstName}`;
-    }
-
-    currentUser = user;
-  } else {
-    // إرجاع الشكل الافتراضي عند الخروج
-    if (loginBtn) loginBtn.style.display = 'flex';
-    if (userProfile) userProfile.style.display = 'none';
-    if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
-    currentUser = null;
-  }
-});
-
-// دالة تسجيل الدخول بـ Google Pop-up
-async function loginWithGoogle() {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    alert("حدث خطأ في تسجيل الدخول: " + error.message);
-  }
-}
-
-// دالة تسجيل الخروج عند الضغط على اسم المستخدم
-function logoutGoogle() {
-  if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
-    signOut(auth);
-  }
-}
  
  </script>
   
