@@ -2004,10 +2004,10 @@ function setRandomMotivation() {
 }
  // دالة الاستماع لرابط طالب معين وقراءة رسائل ولي الأمر
 function listenToParentMessages(studentCode) {
-  const studentRef = doc(db, "students", studentCode);
+  const studentRef = window.fireDoc(window.fireDB, "students", studentCode);
 
   // التحديث الحي المباشر بمجرد إرسال الأب لأي رسالة
-  onSnapshot(studentRef, (docSnap) => {
+  window.fireOnSnapshot(studentRef, (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data();
       const messages = data.parentMessages || [];
