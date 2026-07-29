@@ -1510,6 +1510,56 @@
       isDark = !isDark;
       applyTheme();
     }
-  </script>
+ // متابعة وتحديث حالة تسجيل الدخول تلقائياً
+onAuthStateChanged(auth, (user) => {
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const userProfile = document.getElementById('userProfileInfo');
+  const welcomeText = document.getElementById('headerWelcomeText');
+
+  if (user) {
+    // 1. إخفاء زر التسجيل وإظهار صورة البروفايل
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userProfile) {
+      userProfile.style.display = 'flex';
+      // استخراج الاسم الأول فقط ليكون شكله شيك زي (أهلاً أحمد)
+      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+      
+      document.getElementById('userNameDisplay').textContent = firstName;
+      document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
+    }
+
+    // 2. تحديث الترحيب الملكي في المنتصف
+    const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+    if (welcomeText) {
+      welcomeText.textContent = `🌙 أهلاً ${firstName}`;
+    }
+
+    currentUser = user;
+  } else {
+    // إرجاع الشكل الافتراضي عند الخروج
+    if (loginBtn) loginBtn.style.display = 'flex';
+    if (userProfile) userProfile.style.display = 'none';
+    if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
+    currentUser = null;
+  }
+});
+
+// دالة تسجيل الدخول بـ Google Pop-up
+async function loginWithGoogle() {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    alert("حدث خطأ في تسجيل الدخول: " + error.message);
+  }
+}
+
+// دالة تسجيل الخروج عند الضغط على اسم المستخدم
+function logoutGoogle() {
+  if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
+    signOut(auth);
+  }
+}
+ 
+ </script>
 </body>
 </html>
