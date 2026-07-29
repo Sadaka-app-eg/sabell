@@ -413,7 +413,8 @@ async function renderToolEntries(key) {
         <button onclick="removeToolEntry(${e.id})" style="background:transparent; border:none; color:#ff6b6b; cursor:pointer;">✕</button>
       </div>
       ${e.type === 'text' ? `<div style="font-size:13px; color:var(--text); line-height:1.7;">${e.content}</div>` : ''}
-      ${e.type === 'image' ? `<img src="${e.content}" style="width:100%; border-radius:10px; border:1px solid var(--border);">` : ''}
+${e.type === 'image' ? `<img src="${e.content}" onclick="openImageViewer(this.src)" style="width:100%; border-radius:10px; border:1px solid var(--border); cursor:pointer;" title="اضغط للتكبير 🔍">` : ''}
+      
       ${e.type === 'audio' ? `<audio controls style="width:100%;" src="${e.content}"></audio>` : ''}
     </div>
   `).join('');
@@ -498,4 +499,19 @@ function stopRecordingIfActive() {
   if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
     activeMediaRecorder.stop();
   }
+}
+// 🔍 دالة فتح الصورة بحجم الشاشة
+function openImageViewer(imgSrc) {
+  const modal = document.getElementById('imageViewerModal');
+  const imgEl = document.getElementById('fullImageView');
+  if (modal && imgEl) {
+    imgEl.src = imgSrc;
+    modal.style.display = 'flex';
+  }
+}
+
+// ✕ دالة إغلاق الصورة المكبرة
+function closeImageViewer() {
+  const modal = document.getElementById('imageViewerModal');
+  if (modal) modal.style.display = 'none';
 }
