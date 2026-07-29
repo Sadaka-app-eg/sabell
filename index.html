@@ -296,7 +296,8 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-  import { getAuth, GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  
 import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";  // إعدادات المشروع
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
@@ -312,6 +313,18 @@ import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } 
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
+
+  // التقاط نتيجة التحويل بعد تسجيل الدخول بـ Redirect
+getRedirectResult(auth)
+  .then((result) => {
+    if (result && result.user) {
+      console.log("تم تسجيل الدخول بنجاح للمستخدم:", result.user.displayName);
+      window.syncStudentDataToCloud();
+    }
+  })
+  .catch((error) => {
+    console.error("خطأ أثناء استلام نتيجة تسجيل الدخول:", error);
+  });
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
 // 🔓 إتاحة أدوات Firestore لملف شريك المذاكرة (studyBuddy.js)
