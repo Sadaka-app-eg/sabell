@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سبيل المجد | المنصات والمدرسين</title>
+  <title>سبيل المجد | دليل المنصات والمدرسين</title>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -12,6 +12,7 @@
       --card: rgba(255, 255, 255, 0.04);
       --border: rgba(212, 175, 55, 0.2);
       --gold: #d4af37;
+      --green: #6fbf73;
       --text: #f4f6f4;
       --text2: #9aa79c;
     }
@@ -23,54 +24,306 @@
       padding: 15px;
       max-width: 600px;
       margin: 0 auto;
+      min-height: 100vh;
     }
     .header {
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
     }
-    .header h1 { font-size: 18px; color: var(--gold); }
+    .header h1 { font-size: 17px; color: var(--gold); }
     .back-btn {
       background: var(--card); border: 1px solid var(--border); color: var(--gold);
       padding: 6px 14px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: bold;
+      transition: 0.2s;
     }
-    .teacher-card {
+    .back-btn:hover { background: rgba(212,175,55,0.1); }
+
+    /* شريط اختيار المادة */
+    .filter-box {
       background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
-      padding: 14px; margin-bottom: 12px;
+      padding: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;
     }
-    .teacher-name { font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 4px; }
-    .teacher-subj { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
-    .btn-link {
-      display: inline-block; background: var(--gold); color: #111;
-      padding: 6px 12px; border-radius: 8px; text-decoration: none;
-      font-size: 12px; font-weight: bold; margin-top: 6px;
+    .filter-label { font-size: 12px; color: var(--gold); font-weight: bold; }
+    .select-input {
+      width: 100%; padding: 10px; border-radius: 10px; background: var(--bg);
+      color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif;
+      font-size: 14px; outline: none; cursor: pointer;
+    }
+
+    /* كروت المدرسين والمنصات */
+    .athr-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-small {
+      display: block; text-align: center; text-decoration: none;
+      padding: 10px; background: var(--gold); color: #111; font-weight: bold;
+      border-radius: 10px; font-size: 13px; margin-top: 8px; font-family: 'Amiri', serif;
+      transition: 0.2s;
+    }
+    .btn-small:active { transform: scale(0.98); }
+
+    /* لوحة الأدمن (مخفية افتراضياً) */
+    #adminSection {
+      display: none; background: rgba(212,175,55,0.05); border: 1px dashed var(--gold);
+      border-radius: 14px; padding: 12px; margin-bottom: 16px;
+    }
+    .admin-input {
+      width: 100%; padding: 8px; border-radius: 8px; background: var(--bg);
+      color: var(--text); border: 1px solid var(--border); margin-bottom: 6px; font-size: 12px;
+      font-family: 'Amiri', serif; outline: none;
     }
   </style>
 </head>
 <body>
 
+  <!-- 1. الهيدر العلوى -->
   <div class="header">
-    <h1>🎬 المحاضرات ونخبة المدرسين</h1>
+    <h1>🎬 دليل المنصات ونخبة المدرسين</h1>
     <a href="index.html" class="back-btn">⬅️ العودة للرئيسية</a>
   </div>
 
-  <!-- قائمة الأساتذة والمنصات -->
-  <div class="teacher-card">
-    <div class="teacher-name">📖 أ/ رضا الفاروق - اللغة العربية</div>
-    <div class="teacher-subj">شرح وتأسيس النحو والبلاغة والأدب كاملًا</div>
-    <a href="https://www.youtube.com/@RedaElFarouk" target="_blank" class="btn-link">▶️ فتح قناة اليوتيوب</a>
+  <!-- 2. لوحة الإضافة (للأدمن عند إضافة ?admin=true للرابط) -->
+  <div id="adminSection">
+    <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">⚙️ لوحة إضافة مدرس / منصة جديدة:</div>
+    <input type="text" id="teacherNameInp" placeholder="اسم المدرس..." class="admin-input">
+    <input type="text" id="teacherBioInp" placeholder="نبذة وتفاصيل عن المدرس..." class="admin-input">
+    <input type="text" id="teacherUrlInp" placeholder="رابط المنصة أو القناة الرسمية..." class="admin-input">
+    <input type="text" id="teacherImgInp" placeholder="رابط صورة المدرس (Image URL)..." class="admin-input">
+    <button id="uploadTeacherBtn" class="btn-small" style="width: 100%; cursor: pointer;">➕ حفظ المدرس في قاعدة البيانات</button>
   </div>
 
-  <div class="teacher-card">
-    <div class="teacher-name">⚡ م/ محمود مجدي - الفيزياء</div>
-    <div class="teacher-subj">شرح الفيزياء الكهربية والحديثة بأفكار وامتحانات</div>
-    <a href="https://www.youtube.com" target="_blank" class="btn-link">▶️ مشاهدة المحاضرات</a>
+  <!-- 3. شريط اختيار المادة -->
+  <div class="filter-box">
+    <label class="filter-label" for="subjSelect">📚 اختر المادة لعرض منصاتها ومدرسيها المعتمدين:</label>
+    <select id="subjSelect" class="select-input">
+      <option value="اللغة العربية">📖 اللغة العربية</option>
+      <option value="الفيزياء">⚡ الفيزياء</option>
+      <option value="الكيمياء">🧪 الكيمياء</option>
+      <option value="الأحياء">🧬 الأحياء</option>
+      <option value="اللغة الإنجليزية">🇬🇧 اللغة الإنجليزية</option>
+      <option value="الرياضيات">📐 الرياضيات (كافة الفروع)</option>
+    </select>
   </div>
 
-  <div class="teacher-card">
-    <div class="teacher-name">🧪 د/ محمد عبد الجواد - الكيمياء</div>
-    <div class="teacher-subj">شرح العضوية والكيمياء غير العضوية</div>
-    <a href="https://www.youtube.com" target="_blank" class="btn-link">▶️ مشاهدة المحاضرات</a>
+  <!-- 4. وعاء عرض كروت المدرسين والمنصات -->
+  <div id="teachersListContainer">
+    <div style="text-align:center; padding:20px; color:var(--gold);">جاري تحميل دليل المنصات... ⏳</div>
   </div>
 
+  <!-- 5. جافاسكريبت المزامنة وFirebase ودليل المنصات -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
+      authDomain: "sabeel-almajd.firebaseapp.com",
+      projectId: "sabeel-almajd",
+      storageBucket: "sabeel-almajd.firebasestorage.app",
+      messagingSenderId: "511150067201",
+      appId: "1:511150067201:web:b249f496b9f5df5e6c7a00",
+      measurementId: "G-205TS725KB"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    let currentUser = null;
+
+    // تفعيل لوحة الأدمن
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      const adminSec = document.getElementById('adminSection');
+      if (adminSec) adminSec.style.display = 'block';
+    }
+
+    // 📚 داتا المدرسين والمنصات الشاملة (تستطيع وضع روابط المنصات الرسمية والصور)
+    const teachersDatabase = {
+      "اللغة العربية": [
+        {
+          name: "أ/ رضا الفاروق",
+          img: "https://unavatar.io/youtube/RedaElFarouk",
+          bio: "أسطورة اللغة العربية للثانوية العامة، متخصص في التأسيس الشامل للنحو والأدب والبلاغة.",
+          platformUrl: "https://www.youtube.com/@RedaElFarouk",
+          platformType: "منصة الفاروق التعليمية / يوتيوب",
+          rating: "⭐ 4.9"
+        },
+        {
+          name: "أ/ محمد صلاح",
+          img: "https://unavatar.io/youtube/mohamedsalah",
+          bio: "صاحب أسلوب الخرائط الذهنية والشرح السريع الممتع وتلخيص المناهج بدون تعقيد.",
+          platformUrl: "https://www.youtube.com/@mohamedsalah",
+          platformType: "منصة بسطتهالك / يوتيوب",
+          rating: "⭐ 4.8"
+        }
+      ],
+      "الفيزياء": [
+        {
+          name: "م/ محمود مجدي",
+          img: "https://unavatar.io/youtube/MahmoudMagdyPhysics",
+          bio: "عبقري الفيزياء وتفكيك أفكار كيرشوف ومسائل المستويات العليا بالرسومات التوضيحية.",
+          platformUrl: "https://mahmoudmagdy.com",
+          platformType: "منصة المهندس محمود مجدي الرسمية",
+          rating: "⭐ 4.9"
+        },
+        {
+          name: "أ/ محمد عبد المعبود",
+          img: "https://via.placeholder.com/150/121e14/d4af37?text=عبدالمعبود",
+          bio: "خبرة السنين في تبسيط الفيزياء وإزالة الرهبة منها وتثبيت قوانين الكهربية والحديثة.",
+          platformUrl: "https://abdelmaboud.com",
+          platformType: "منصة أستاذ الأجيال الرسمية",
+          rating: "⭐ 4.9"
+        }
+      ],
+      "الكيمياء": [
+        {
+          name: "د/ محمد عبد الجواد",
+          img: "https://via.placeholder.com/150/121e14/d4af37?text=عبدالجواد",
+          bio: "ملك الكيمياء العضوية ومعادلاتها بحماس وتفاعل جبار وتدريب مكثف على الامتحانات.",
+          platformUrl: "https://abdelgawad.com",
+          platformType: "منصة د. محمد عبد الجواد",
+          rating: "⭐ 5.0"
+        },
+        {
+          name: "أ/ خالد صقر",
+          img: "https://via.placeholder.com/150/121e14/d4af37?text=خالد+صقر",
+          bio: "شرح هادئ ومنظم للغاية، ممتاز في التأسيس والتدرج من البسيط للمستويات العليا.",
+          platformUrl: "https://khaledsaker.com",
+          platformType: "منصة الأستاذ خالد صقر",
+          rating: "⭐ 4.9"
+        }
+      ],
+      "الأحياء": [
+        {
+          name: "د/ أحمد الجوهري",
+          img: "https://via.placeholder.com/150/121e14/d4af37?text=الجوهري",
+          bio: "شرح أحياء بأسلوب طبي تفصيلي مع توضيح الرسومات والدعامة والمناعة وDNA.",
+          platformUrl: "https://eljohary.com",
+          platformType: "منصة د. أحمد الجوهري",
+          rating: "⭐ 4.9"
+        }
+      ],
+      "اللغة الإنجليزية": [
+        {
+          name: "مستر عمرو رجب",
+          img: "https://via.placeholder.com/150/121e14/d4af37?text=عمرو+رجب",
+          bio: "شرح جرامر متكتك، حل مكثف، ومتابعة دقيقة لمهارات الترجمة والقطع.",
+          platformUrl: "https://amrrajab.com",
+          platformType: "منصة مستر عمرو رجب",
+          rating: "⭐ 4.8"
+        }
+      ]
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const subjSelect = document.getElementById('subjSelect');
+      const addTeacherBtn = document.getElementById('uploadTeacherBtn');
+
+      if (subjSelect) subjSelect.addEventListener('change', loadTeachersList);
+      if (addTeacherBtn) addTeacherBtn.addEventListener('click', uploadTeacherToFirebase);
+
+      onAuthStateChanged(auth, (user) => {
+        currentUser = user;
+      });
+
+      loadTeachersList();
+    });
+
+    // دالة عرض قائمة المدرسين والمنصات
+    async function loadTeachersList() {
+      const subjSelect = document.getElementById('subjSelect');
+      const subj = subjSelect ? subjSelect.value : "اللغة العربية";
+      const container = document.getElementById('teachersListContainer');
+
+      if (!container) return;
+
+      container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--gold);">جاري تحميل دليل المنصات للمادة... ⏳</div>`;
+
+      // 1. البيانات المحلية للمدرسين والمنصات
+      let teachersList = [...(teachersDatabase[subj] || [])];
+
+      // 2. جلب المنصات والمدرسين المضافين سحابياً من Firebase
+      try {
+        const q = query(collection(db, "teachers"), where("subject", "==", subj));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+          teachersList.push(doc.data());
+        });
+      } catch (err) {
+        console.log("Firebase status: ", err.message);
+      }
+
+      if (teachersList.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text2); font-size:13px;">لا يوجد مدرسين أو منصات مسجلة لهذه المادة حالياً.</div>`;
+        return;
+      }
+
+      // 3. بناء الكروت التفاعلية الممتازة
+      let html = '';
+      teachersList.forEach((t) => {
+        html += `
+          <div class="athr-card">
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+              <img src="${t.img || 'https://via.placeholder.com/80'}" style="width:65px; height:65px; border-radius:50%; object-fit:cover; border:2px solid var(--gold);" onerror="this.src='https://via.placeholder.com/80/121e14/d4af37?text=مدرس'">
+              <div>
+                <div style="font-size:16px; font-weight:bold; color:var(--gold);">${t.name}</div>
+                <div style="font-size:11px; color:var(--green); font-weight:bold; margin-top:2px;">🌐 ${t.platformType || 'منصة تعليمية'} • ${t.rating || '⭐ ممتاز'}</div>
+              </div>
+            </div>
+
+            <p style="font-size:12px; color:var(--text); line-height:1.6; margin-bottom:6px;">${t.bio}</p>
+
+            <a href="${t.platformUrl}" target="_blank" class="btn-small">
+              🚀 الانتقال لمنصة / قناة المدرس
+            </a>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // دالة إضافة مدرس جديد كـ Admin
+    async function uploadTeacherToFirebase() {
+      if (!currentUser) {
+        alert("من فضلك سجل الدخول بحساب جوجل أولاً 🙏");
+        return;
+      }
+
+      const subj = document.getElementById('subjSelect').value;
+      const name = document.getElementById('teacherNameInp').value.trim();
+      const bio = document.getElementById('teacherBioInp').value.trim();
+      const url = document.getElementById('teacherUrlInp').value.trim();
+      const imgUrl = document.getElementById('teacherImgInp').value.trim();
+
+      if (!subj || !name || !url) {
+        alert("يرجى إدخال اسم المدرس والمادة ورابط المنصة!");
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "teachers"), {
+          subject: subj,
+          name: name,
+          bio: bio || "مدرس معتمد للثانوية العامة.",
+          platformUrl: url,
+          img: imgUrl || "https://via.placeholder.com/80",
+          addedBy: currentUser.email,
+          createdAt: new Date().toISOString()
+        });
+
+        alert("🎉 تم إضافة المنصة والمدرس بنجاح إلى السحاب!");
+        document.getElementById('teacherNameInp').value = '';
+        document.getElementById('teacherBioInp').value = '';
+        document.getElementById('teacherUrlInp').value = '';
+        document.getElementById('teacherImgInp').value = '';
+        loadTeachersList();
+      } catch (err) {
+        alert("خطأ أثناء الحفظ: " + err.message);
+      }
+    }
+  </script>
 </body>
 </html>
