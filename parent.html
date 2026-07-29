@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سبيل المجد | لوحة متابعة ولي الأمر</title>
+  <title>سبيل المجد | لوحة متابعة ولي الأمر المتطورة</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
   
@@ -16,11 +16,12 @@
       --gold: #d4af37;
       --green: #6fbf73;
       --red: #ff6b6b;
+      --blue: #4dabf7;
       --text: #f4f6f4;
       --text2: #9aa79c;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Amiri', serif;
       background: var(--bg);
@@ -30,7 +31,7 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 650px;
       margin: 0 auto;
     }
 
@@ -38,34 +39,37 @@
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 20px;
+      padding: 22px;
       text-align: center;
       margin-bottom: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
 
     .header-card h1 {
       color: var(--gold);
-      font-size: 20px;
+      font-size: 22px;
       margin-bottom: 6px;
+      font-family: 'Cairo', sans-serif;
     }
 
     .card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 14px;
-      padding: 16px;
+      padding: 18px;
       margin-bottom: 14px;
+      backdrop-filter: blur(5px);
     }
 
     .code-input-group {
       display: flex;
       gap: 8px;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
     .code-input-group input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       border-radius: 10px;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -74,24 +78,42 @@
       text-align: center;
       font-weight: bold;
       outline: none;
+      transition: all 0.3s;
+    }
+
+    .code-input-group input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
     }
 
     .btn {
       background: var(--gold);
       color: #111;
       border: none;
-      padding: 10px 18px;
+      padding: 10px 20px;
       border-radius: 10px;
       font-family: 'Amiri', serif;
       font-weight: bold;
       cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+
+    .btn-danger {
+      background: var(--red);
+      color: #fff;
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       margin-bottom: 14px;
+    }
+
+    @media (min-width: 500px) {
+      .stats-grid { grid-template-columns: repeat(4, 1fr); }
     }
 
     .stat-box {
@@ -103,27 +125,109 @@
     }
 
     .stat-num {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: bold;
       color: var(--gold);
+      font-family: 'Cairo', sans-serif;
     }
 
     .stat-label {
       font-size: 11px;
       color: var(--text2);
+      margin-top: 4px;
     }
 
     .status-badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 12px;
       font-size: 11px;
       font-weight: bold;
+    }
+
+    .badge-success { background: rgba(111, 191, 115, 0.2); color: var(--green); border: 1px solid rgba(111, 191, 115, 0.3); }
+
+    .task-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .task-row:last-child { border-bottom: none; }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: var(--gold);
+      margin-bottom: 10px;
+      font-family: 'Cairo', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* تنسيقات قسم الرسائل والفويسات */
+    .chat-box {
+      max-height: 250px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-left: 5px;
+    }
+
+    .msg-bubble {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 4px;
+      text-align: left;
+    }
+
+    .audio-player {
+      width: 100%;
+      height: 35px;
       margin-top: 5px;
     }
 
-    .badge-success { background: rgba(111, 191, 115, 0.2); color: var(--green); }
-    .badge-warning { background: rgba(212, 175, 55, 0.2); color: var(--gold); }
+    .record-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .recording-indicator {
+      color: var(--red);
+      font-size: 12px;
+      font-weight: bold;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 10px;
+      height: 10px;
+      background-color: var(--red);
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -133,9 +237,9 @@
   <!-- Header -->
   <div class="header-card">
     <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
-    <p style="font-size: 12px; color: var(--text2);">متابعة حية ومباشرة لإنجازات الطالب وساعات مذاكرته</p>
+    <p style="font-size: 12px; color: var(--text2);">متابعة حية وإرسال تشجيع صوتي ونصي للطالب</p>
     
-    <!-- قسم أدخال الكود -->
+    <!-- قسم إدخال الكود -->
     <div class="code-input-group">
       <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
       <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
@@ -146,12 +250,12 @@
   <div id="parentDashboardContent" style="display: none;">
 
     <!-- كارت بيانات الطالب -->
-    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <div>
-        <h2 id="parentStudentName" style="font-size: 18px; color: var(--gold);">اسم الطالب</h2>
-        <div id="parentStudentBranch" style="font-size: 12px; color: var(--text2);">الشعبة: -</div>
+        <h2 id="parentStudentName" style="font-size: 18px; color: var(--gold); font-family: 'Cairo', sans-serif;">اسم الطالب</h2>
+        <div id="parentStudentBranch" style="font-size: 12px; color: var(--text2); margin-top: 3px;">الشعبة: -</div>
       </div>
-      <div style="text-align: left;">
+      <div>
         <span class="status-badge badge-success" id="parentLastSync">جاري التحميل...</span>
       </div>
     </div>
@@ -160,36 +264,71 @@
     <div class="stats-grid">
       <div class="stat-box">
         <div class="stat-num" id="parentPlanCommitment">0%</div>
-        <div class="stat-label">نسبة الالتزام بالخطة</div>
+        <div class="stat-label">نسبة الالتزام</div>
       </div>
       <div class="stat-box">
         <div class="stat-num" id="parentFocusMins">0</div>
-        <div class="stat-label">دقائق التركيز اليومية ⏱️</div>
+        <div class="stat-label">دقائق التركيز ⏱️</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="parentCompletedTasksNum">0</div>
+        <div class="stat-label">مهام منجزة ✅</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="parentStreakDays">0 يوم</div>
+        <div class="stat-label">أيام التتابع 🔥</div>
       </div>
     </div>
 
     <!-- كارت تقييم المستوى -->
     <div class="card">
-      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 6px;">📊 التقييم العام لأداء الطالب:</div>
-      <div id="parentEvaluationText" style="font-size: 12px; color: var(--text); line-height: 1.6;">
+      <div class="section-title">📊 التقييم العام لأداء الطالب اليوم:</div>
+      <div id="parentEvaluationText" style="font-size: 13px; color: var(--text); line-height: 1.6;">
         جاري تحليل البيانات...
       </div>
     </div>
 
     <!-- جدول إنجاز اليوم -->
     <div class="card">
-      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📋 جدول المهام اليومي للطالب:</div>
-      <div id="parentTasksTodayList" style="font-size: 12px;"></div>
+      <div class="section-title">📋 جدول المهام اليومي (اليوم الحالي):</div>
+      <div id="parentTasksTodayList" style="font-size: 13px;"></div>
+    </div>
+
+    <!-- كارت الرسائل والتحفيز الصوتي والنصي -->
+    <div class="card">
+      <div class="section-title">🎙️ رسائل التحفيز والدعم للطالب:</div>
+      
+      <!-- قائمة الرسائل المتبادلة/المرسلة -->
+      <div class="chat-box" id="messagesChatBox">
+        <div style="color: var(--text2); text-align: center; font-size: 12px; padding: 10px;">
+          لا توجد رسائل تشجيعية بعد. استخدم الأدوات أدناه لإرسال فويس أو كلمة طيبة!
+        </div>
+      </div>
+
+      <!-- مؤشر جاري التسجيل الصوتي -->
+      <div class="recording-indicator" id="recordingIndicator">
+        <div class="pulse-dot"></div>
+        <span>جاري تسجيل رسالة صوتية... (<span id="recordingTimer">0</span> ثانية)</span>
+      </div>
+
+      <!-- نموذج إدخال الرسائل الصوتية والنصية -->
+      <div class="record-controls" style="margin-top: 10px;">
+        <input type="text" id="parentTextMsgInp" placeholder="اكتب كلمة تشجيعية هنا..." style="flex: 1; padding: 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); outline: none;">
+        
+        <button class="btn" id="btnSendText" onclick="sendTextMessage()">إرسال 💬</button>
+        <button class="btn" id="btnRecordAudio" onclick="toggleAudioRecording()">🎙️ فويس</button>
+      </div>
     </div>
 
   </div>
 
 </div>
 
-<!-- Firebase App & Firestore Services -->
+<!-- Firebase Services (App, Firestore, Storage) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
@@ -202,10 +341,19 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const storage = getStorage(app);
 
   let unsubscribeListener = null;
+  let currentStudentCode = null;
 
-  // دالة قراءة وربط البيانات الحية (Realtime Listener)
+  // تسجيل الصوت
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let isRecording = false;
+  let recordingInterval = null;
+  let recordingSeconds = 0;
+
+  // 1. جلب بيانات الطالب للوحة ولي الأمر
   window.fetchStudentDataForParent = function() {
     const code = document.getElementById('parentStudentCodeInp').value.trim().toUpperCase();
     if (!code) {
@@ -213,80 +361,233 @@
       return;
     }
 
-    if (unsubscribeListener) unsubscribeListener(); // إلغاء أي الاستماع القديم
+    currentStudentCode = code;
+    if (unsubscribeListener) unsubscribeListener();
 
     const studentRef = doc(db, "students", code);
+    document.getElementById('parentLastSync').textContent = "جاري الاتصال...";
 
-    // الاستماع المتواصل للتغييرات بمجرد قيام الطالب بضغط ✅ أو إنهاء تايمر
     unsubscribeListener = onSnapshot(studentRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         renderParentDashboard(data);
       } else {
-        alert("لم يتم العثور على طالب بهذا الكود! تأكد من أن الطالب قام بتسجيل الدخول في صفحته أولاً.");
+        alert("لم يتم العثور على طالب بهذا الكود! تأكد من كود الطالب.");
+        document.getElementById('parentDashboardContent').style.display = 'none';
       }
     }, (error) => {
       console.error("خطأ في جلب البيانات:", error);
     });
   };
 
+  // 2. عرض البيانات والرسائل
   function renderParentDashboard(data) {
     document.getElementById('parentDashboardContent').style.display = 'block';
-
     document.getElementById('parentStudentName').textContent = data.studentName || 'الطالب';
     document.getElementById('parentStudentBranch').textContent = "الشعبة: " + (data.branch || 'غير محدد');
     
-    // آخر وقت تواجد
     if (data.lastUpdate) {
       const timeStr = new Date(data.lastUpdate).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
       document.getElementById('parentLastSync').textContent = "آخر تحديث: " + timeStr;
     }
 
-    // حساب الالتزام بالخطة
-    let totalCells = 0;
-    let doneCells = 0;
-    let tasksHtml = '';
+    // حساب جدول الإنجازات
+    let totalCells = 0, doneCells = 0, tasksHtml = '';
+    const currentDayIndex = data.currentDayIndex || 1;
 
     if (data.plan && data.plan.tasksConfig) {
       const tasks = Object.keys(data.plan.tasksConfig);
       tasks.forEach(task => {
-        // نأخذ حالة اليوم الأول كعينة للمتابعة أو يمكن التطوير لاحقاً
-        const val = (data.plan.matrix && data.plan.matrix[task] && data.plan.matrix[task][1]) || 0;
+        const val = (data.plan.matrix && data.plan.matrix[task] && data.plan.matrix[task][currentDayIndex]) || 0;
         totalCells++;
         
-        let statusTag = '⚪ لم تُحدد بعد';
-        if (val === 1) { statusTag = '✅ تم الإنجاز بنجاح'; doneCells++; }
-        else if (val === 2) { statusTag = '❌ قَصّر فيها'; }
+        let statusTag = '<span style="color:var(--text2);">⚪ لم تُحدد بعد</span>';
+        if (val === 1) { 
+          statusTag = '<span style="color:var(--green); font-weight:bold;">✅ تم الإنجاز</span>'; 
+          doneCells++; 
+        } else if (val === 2) { 
+          statusTag = '<span style="color:var(--red); font-weight:bold;">❌ قَصّر فيها</span>'; 
+        }
 
         tasksHtml += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border);">
+          <div class="task-row">
             <span style="font-weight:bold; color:var(--text);">${task}</span>
             <span>${statusTag}</span>
           </div>
         `;
       });
     } else {
-      tasksHtml = '<div style="color:var(--text2); text-align:center;">لم يقم الطالب بإنشاء خطة بعد.</div>';
+      tasksHtml = '<div style="color:var(--text2); text-align:center; padding: 10px;">لم يتم تقديم جدول بعد.</div>';
     }
 
     document.getElementById('parentTasksTodayList').innerHTML = tasksHtml;
 
+    // الإحصائيات
     const commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
     document.getElementById('parentPlanCommitment').textContent = commitmentPct + "%";
+    document.getElementById('parentCompletedTasksNum').textContent = `${doneCells}/${totalCells}`;
 
-    // دقائق المذاكرة
     const today = new Date().toLocaleDateString('en-CA');
     const todayFocus = (data.focus && data.focus[today]) ? data.focus[today].mins : 0;
     document.getElementById('parentFocusMins').textContent = todayFocus;
+    document.getElementById('parentStreakDays').textContent = (data.streak || 0) + " يوم";
 
-    // تقييم أداء الطالب لولي الأمر
+    // التقييم
     const evalBox = document.getElementById('parentEvaluationText');
     if (commitmentPct >= 80) {
-      evalBox.innerHTML = "🌟 <b>أداء ممتازة:</b> ابنك ملتزم جداً بجدوله اليومي ويسير بخطوات ثابتة وننصح بتقديم كلمات تشجيعية له!";
+      evalBox.innerHTML = "🌟 <b>أداء ممتاز:</b> ابنك ملتزم جداً بجدوله، أرسل له فويس تشجيعي ليكمل بإصرار!";
     } else if (commitmentPct >= 50) {
-      evalBox.innerHTML = "⚡ <b>أداء جيد:</b> ابنك يؤدي بشكل مقبول، ولكنه يواجه بعض التقصير في بعض المواد. يحتاج تذكير هادئ لمواصلة التركيز.";
+      evalBox.innerHTML = "⚡ <b>أداء جيد:</b> أداء مقبول ويحتاج لرسالة تذكير هادئة لمواصلة التركيز.";
     } else {
-      evalBox.innerHTML = "⚠️ <b>تحذير متابعة:</b> مستوى الالتزام منخفض اليوم. يرجى التحدث معه بلطف لمعرفة سبب المشتتات والوقوف بجانبه.";
+      evalBox.innerHTML = "⚠️ <b>تحذير متابعة:</b> الالتزام منخفض، أرسل له كلمة أو فويس داعم للوقوف معه.";
+    }
+
+    // عرض الرسائل والفويسات المرسلة
+    renderMessages(data.parentMessages || []);
+  }
+
+  function renderMessages(messages) {
+    const chatBox = document.getElementById('messagesChatBox');
+    if (!messages || messages.length === 0) {
+      chatBox.innerHTML = '<div style="color: var(--text2); text-align: center; font-size: 12px; padding: 10px;">لا توجد رسائل تشجيعية بعد.</div>';
+      return;
+    }
+
+    let html = '';
+    messages.forEach(msg => {
+      const timeStr = new Date(msg.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      if (msg.type === 'text') {
+        html += `
+          <div class="msg-bubble">
+            <div>💬 <b>ولي الأمر:</b> ${msg.content}</div>
+            <div class="msg-time">${timeStr}</div>
+          </div>
+        `;
+      } else if (msg.type === 'audio') {
+        html += `
+          <div class="msg-bubble">
+            <div>🎙️ <b>رسالة صوتية تشجيعية:</b></div>
+            <audio controls class="audio-player" src="${msg.content}"></audio>
+            <div class="msg-time">${timeStr}</div>
+          </div>
+        `;
+      }
+    });
+
+    chatBox.innerHTML = html;
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // 3. إرسال رسالة نصية
+  window.sendTextMessage = async function() {
+    const input = document.getElementById('parentTextMsgInp');
+    const text = input.value.trim();
+    if (!text || !currentStudentCode) return;
+
+    const studentRef = doc(db, "students", currentStudentCode);
+    const newMsg = {
+      type: 'text',
+      content: text,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      await updateDoc(studentRef, {
+        parentMessages: arrayUnion(newMsg)
+      });
+      input.value = '';
+    } catch (err) {
+      console.error("خطأ في إرسال الرسالة:", err);
+      alert("تعذر إرسال الرسالة، تأكد من الاتصال.");
+    }
+  };
+
+  // 4. تسجيل وإرسال الفويس
+  window.toggleAudioRecording = async function() {
+    if (!currentStudentCode) {
+      alert("يرجى إدخال كود الطالب أولاً");
+      return;
+    }
+
+    const btnRecord = document.getElementById('btnRecordAudio');
+    const indicator = document.getElementById('recordingIndicator');
+
+    if (!isRecording) {
+      // بدء التسجيل
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          await uploadAndSendAudio(audioBlob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        btnRecord.textContent = "⏹️ إيقاف وإرسال";
+        btnRecord.classList.add('btn-danger');
+        indicator.style.display = 'flex';
+
+        recordingSeconds = 0;
+        document.getElementById('recordingTimer').textContent = recordingSeconds;
+        recordingInterval = setInterval(() => {
+          recordingSeconds++;
+          document.getElementById('recordingTimer').textContent = recordingSeconds;
+        }, 1000);
+
+      } catch (err) {
+        alert("لم يتم السماح بالوصول للميكروفون أو الأجهزة غير مدعومة.");
+        console.error(err);
+      }
+    } else {
+      // إيقاف التسجيل والإرسال
+      isRecording = false;
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+
+      clearInterval(recordingInterval);
+      btnRecord.textContent = "🎙️ فويس";
+      btnRecord.classList.remove('btn-danger');
+      indicator.style.display = 'none';
+    }
+  };
+
+  async function uploadAndSendAudio(blob) {
+    const btnRecord = document.getElementById('btnRecordAudio');
+    btnRecord.textContent = "جاري الرفع... ⏳";
+    btnRecord.disabled = true;
+
+    try {
+      // رفع الصوت لـ Firebase Storage
+      const fileName = `audio_msgs/${currentStudentCode}_${Date.now()}.webm`;
+      const storageRef = ref(storage, fileName);
+      await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // حفظ الرابط في Firestore
+      const studentRef = doc(db, "students", currentStudentCode);
+      const newMsg = {
+        type: 'audio',
+        content: downloadURL,
+        timestamp: new Date().toISOString()
+      };
+
+      await updateDoc(studentRef, {
+        parentMessages: arrayUnion(newMsg)
+      });
+
+    } catch (err) {
+      console.error("خطأ أثناء رفع المقطع الصوتي:", err);
+      alert("حدث خطأ أثناء إرسال الفويس، تحقق من قواعد Firebase Storage.");
+    } finally {
+      btnRecord.disabled = false;
+      btnRecord.textContent = "🎙️ فويس";
     }
   }
 </script>
