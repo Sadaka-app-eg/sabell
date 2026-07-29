@@ -275,12 +275,12 @@
   </style>
 </head>
 <body>
-  <!-- Firebase App (الخدمة الأساسية) -->
-<!-- Firebase App & Auth Services -->
+<!-- Firebase App, Auth & Firestore Services -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // إعدادات المشروع
   const firebaseConfig = {
@@ -293,13 +293,57 @@
     measurementId: "G-205TS725KB"
   };
 
-  // تهيئة التطبيق والمصادقة
+  // تهيئة التطبيق والخدمات
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
+  const db = getFirestore(app);
 
-  // جعل الدوال معرّفة على مستوى الـ Window لاستدعائها من الـ HTML
+  // 🔑 1. توليد كود قصير وسهل للطالب (مثل SM-4921)
+  function getOrCreateStudentCode() {
+    let code = localStorage.getItem('sm_student_code');
+    if (!code) {
+      const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4 أرقام عشوائية
+      code = "SM-" + randomDigits;
+      localStorage.setItem('sm_student_code', code);
+    }
+    return code;
+  }
+
+  // ☁️ 2. دالة رفع حالة الطالب للسحاب
+  window.syncStudentDataToCloud = async function() {
+    const user = auth.currentUser;
+    if (!user) return; // يلزم تسجيل الدخول لرفع البيانات
+
+    const studentCode = getOrCreateStudentCode();
+    const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+    const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+    const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
+    const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+
+    try {
+      // الحفظ باسم "كود الطالب" في Firestore لتسهيل وصول ولي الأمر
+      const studentRef = doc(db, "students", studentCode);
+
+      await setDoc(studentRef, {
+        studentCode: studentCode,
+        studentName: user.displayName || "الطالب",
+        userEmail: user.email,
+        branch: userBranch,
+        lastUpdate: new Date().toISOString(),
+        plan: activePlan,
+        focus: focusStats,
+        mistakesCount: mistakes.length
+      }, { merge: true });
+
+      console.log("تمت مزامنة البيانات للسحاب بنجاح! الكود:", studentCode);
+    } catch (err) {
+      console.error("خطأ في المزامنة:", err);
+    }
+  };
+
+  // 🚪 3. تسجيل الدخول والخروج
   window.loginWithGoogle = async function() {
     try {
       await signInWithPopup(auth, provider);
@@ -314,7 +358,7 @@
     }
   };
 
-  // متابعة وتحديث حالة تسجيل الدخول تلقائياً
+  // 🔄 4. عند تغير حالة الدخول
   onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('googleLoginBtn');
     const userProfile = document.getElementById('userProfileInfo');
@@ -324,15 +368,18 @@
       if (loginBtn) loginBtn.style.display = 'none';
       if (userProfile) {
         userProfile.style.display = 'flex';
-        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'الطالب';
         document.getElementById('userNameDisplay').textContent = firstName;
         document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
       }
 
-      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'أحمد';
+      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'الطالب';
       if (welcomeText) {
         welcomeText.textContent = `🌙 أهلاً ${firstName}`;
       }
+
+      // بمجرد تسجيل الدخول تقوم المنظومة بالمزامنة الأولى تلقائياً
+      window.syncStudentDataToCloud();
     } else {
       if (loginBtn) loginBtn.style.display = 'flex';
       if (userProfile) userProfile.style.display = 'none';
