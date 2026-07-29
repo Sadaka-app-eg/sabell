@@ -377,7 +377,7 @@ window.syncStudentDataToCloud = async function() {
       studentName: user ? user.displayName : "الطالب",
       userEmail: user ? user.email : "غير مسجل",
       branch: userBranch,
-      lastUpdate: timeFormatted,
+lastUpdate: now.toISOString(),      
       plan: activePlan,
       commitmentPct: commitmentPct,
       focus: focusStats,
