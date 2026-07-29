@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سبيل المجد | المنصات والمدرسين</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b120c;
+      --bg2: #121e14;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(212, 175, 55, 0.2);
+      --gold: #d4af37;
+      --text: #f4f6f4;
+      --text2: #9aa79c;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Amiri', serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+    }
+    .header h1 { font-size: 18px; color: var(--gold); }
+    .back-btn {
+      background: var(--card); border: 1px solid var(--border); color: var(--gold);
+      padding: 6px 14px; border-radius: 10px; text-decoration: none; font-size: 12px; font-weight: bold;
+    }
+    .teacher-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .teacher-name { font-size: 16px; font-weight: bold; color: var(--gold); margin-bottom: 4px; }
+    .teacher-subj { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+    .btn-link {
+      display: inline-block; background: var(--gold); color: #111;
+      padding: 6px 12px; border-radius: 8px; text-decoration: none;
+      font-size: 12px; font-weight: bold; margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>🎬 المحاضرات ونخبة المدرسين</h1>
+    <a href="index.html" class="back-btn">⬅️ العودة للرئيسية</a>
+  </div>
+
+  <!-- قائمة الأساتذة والمنصات -->
+  <div class="teacher-card">
+    <div class="teacher-name">📖 أ/ رضا الفاروق - اللغة العربية</div>
+    <div class="teacher-subj">شرح وتأسيس النحو والبلاغة والأدب كاملًا</div>
+    <a href="https://www.youtube.com/@RedaElFarouk" target="_blank" class="btn-link">▶️ فتح قناة اليوتيوب</a>
+  </div>
+
+  <div class="teacher-card">
+    <div class="teacher-name">⚡ م/ محمود مجدي - الفيزياء</div>
+    <div class="teacher-subj">شرح الفيزياء الكهربية والحديثة بأفكار وامتحانات</div>
+    <a href="https://www.youtube.com" target="_blank" class="btn-link">▶️ مشاهدة المحاضرات</a>
+  </div>
+
+  <div class="teacher-card">
+    <div class="teacher-name">🧪 د/ محمد عبد الجواد - الكيمياء</div>
+    <div class="teacher-subj">شرح العضوية والكيمياء غير العضوية</div>
+    <a href="https://www.youtube.com" target="_blank" class="btn-link">▶️ مشاهدة المحاضرات</a>
+  </div>
+
+</body>
+</html>
