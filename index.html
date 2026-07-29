@@ -296,8 +296,7 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
   import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  // إعدادات المشروع
+import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";  // إعدادات المشروع
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
     authDomain: "sabeel-almajd.firebaseapp.com",
@@ -314,7 +313,20 @@ import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/f
   const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
-
+// 🔓 إتاحة أدوات Firestore لملف شريك المذاكرة (studyBuddy.js)
+  window.fireDB = db;
+  window.fireDoc = doc;
+  window.fireSetDoc = setDoc;
+  window.fireGetDoc = getDoc;
+  window.fireUpdateDoc = updateDoc;
+  window.fireOnSnapshot = onSnapshot;
+  window.fireArrayUnion = arrayUnion;
+  window.getMyStudentCode = function() {
+    return getOrCreateStudentCode(auth.currentUser);
+  };
+  window.getMyStudentName = function() {
+    return auth.currentUser ? (auth.currentUser.displayName || "الطالب") : "الطالب";
+  };
   // 🔑 1. توليد كود قصير وسهل للطالب (مثل SM-4921)
 function getOrCreateStudentCode(user) {
     if (!user) return localStorage.getItem('sm_student_code') || "SM-GUEST";
@@ -456,6 +468,7 @@ const studentCode = getOrCreateStudentCode(user);
 <a href="lessons.html" class="drawer-item" style="text-decoration:none;">🎬 المحاضرات والدروس</a>
 
     <div class="drawer-item" onclick="showPage('subjectTreePage', this); renderSubjectTreePage();">🌳 شجرة المواد والدروس</div>
+    <div class="drawer-item" onclick="showPage('studyBuddyPage', this); renderStudyBuddyPage();">🤝 شريك المذاكرة</div>
 <!-- التبويب الصحيح والمعدل -->
 <div class="drawer-item" onclick="showPage('motivationWarningsPage', this); renderWarnings(); setRandomMotivation();">
   💡 بوصلة التفوق والتحذيرات
@@ -573,6 +586,77 @@ const studentCode = getOrCreateStudentCode(user);
           ← رجوع لكل المواد
         </button>
         <div id="treeChaptersList"></div>
+      </div>
+    </div>
+  <!-- ==================== صفحة شريك المذاكرة ==================== -->
+    <div class="page" id="studyBuddyPage">
+      <div style="text-align: center; margin-bottom: 12px;">
+        <h2 style="color: var(--gold); font-size: 20px;">🤝 شَرِيكُ المُذَاكَرَةِ</h2>
+        <p style="font-size: 12px; color: var(--text2);">تحدَّ صاحبك أو حد من عيلتك على مين يخلص جلسات تركيز أكتر الأسبوع ده!</p>
+      </div>
+
+      <!-- لسه مفيش شريك -->
+      <div id="noBuddyState" class="athr-card">
+        <div style="font-size: 13px; color: var(--text2); margin-bottom: 10px;">مفيش شريك مذاكرة لسه. اطلب كوده وابعتله دعوة:</div>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="buddyCodeInput" placeholder="مثلاً: SM-4921" style="flex:1; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none;">
+          <button onclick="sendBuddyRequest()" class="btn-small">إرسال دعوة</button>
+        </div>
+        <div id="myOwnCodeDisplay" style="font-size: 11px; color: var(--gold); margin-top: 10px; text-align: center;"></div>
+      </div>
+
+      <!-- الدعوات الواردة -->
+      <div id="incomingRequestsBox"></div>
+
+      <!-- في وجود شريك -->
+      <div id="activeBuddyState" style="display:none;">
+
+        <div class="athr-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size: 12px; color: var(--text2);">شريكك الحالي:</div>
+            <div id="buddyNameDisplay" style="font-size: 15px; font-weight: bold; color: var(--gold);"></div>
+          </div>
+          <button onclick="removeBuddy()" style="background:transparent; border:1px solid #ff6b6b; color:#ff6b6b; padding:6px 12px; border-radius:10px; font-size:11px; cursor:pointer;">فسخ الشراكة</button>
+        </div>
+
+        <div class="athr-card">
+          <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📊 تحدي الأسبوع (<span id="weekIdDisplay"></span>)</div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="text-align: center;">
+              <div style="font-size: 12px; color: var(--text2);">إنتَ</div>
+              <div style="font-size: 26px; font-weight: bold; color: var(--gold);" id="myWeeklyMins">0</div>
+              <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
+              <div class="tree-progress-bar"><div class="tree-progress-fill" id="myWeeklyBar" style="width:0%;"></div></div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 12px; color: var(--text2);">شريكك</div>
+              <div style="font-size: 26px; font-weight: bold; color: var(--green);" id="buddyWeeklyMins">0</div>
+              <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
+              <div class="tree-progress-bar"><div class="tree-progress-fill" id="buddyWeeklyBar" style="width:0%; background:var(--green);"></div></div>
+            </div>
+          </div>
+
+          <div id="weeklyLeadBadge" style="margin-top: 12px; text-align: center; font-size: 12px; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px;"></div>
+        </div>
+
+        <div class="athr-card">
+          <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">📣 ابعت تحفيز سريع لشريكك:</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="sendQuickCheer('💪')" class="btn-small">💪</button>
+            <button onclick="sendQuickCheer('🔥')" class="btn-small">🔥</button>
+            <button onclick="sendQuickCheer('👏')" class="btn-small">👏</button>
+            <button onclick="sendQuickCheer('🚀')" class="btn-small">🚀</button>
+            <button onclick="sendQuickCheer('🌙')" class="btn-small">🌙</button>
+          </div>
+        </div>
+
+        <div id="cheersInboxBox" class="athr-card"></div>
+
+        <div class="athr-card">
+          <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">🏆 سجل الأسابيع السابقة</div>
+          <div id="buddyHistoryList" style="font-size: 12px; color: var(--text2);">لسه مفيش أسابيع سابقة.</div>
+        </div>
       </div>
     </div>
     <!-- ==================== صفحة خطة التفوق والجدول (SCHEDULE) ==================== -->
@@ -1551,8 +1635,12 @@ function toggleMatrixCell(taskName, dayNum) {
       stats[today].mins += (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
       stats[today].sessions += 1;
 
-      localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
+localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
       updateFocusStatsUI();
+
+      // 🤝 تسجيل الدقائق في تحدي شريك المذاكرة
+      const addedMins = (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
+      if (window.recordFocusSessionForBuddy) window.recordFocusSessionForBuddy(addedMins);
     }
 
     function updateFocusStatsUI() {
@@ -1971,6 +2059,6 @@ function renderStudentParentMessages(messages) {
 <!-- في نهاية ملف index.html قبل إغلاق body -->
 <script src="app.js" defer></script>
   <script src="subjectTree.js" defer></script>
-
+<script src="studyBuddy.js" defer></script>
 </body>
 </html>
