@@ -214,20 +214,34 @@ let recordedAudioChunks = [];
 let currentToolTarget = null; // { subject, chapterId, lessonId|null }
 
 // ================= 💾 تخزين الملخصات =================
-function getLessonSummaries(key) {
-  const all = JSON.parse(localStorage.getItem('sm_summaries') || '{}');
+// جلب الملخصات من IndexedDB
+async function getLessonSummaries(key) {
+  const all = await localforage.getItem('sm_summaries') || {};
   return all[key] || [];
 }
 
-function saveSummaryEntry(key, entry) {
-  const all = JSON.parse(localStorage.getItem('sm_summaries') || '{}');
+// حفظ الملخص في IndexedDB بدون قلق من المساحة
+async function saveSummaryEntry(key, entry) {
+  const user = auth.currentUser;
+  const userKey = user ? `sm_summaries_${user.uid}` : 'sm_summaries_guest';
+  
+  let all = await localforage.getItem(userKey) || {};
   if (!all[key]) all[key] = [];
   all[key].push(entry);
-  try {
-    localStorage.setItem('sm_summaries', JSON.stringify(all));
-  } catch (e) {
-    alert("مساحة التخزين قربت تخلص 😅 امسح بعض الملخصات القديمة (خصوصاً الصوتية) وجرب تاني.");
-  }
+  
+  await localforage.setItem(userKey, all);
+}
+
+// حذف ملخص معين
+async function deleteSummaryEntry(key, entryId) {
+  const user = auth.currentUser;
+  const userKey = user ? `sm_summaries_${user.uid}` : 'sm_summaries_guest';
+  
+  let all = await localforage.getItem(userKey) || {};
+  if (!all[key]) return;
+  
+  all[key] = all[key].filter(e => e.id !== entryId);
+  await localforage.setItem(userKey, all);
 }
 
 function deleteSummaryEntry(key, entryId) {
@@ -381,8 +395,8 @@ function getCurrentKey() {
     : chapterKey(currentToolTarget.subject, currentToolTarget.chapterId);
 }
 
-function renderToolEntries(key) {
-  const entries = getLessonSummaries(key);
+async function renderToolEntries(key) {
+  const entries = await getLessonSummaries(key); // أضفنا await هنا
   const container = document.getElementById('toolEntriesList');
 
   if (entries.length === 0) {
@@ -418,10 +432,11 @@ function closeLessonToolsModal() {
 }
 
 // ---- إضافة نص ----
-function submitTextSummary() {
+// مثال عند حفظ النص:
+async function submitTextSummary() {
   const val = document.getElementById('toolTextInput').value.trim();
   if (!val) return;
-  saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'text', content: val, date: new Date().toLocaleDateString('ar-EG') });
+  await saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'text', content: val, date: new Date().toLocaleDateString('ar-EG') });
   document.getElementById('toolTextInput').value = '';
   document.getElementById('toolTextBox').style.display = 'none';
   renderToolEntries(getCurrentKey());
