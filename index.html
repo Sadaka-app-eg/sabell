@@ -312,36 +312,50 @@
   }
 
   // ☁️ 2. دالة رفع حالة الطالب للسحاب
-  window.syncStudentDataToCloud = async function() {
-    const user = auth.currentUser;
-    if (!user) return; // يلزم تسجيل الدخول لرفع البيانات
+ // ☁️ دالة المزامنة الفورية الشاملة
+window.syncStudentDataToCloud = async function() {
+  const user = auth.currentUser;
+  const studentCode = getOrCreateStudentCode();
+  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+  const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+  const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
+  const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
 
-    const studentCode = getOrCreateStudentCode();
-    const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
-    const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-    const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
-    const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+  // حساب نسبة الالتزام الفعلية
+  let commitmentPct = 0;
+  if (activePlan && activePlan.matrix) {
+    let totalCells = 0, doneCells = 0;
+    Object.keys(activePlan.matrix).forEach(task => {
+      Object.keys(activePlan.matrix[task]).forEach(day => {
+        totalCells++;
+        if (activePlan.matrix[task][day] === 1) doneCells++;
+      });
+    });
+    commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
+  }
 
-    try {
-      // الحفظ باسم "كود الطالب" في Firestore لتسهيل وصول ولي الأمر
-      const studentRef = doc(db, "students", studentCode);
+  // تنسيق الوقت بصيغة 12 ساعة عربية صحيحة (ص / م)
+  const now = new Date();
+  const timeFormatted = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
 
-      await setDoc(studentRef, {
-        studentCode: studentCode,
-        studentName: user.displayName || "الطالب",
-        userEmail: user.email,
-        branch: userBranch,
-        lastUpdate: new Date().toISOString(),
-        plan: activePlan,
-        focus: focusStats,
-        mistakesCount: mistakes.length
-      }, { merge: true });
-
-      console.log("تمت مزامنة البيانات للسحاب بنجاح! الكود:", studentCode);
-    } catch (err) {
-      console.error("خطأ في المزامنة:", err);
-    }
-  };
+  try {
+    const studentRef = doc(db, "students", studentCode);
+    await setDoc(studentRef, {
+      studentCode: studentCode,
+      studentName: user ? user.displayName : "الطالب",
+      userEmail: user ? user.email : "غير مسجل",
+      branch: userBranch,
+      lastUpdate: timeFormatted,
+      plan: activePlan,
+      commitmentPct: commitmentPct,
+      focus: focusStats,
+      mistakesCount: mistakes.length
+    }, { merge: true });
+    console.log("تمت المزامنة الفورية لولي الأمر بنجاح!");
+  } catch (err) {
+    console.error("خطأ في المزامنة:", err);
+  }
+};
 
   // 🚪 3. تسجيل الدخول والخروج
   window.loginWithGoogle = async function() {
@@ -1089,19 +1103,22 @@
       initPlanSetupUI();
     }
 
-    function toggleMatrixCell(taskName, dayNum) {
-      const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
-      if (!plan) return;
+// وتعديل دالة الضغط على الجدول لتستدعي المزامنة فوراً:
+function toggleMatrixCell(taskName, dayNum) {
+  const plan = JSON.parse(localStorage.getItem('sm_active_plan'));
+  if (!plan) return;
 
-      if (!plan.matrix[taskName]) plan.matrix[taskName] = {};
-      
-      const currentVal = plan.matrix[taskName][dayNum] || 0;
-      const nextVal = (currentVal + 1) % 3;
-      plan.matrix[taskName][dayNum] = nextVal;
+  if (!plan.matrix[taskName]) plan.matrix[taskName] = {};
+  
+  const currentVal = plan.matrix[taskName][dayNum] || 0;
+  plan.matrix[taskName][dayNum] = (currentVal + 1) % 3;
 
-      localStorage.setItem('sm_active_plan', JSON.stringify(plan));
-      renderActivePlanGrid(plan);
-    }
+  localStorage.setItem('sm_active_plan', JSON.stringify(plan));
+  renderActivePlanGrid(plan);
+  
+  // 🚀 رفع التغيير فوراً لوالي الأمر!
+  if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
+}
 
     function renderActivePlanGrid(plan) {
       const container = document.getElementById('planMatrixGridTable');
