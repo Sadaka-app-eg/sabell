@@ -391,13 +391,13 @@ lastUpdate: now.toISOString(),
 };
 
   // 🚪 3. تسجيل الدخول والخروج
-  window.loginWithGoogle = async function() {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      alert("حدث خطأ في تسجيل الدخول: " + error.message);
-    }
-  };
+window.loginWithGoogle = async function() {
+  try {
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    alert("حدث خطأ في تسجيل الدخول: " + error.message);
+  }
+};
 
 window.logoutGoogle = function() {
   if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
