@@ -434,9 +434,9 @@ window.syncStudentDataToCloud = async function() {
     <div class="drawer-item" onclick="showPage('focusPage', this)">⏱️ تايمر التركيز</div>
     <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
 <a href="lessons.html" class="drawer-item" style="text-decoration:none;">🎬 المحاضرات والدروس</a>
-<!-- التبويب الجديد في القائمة -->
-<div class="nav-item" onclick="switchTab('motivation-warnings')">
-  💡 <span>بوصلة التفوق والتحذيرات</span>
+<!-- التبويب الصحيح والمعدل -->
+<div class="drawer-item" onclick="showPage('motivation-warnings-tab', this); renderWarnings(); setRandomMotivation();">
+  💡 بوصلة التفوق والتحذيرات
 </div>
     
   </div>
@@ -928,14 +928,18 @@ window.syncStudentDataToCloud = async function() {
       initAppUI();
     }
 
-    function initAppUI() {
-      document.getElementById('currentBranchDisplay').textContent = "الشعبة: " + userBranch;
-      renderSubjectsList();
-      initPlanSetupUI();
-      renderMistakesList();
-      updateFocusStatsUI();
-      startExamCountdown();
-    }
+function initAppUI() {
+  document.getElementById('currentBranchDisplay').textContent = "الشعبة: " + userBranch;
+  renderSubjectsList();
+  initPlanSetupUI();
+  renderMistakesList();
+  updateFocusStatsUI();
+  startExamCountdown();
+  
+  // 🌟 إضافة استدعاء التحفيز والأخطاء هنا
+  renderWarnings();
+  setRandomMotivation();
+}
 
     // ================= 📚 رسم المواد والنصائح =================
     function renderSubjectsList() {
