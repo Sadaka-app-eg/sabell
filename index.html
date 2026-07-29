@@ -617,7 +617,19 @@ window.syncStudentDataToCloud = async function() {
             <button class="day-btn" id="chartTab_weekly" onclick="switchAnalyticsView('weekly')">الأسبوعي</button>
             <button class="day-btn" id="chartTab_monthly" onclick="switchAnalyticsView('monthly')">الشهري</button>
           </div>
+<!-- كارت رسائل ولي الأمر في صفحة الطالب -->
+<div class="card" id="parentMessagesCard">
+  <div style="font-size: 15px; font-weight: bold; color: var(--gold); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+    👨‍👦 <span>رسائل وتشجيع ولي الأمر:</span>
+  </div>
 
+  <!-- قائمة عرض الرسائل والفويسات -->
+  <div id="studentParentMessagesList" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;">
+    <div style="color: var(--text2); font-size: 12px; text-align: center; padding: 10px;">
+      لا توجد رسائل تشجيعية جديدة حتى الآن.
+    </div>
+  </div>
+</div>
           <!-- مكان رسم الرسم البياني تفاعلياً -->
           <div style="position: relative; height: 220px; width: 100%;">
             <canvas id="progressChartCanvas"></canvas>
@@ -1844,7 +1856,58 @@ function setRandomMotivation() {
     textEl.textContent = `"${motivations[randomIndex]}"`;
   }
 }
- 
+ // دالة الاستماع لرابط طالب معين وقراءة رسائل ولي الأمر
+function listenToParentMessages(studentCode) {
+  const studentRef = doc(db, "students", studentCode);
+
+  // التحديث الحي المباشر بمجرد إرسال الأب لأي رسالة
+  onSnapshot(studentRef, (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      const messages = data.parentMessages || [];
+      renderStudentParentMessages(messages);
+    }
+  });
+}
+
+// دالة طباعة الرسائل والفويسات في شاشة الطالب
+function renderStudentParentMessages(messages) {
+  const container = document.getElementById('studentParentMessagesList');
+  if (!messages || messages.length === 0) {
+    container.innerHTML = `
+      <div style="color: var(--text2); font-size: 12px; text-align: center; padding: 10px;">
+        لا توجد رسائل تشجيعية جديدة حتى الآن.
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  // عرض الرسائل بالترتيب (الأحدث في الأسفل)
+  messages.forEach((msg) => {
+    const timeStr = new Date(msg.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+
+    if (msg.type === 'text') {
+      html += `
+        <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px;">
+          <div style="font-size: 13px; color: var(--text);">💬 <b>رسالة من ولي أمرك:</b> ${msg.content}</div>
+          <div style="font-size: 10px; color: var(--text2); text-align: left; margin-top: 4px;">${timeStr}</div>
+        </div>
+      `;
+    } else if (msg.type === 'audio') {
+      html += `
+        <div style="background: rgba(111, 191, 115, 0.08); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px;">
+          <div style="font-size: 13px; color: var(--gold); margin-bottom: 6px;">🎙️ <b>رسالة صوتية من ولي أمرك:</b></div>
+          <audio controls style="width: 100%; height: 36px;" src="${msg.content}"></audio>
+          <div style="font-size: 10px; color: var(--text2); text-align: left; margin-top: 4px;">${timeStr}</div>
+        </div>
+      `;
+    }
+  });
+
+  container.innerHTML = html;
+  // التمرير للتلقائي لآخر رسالة
+  container.scrollTop = container.scrollHeight;
+}
  </script>
   
 <!-- في نهاية ملف index.html قبل إغلاق body -->
