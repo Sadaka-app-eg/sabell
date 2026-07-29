@@ -435,7 +435,7 @@ window.syncStudentDataToCloud = async function() {
     <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
 <a href="lessons.html" class="drawer-item" style="text-decoration:none;">🎬 المحاضرات والدروس</a>
 <!-- التبويب الصحيح والمعدل -->
-<div class="drawer-item" onclick="showPage('motivation-warnings-tab', this); renderWarnings(); setRandomMotivation();">
+<div class="drawer-item" onclick="showPage('motivationWarningsPage', this); renderWarnings(); setRandomMotivation();">
   💡 بوصلة التفوق والتحذيرات
 </div>
     
@@ -513,27 +513,21 @@ window.syncStudentDataToCloud = async function() {
       </div>
       <div id="homeQuickSubjects"></div>
     </div>
-<!-- واجهة تبويب التحفيز والأخطاء -->
-<div id="motivation-warnings-tab" class="tab-content" style="display: none;">
-  
-  <!-- قسم الرسائل التحفيزية -->
-  <div class="card motivation-card">
+<!-- 2️⃣ بوصلة التفوق والتحذيرات -->
+<div class="page" id="motivationWarningsPage">
+  <div class="card">
     <h2 style="color: var(--gold); margin-bottom: 10px;">🌟 وقود العزيمة (رسالة اليوم)</h2>
     <p id="dailyMotivationText" style="font-size: 15px; line-height: 1.7; color: var(--text);">
       "المجموع العالي ليس حكراً على العباقرة، بل هو مكافأة من يستمر حتى النهاية عندما يتوقف الآخرون."
     </p>
   </div>
 
-  <!-- فلتر العرض (الأخطاء والتحذيرات) -->
   <div class="card">
     <h2 style="color: var(--red); margin-bottom: 12px; font-family: 'Cairo', sans-serif;">
       ⚠️ 20+ خطأ قاتل تسبب في ضياع مجاميع من قبلك (احذرها!)
     </h2>
-    <div id="warningsList">
-      <!-- يتم تعبئة قائمة الأخطاء ديناميكياً -->
-    </div>
+    <div id="warningsList"></div>
   </div>
-
 </div>
     <!-- ==================== صفحة المواد والنصائح (SUBJECTS) ==================== -->
     <div class="page" id="subjectsPage">
@@ -1646,7 +1640,8 @@ function toggleMatrixCell(taskName, dayNum) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.drawer-item').forEach(d => d.classList.remove('active'));
 
-      document.getElementById(pageId).classList.add('active');
+const targetPage = document.getElementById(pageId);
+if (targetPage) targetPage.classList.add('active');      
       if (el) el.classList.add('active');
       
       const drawer = document.getElementById('tabsDrawer');
