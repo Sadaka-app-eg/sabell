@@ -293,12 +293,14 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 </head>
 <body>
 <!-- Firebase App, Auth & Firestore Services -->
+<!-- Firebase App, Auth & Firestore Services -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  
-import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";  // إعدادات المشروع
+  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // إعدادات المشروع
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
     authDomain: "sabeel-almajd.firebaseapp.com",
@@ -313,21 +315,10 @@ import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } 
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   const auth = getAuth(app);
-
-  // التقاط نتيجة التحويل بعد تسجيل الدخول بـ Redirect
-getRedirectResult(auth)
-  .then((result) => {
-    if (result && result.user) {
-      console.log("تم تسجيل الدخول بنجاح للمستخدم:", result.user.displayName);
-      window.syncStudentDataToCloud();
-    }
-  })
-  .catch((error) => {
-    console.error("خطأ أثناء استلام نتيجة تسجيل الدخول:", error);
-  });
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
-// 🔓 إتاحة أدوات Firestore لملف شريك المذاكرة (studyBuddy.js)
+
+  // 🔓 إتاحة أدوات Firestore لملف شريك المذاكرة (studyBuddy.js)
   window.fireDB = db;
   window.fireDoc = doc;
   window.fireSetDoc = setDoc;
@@ -335,20 +326,19 @@ getRedirectResult(auth)
   window.fireUpdateDoc = updateDoc;
   window.fireOnSnapshot = onSnapshot;
   window.fireArrayUnion = arrayUnion;
+
   window.getMyStudentCode = function() {
     return getOrCreateStudentCode(auth.currentUser);
   };
   window.getMyStudentName = function() {
     return auth.currentUser ? (auth.currentUser.displayName || "الطالب") : "الطالب";
   };
-  // 🔑 1. توليد كود قصير وسهل للطالب (مثل SM-4921)
-function getOrCreateStudentCode(user) {
+
+  // 🔑 1. توليد كود قصير وسهل للطالب
+  function getOrCreateStudentCode(user) {
     if (!user) return localStorage.getItem('sm_student_code') || "SM-GUEST";
-    
-    // مفتاح خاص بكود هذا الحساب بالذات
     const userStorageKey = 'sm_student_code_' + user.uid;
     let code = localStorage.getItem(userStorageKey);
-    
     if (!code) {
       const randomDigits = Math.floor(1000 + Math.random() * 9000);
       code = "SM-" + randomDigits;
@@ -358,112 +348,114 @@ function getOrCreateStudentCode(user) {
   }
 
   // ☁️ 2. دالة رفع حالة الطالب للسحاب
-window.syncStudentDataToCloud = async function() {
-  const user = auth.currentUser;
-  const studentCode = getOrCreateStudentCode(user);
-  
-  const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
-  const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-  const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
-  const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+  window.syncStudentDataToCloud = async function() {
+    const user = auth.currentUser;
+    if (!user) return; // عدم التنفيذ إذا لم يكن مسجلاً
+    const studentCode = getOrCreateStudentCode(user);
+    
+    const activePlan = JSON.parse(localStorage.getItem('sm_active_plan_' + user.uid) || localStorage.getItem('sm_active_plan') || 'null');
+    const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+    const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
+    const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
 
-  // حساب نسبة الالتزام الفعلية
-  let commitmentPct = 0;
-  if (activePlan && activePlan.matrix) {
-    let totalCells = 0, doneCells = 0;
-    Object.keys(activePlan.matrix).forEach(task => {
-      Object.keys(activePlan.matrix[task]).forEach(day => {
-        totalCells++;
-        if (activePlan.matrix[task][day] === 1) doneCells++;
+    let commitmentPct = 0;
+    if (activePlan && activePlan.matrix) {
+      let totalCells = 0, doneCells = 0;
+      Object.keys(activePlan.matrix).forEach(task => {
+        Object.keys(activePlan.matrix[task]).forEach(day => {
+          totalCells++;
+          if (activePlan.matrix[task][day] === 1) doneCells++;
+        });
       });
-    });
-    commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
-  }
+      commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
+    }
 
-  // تنسيق الوقت بصيغة 12 ساعة عربية صحيحة (ص / م)
-  const now = new Date();
-  const timeFormatted = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
-
-  try {
-    const studentRef = doc(db, "students", studentCode);
-    await setDoc(studentRef, {
-      studentCode: studentCode,
-      studentName: user ? user.displayName : "الطالب",
-      userEmail: user ? user.email : "غير مسجل",
-      branch: userBranch,
-lastUpdate: now.toISOString(),      
-      plan: activePlan,
-      commitmentPct: commitmentPct,
-      focus: focusStats,
-      mistakesCount: mistakes.length
-    }, { merge: true });
-    console.log("تمت المزامنة الفورية لولي الأمر بنجاح!");
-  } catch (err) {
-    console.error("خطأ في المزامنة:", err);
-  }
-};
+    const now = new Date();
+    try {
+      const studentRef = doc(db, "students", studentCode);
+      await setDoc(studentRef, {
+        studentCode: studentCode,
+        studentName: user.displayName || "الطالب",
+        userEmail: user.email || "غير مسجل",
+        branch: userBranch,
+        lastUpdate: now.toISOString(),     
+        plan: activePlan,
+        commitmentPct: commitmentPct,
+        focus: focusStats,
+        mistakesCount: mistakes.length
+      }, { merge: true });
+      console.log("تمت المزامنة بنجاح!");
+    } catch (err) {
+      console.error("خطأ في المزامنة:", err);
+    }
+  };
 
   // 🚪 3. تسجيل الدخول والخروج
-window.loginWithGoogle = async function() {
-  try {
-    await signInWithRedirect(auth, provider);
-  } catch (error) {
-    alert("حدث خطأ في تسجيل الدخول: " + error.message);
-  }
-};
-
-window.logoutGoogle = function() {
-  if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
-    signOut(auth).then(() => {
-      // إعادة تحميل الصفحة لتطهير العرض للحساب الجديد
-      window.location.reload();
-    });
-  }
-};
-
-  // 🔄 4. عند تغير حالة الدخول
-onAuthStateChanged(auth, (user) => {
-  const loginBtn = document.getElementById('googleLoginBtn');
-  const userProfile = document.getElementById('userProfileInfo');
-  const welcomeText = document.getElementById('headerWelcomeText');
-
-  if (user) {
-    const studentCode = getOrCreateStudentCode(user);
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (userProfile) {
-      userProfile.style.display = 'flex';
-      document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
-      document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
+  window.loginWithGoogle = async function() {
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      alert("حدث خطأ في تسجيل الدخول: " + error.message);
     }
+  };
 
-    if (welcomeText) {
-      welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
+  window.logoutGoogle = function() {
+    if (confirm("هل تريد تسجيل الخروج من حسابك؟")) {
+      signOut(auth).then(() => {
+        window.location.reload();
+      });
     }
+  };
 
-    // جلب/فصل خطة الحساب الحالي بناءً على الـ UID
-    const userPlanKey = 'sm_active_plan_' + user.uid;
-    const currentPlan = localStorage.getItem(userPlanKey);
-    if (currentPlan) {
-      localStorage.setItem('sm_active_plan', currentPlan);
+  // 🔄 4. التقاط نتيجة الـ Redirect فور تحميل الصفحة
+  getRedirectResult(auth).then((result) => {
+    if (result && result.user) {
+      console.log("تم استلام بيانات تسجيل الدخول بأسلوب Redirect!");
+    }
+  }).catch((error) => {
+    console.error("خطأ Redirect:", error);
+  });
+
+  // 🔄 5. عند تغير حالة الدخول
+  onAuthStateChanged(auth, (user) => {
+    const loginBtn = document.getElementById('googleLoginBtn');
+    const userProfile = document.getElementById('userProfileInfo');
+    const welcomeText = document.getElementById('headerWelcomeText');
+
+    if (user) {
+      const studentCode = getOrCreateStudentCode(user);
+      if (loginBtn) loginBtn.style.display = 'none';
+      if (userProfile) {
+        userProfile.style.display = 'flex';
+        document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
+        document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
+      }
+
+      if (welcomeText) {
+        welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
+      }
+
+      // فصل جدول الحساب بناءً على الـ UID
+      const userPlanKey = 'sm_active_plan_' + user.uid;
+      const currentPlan = localStorage.getItem(userPlanKey);
+      if (currentPlan) {
+        localStorage.setItem('sm_active_plan', currentPlan);
+      } else {
+        localStorage.removeItem('sm_active_plan');
+      }
+
+      if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
+      window.syncStudentDataToCloud();
+      if (typeof listenToParentMessages === 'function') listenToParentMessages(studentCode);
     } else {
-      localStorage.removeItem('sm_active_plan'); // تصفير الجدول للحساب الجديد
+      if (loginBtn) loginBtn.style.display = 'flex';
+      if (userProfile) userProfile.style.display = 'none';
+      if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
+
+      localStorage.removeItem('sm_active_plan');
+      if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
     }
-
-    // إعادة تهيئة الواجهة للجدول
-    if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
-
-    window.syncStudentDataToCloud();
-    if (typeof listenToParentMessages === 'function') listenToParentMessages(studentCode);
-  } else {
-    if (loginBtn) loginBtn.style.display = 'flex';
-    if (userProfile) userProfile.style.display = 'none';
-    if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
-
-    // تصفير العرض في حالة الخروج
-    localStorage.removeItem('sm_active_plan');
-    if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
-  }
-});
+  });
 </script>
 <!-- 🌟 شاشة الترحيب الافتتاحية (Splash Screen) -->
 <div id="splashScreen">
@@ -1325,15 +1317,15 @@ function toggleMatrixCell(taskName, dayNum) {
   plan.matrix[taskName][dayNum] = (currentVal + 1) % 3;
 
   localStorage.setItem('sm_active_plan', JSON.stringify(plan));
+
+  // حفظ الخطة في مفتاح المستخدم الخاص
+  if (window.fireDB) {
+    // جلب المستخدم عبر النافذة أو السكريبت
+    const userStorageKey = localStorage.getItem('sm_student_code');
+  }
+
   renderActivePlanGrid(plan);
-  
-  // 🚀 رفع التغيير فوراً لوالي الأمر!
   if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
-  // داخل buildAndStartPlan و toggleMatrixCell بعد التعديل:
-const user = auth.currentUser;
-if (user) {
-  localStorage.setItem('sm_active_plan_' + user.uid, JSON.stringify(planData));
-}
 }
 
     function renderActivePlanGrid(plan) {
