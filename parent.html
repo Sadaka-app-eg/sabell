@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سبيل المجد | لوحة متابعة ولي الأمر</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0b120c;
+      --bg2: #121e14;
+      --card: rgba(255, 255, 255, 0.04);
+      --border: rgba(212, 175, 55, 0.2);
+      --gold: #d4af37;
+      --green: #6fbf73;
+      --red: #ff6b6b;
+      --text: #f4f6f4;
+      --text2: #9aa79c;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Amiri', serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .header-card h1 {
+      color: var(--gold);
+      font-size: 20px;
+      margin-bottom: 6px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .code-input-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .code-input-group input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--gold);
+      font-size: 16px;
+      text-align: center;
+      font-weight: bold;
+      outline: none;
+    }
+
+    .btn {
+      background: var(--gold);
+      color: #111;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-family: 'Amiri', serif;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--gold);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .badge-success { background: rgba(111, 191, 115, 0.2); color: var(--green); }
+    .badge-warning { background: rgba(212, 175, 55, 0.2); color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header-card">
+    <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
+    <p style="font-size: 12px; color: var(--text2);">متابعة حية ومباشرة لإنجازات الطالب وساعات مذاكرته</p>
+    
+    <!-- قسم أدخال الكود -->
+    <div class="code-input-group">
+      <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
+      <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
+    </div>
+  </div>
+
+  <!-- حاوية البيانات الحية (تظهر بعد إدخال الكود) -->
+  <div id="parentDashboardContent" style="display: none;">
+
+    <!-- كارت بيانات الطالب -->
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <h2 id="parentStudentName" style="font-size: 18px; color: var(--gold);">اسم الطالب</h2>
+        <div id="parentStudentBranch" style="font-size: 12px; color: var(--text2);">الشعبة: -</div>
+      </div>
+      <div style="text-align: left;">
+        <span class="status-badge badge-success" id="parentLastSync">جاري التحميل...</span>
+      </div>
+    </div>
+
+    <!-- شبكة الإحصائيات السريعة -->
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num" id="parentPlanCommitment">0%</div>
+        <div class="stat-label">نسبة الالتزام بالخطة</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="parentFocusMins">0</div>
+        <div class="stat-label">دقائق التركيز اليومية ⏱️</div>
+      </div>
+    </div>
+
+    <!-- كارت تقييم المستوى -->
+    <div class="card">
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 6px;">📊 التقييم العام لأداء الطالب:</div>
+      <div id="parentEvaluationText" style="font-size: 12px; color: var(--text); line-height: 1.6;">
+        جاري تحليل البيانات...
+      </div>
+    </div>
+
+    <!-- جدول إنجاز اليوم -->
+    <div class="card">
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📋 جدول المهام اليومي للطالب:</div>
+      <div id="parentTasksTodayList" style="font-size: 12px;"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Firebase App & Firestore Services -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
+    authDomain: "sabeel-almajd.firebaseapp.com",
+    projectId: "sabeel-almajd",
+    storageBucket: "sabeel-almajd.firebasestorage.app",
+    messagingSenderId: "511150067201",
+    appId: "1:511150067201:web:b249f496b9f5df5e6c7a00"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let unsubscribeListener = null;
+
+  // دالة قراءة وربط البيانات الحية (Realtime Listener)
+  window.fetchStudentDataForParent = function() {
+    const code = document.getElementById('parentStudentCodeInp').value.trim().toUpperCase();
+    if (!code) {
+      alert("من فضلك أدخل كود الطالب أولاً");
+      return;
+    }
+
+    if (unsubscribeListener) unsubscribeListener(); // إلغاء أي الاستماع القديم
+
+    const studentRef = doc(db, "students", code);
+
+    // الاستماع المتواصل للتغييرات بمجرد قيام الطالب بضغط ✅ أو إنهاء تايمر
+    unsubscribeListener = onSnapshot(studentRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        renderParentDashboard(data);
+      } else {
+        alert("لم يتم العثور على طالب بهذا الكود! تأكد من أن الطالب قام بتسجيل الدخول في صفحته أولاً.");
+      }
+    }, (error) => {
+      console.error("خطأ في جلب البيانات:", error);
+    });
+  };
+
+  function renderParentDashboard(data) {
+    document.getElementById('parentDashboardContent').style.display = 'block';
+
+    document.getElementById('parentStudentName').textContent = data.studentName || 'الطالب';
+    document.getElementById('parentStudentBranch').textContent = "الشعبة: " + (data.branch || 'غير محدد');
+    
+    // آخر وقت تواجد
+    if (data.lastUpdate) {
+      const timeStr = new Date(data.lastUpdate).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+      document.getElementById('parentLastSync').textContent = "آخر تحديث: " + timeStr;
+    }
+
+    // حساب الالتزام بالخطة
+    let totalCells = 0;
+    let doneCells = 0;
+    let tasksHtml = '';
+
+    if (data.plan && data.plan.tasksConfig) {
+      const tasks = Object.keys(data.plan.tasksConfig);
+      tasks.forEach(task => {
+        // نأخذ حالة اليوم الأول كعينة للمتابعة أو يمكن التطوير لاحقاً
+        const val = (data.plan.matrix && data.plan.matrix[task] && data.plan.matrix[task][1]) || 0;
+        totalCells++;
+        
+        let statusTag = '⚪ لم تُحدد بعد';
+        if (val === 1) { statusTag = '✅ تم الإنجاز بنجاح'; doneCells++; }
+        else if (val === 2) { statusTag = '❌ قَصّر فيها'; }
+
+        tasksHtml += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px dashed var(--border);">
+            <span style="font-weight:bold; color:var(--text);">${task}</span>
+            <span>${statusTag}</span>
+          </div>
+        `;
+      });
+    } else {
+      tasksHtml = '<div style="color:var(--text2); text-align:center;">لم يقم الطالب بإنشاء خطة بعد.</div>';
+    }
+
+    document.getElementById('parentTasksTodayList').innerHTML = tasksHtml;
+
+    const commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
+    document.getElementById('parentPlanCommitment').textContent = commitmentPct + "%";
+
+    // دقائق المذاكرة
+    const today = new Date().toLocaleDateString('en-CA');
+    const todayFocus = (data.focus && data.focus[today]) ? data.focus[today].mins : 0;
+    document.getElementById('parentFocusMins').textContent = todayFocus;
+
+    // تقييم أداء الطالب لولي الأمر
+    const evalBox = document.getElementById('parentEvaluationText');
+    if (commitmentPct >= 80) {
+      evalBox.innerHTML = "🌟 <b>أداء ممتازة:</b> ابنك ملتزم جداً بجدوله اليومي ويسير بخطوات ثابتة وننصح بتقديم كلمات تشجيعية له!";
+    } else if (commitmentPct >= 50) {
+      evalBox.innerHTML = "⚡ <b>أداء جيد:</b> ابنك يؤدي بشكل مقبول، ولكنه يواجه بعض التقصير في بعض المواد. يحتاج تذكير هادئ لمواصلة التركيز.";
+    } else {
+      evalBox.innerHTML = "⚠️ <b>تحذير متابعة:</b> مستوى الالتزام منخفض اليوم. يرجى التحدث معه بلطف لمعرفة سبب المشتتات والوقوف بجانبه.";
+    }
+  }
+</script>
+
+</body>
+</html>
