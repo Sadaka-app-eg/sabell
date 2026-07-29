@@ -301,12 +301,17 @@
   const db = getFirestore(app);
 
   // 🔑 1. توليد كود قصير وسهل للطالب (مثل SM-4921)
-  function getOrCreateStudentCode() {
-    let code = localStorage.getItem('sm_student_code');
+function getOrCreateStudentCode(user) {
+    if (!user) return localStorage.getItem('sm_student_code') || "SM-GUEST";
+    
+    // مفتاح خاص بكود هذا الحساب بالذات
+    const userStorageKey = 'sm_student_code_' + user.uid;
+    let code = localStorage.getItem(userStorageKey);
+    
     if (!code) {
-      const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4 أرقام عشوائية
+      const randomDigits = Math.floor(1000 + Math.random() * 9000);
       code = "SM-" + randomDigits;
-      localStorage.setItem('sm_student_code', code);
+      localStorage.setItem(userStorageKey, code);
     }
     return code;
   }
@@ -315,7 +320,9 @@
  // ☁️ دالة المزامنة الفورية الشاملة
 window.syncStudentDataToCloud = async function() {
   const user = auth.currentUser;
-  const studentCode = getOrCreateStudentCode();
+const user = auth.currentUser;
+const studentCode = getOrCreateStudentCode(user);
+  
   const activePlan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
   const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
   const userBranch = localStorage.getItem('sm_user_branch') || 'غير محدد';
@@ -380,8 +387,8 @@ window.syncStudentDataToCloud = async function() {
     const welcomeText = document.getElementById('headerWelcomeText');
 
     if (user) {
-      const studentCode = getOrCreateStudentCode(); // جلب كود الطالب
-      
+const user = auth.currentUser;
+const studentCode = getOrCreateStudentCode(user);      
       if (loginBtn) loginBtn.style.display = 'none';
       if (userProfile) {
         userProfile.style.display = 'flex';
