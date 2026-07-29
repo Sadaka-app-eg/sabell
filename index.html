@@ -359,26 +359,28 @@
   };
 
   // 🔄 4. عند تغير حالة الدخول
+// 🔄 4. عند تغير حالة الدخول
   onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('googleLoginBtn');
     const userProfile = document.getElementById('userProfileInfo');
     const welcomeText = document.getElementById('headerWelcomeText');
 
     if (user) {
+      const studentCode = getOrCreateStudentCode(); // جلب كود الطالب
+      
       if (loginBtn) loginBtn.style.display = 'none';
       if (userProfile) {
         userProfile.style.display = 'flex';
-        const firstName = user.displayName ? user.displayName.split(' ')[0] : 'الطالب';
-        document.getElementById('userNameDisplay').textContent = firstName;
+        // عرض الاسم الكامل + الكود عند تحريك الماوس أو الضغط
+        document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
         document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
       }
 
-      const firstName = user.displayName ? user.displayName.split(' ')[0] : 'الطالب';
       if (welcomeText) {
-        welcomeText.textContent = `🌙 أهلاً ${firstName}`;
+        welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
       }
 
-      // بمجرد تسجيل الدخول تقوم المنظومة بالمزامنة الأولى تلقائياً
+      // مزامنة البيانات مع السحاب وإظهار تنبيه نجاح
       window.syncStudentDataToCloud();
     } else {
       if (loginBtn) loginBtn.style.display = 'flex';
