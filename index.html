@@ -415,6 +415,7 @@ const studentCode = getOrCreateStudentCode(user);
 
       // مزامنة البيانات مع السحاب وإظهار تنبيه نجاح
       window.syncStudentDataToCloud();
+            listenToParentMessages(studentCode);
     } else {
       if (loginBtn) loginBtn.style.display = 'flex';
       if (userProfile) userProfile.style.display = 'none';
