@@ -328,14 +328,38 @@
 <a href="lessons/lessons.html" class="drawer-item" style="text-decoration:none;">🎬  المحاضرات والدروس</a>    
   </div>
 
-  <!-- HEADER -->
-  <div class="header">
-    <button class="icon-btn" onclick="toggleMenu()">☰</button>
-    <h1>🎓 سَبِيلُ المَجْدِ | الثانوية العامة</h1>
+<!-- HEADER الملكي على طريقة أثر -->
+<div class="header">
+  
+  <!-- 1. الجهة اليسرى: تسجيل الدخول أو حساب المستخدم + زر الثيم -->
+  <div style="display: flex; align-items: center; gap: 8px;">
+    
+    <!-- زر الثيم (ليلي / نهاري) -->
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+
+    <!-- زر تسجيل الدخول بجوجل (يظهر قبل التسجيل) -->
+    <button id="googleLoginBtn" style="display: flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 14px; height: 14px;">
+      دخول
+    </button>
+
+    <!-- بروفايل المستخدم (يظهر بعد تسجيل الدخول) -->
+    <div id="userProfileInfo" style="display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; cursor: pointer;" onclick="logoutGoogle()">
+      <img id="userImgDisplay" src="" style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--gold);">
+      <span id="userNameDisplay" style="font-size: 12px; font-weight: bold; color: var(--gold);"></span>
+    </div>
+
   </div>
 
-  <div class="app-container">
+  <!-- 2. المنتصف: الترحيب باسم المستخدم -->
+  <div style="font-size: 16px; font-weight: bold; color: var(--gold); font-family: 'Amiri', serif;" id="headerWelcomeText">
+    🥐 أهلاً بك
+  </div>
+
+  <!-- 3. الجهة اليمنى: القائمة الجانبية -->
+  <button class="icon-btn" onclick="toggleMenu()">☰</button>
+
+</div>
 
     <!-- ==================== الصفحة الرئيسية (HOME) ==================== -->
     <div class="page active" id="homePage">
