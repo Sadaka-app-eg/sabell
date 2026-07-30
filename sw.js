@@ -1,5 +1,5 @@
 // ⚠️ كل ما تعمل تحديث جديد للموقع، غيّر الرقم ده فقط (v3, v4, v5...)
-const CACHE_NAME = 'sabeel-almajd-v3';
+const CACHE_NAME = 'sabeel-almajd-v4';
 
 // الملفات المحلية الخاصة بملفك فقط (المضمون تخزينها بدون مشاكل)
 const LOCAL_ASSETS = [
