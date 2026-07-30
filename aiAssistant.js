@@ -41,13 +41,14 @@ function getStudentContextPrompt() {
 }
 
 // دالة تنظيف الردود
+// دالة تنظيف الردود
 function cleanAiResponse(text) {
-  // تنظيف أي حروف غير عربية أو لاتينية غريبة متداخلة
-cleaned = cleaned.replace(/[^\u0600-\u06FF\s\d.,!؟:()\-]/g, "");
   if (!text) return "";
   let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
-  cleaned = cleaned.replace(/[\u4e00-\u9fa5]/g, ""); // مسح أي حروف صينية فوراً لو خرجت بالخطأ
+  cleaned = cleaned.replace(/[\u4e00-\u9fa5]/g, ""); // مسح أي حروف صينية
+  // تنظيف أي حروف غريبة مع الحفاظ على الأرقام والعلامات
+  cleaned = cleaned.replace(/[^\u0600-\u06FF\s\d.,!؟:()\-]/g, "");
   return cleaned.trim();
 }
 
