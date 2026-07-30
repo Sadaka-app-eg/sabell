@@ -267,73 +267,88 @@ async function syncTreeProgressToCloud(treeData) {
 }
 
 // ================= 📂 أبواب/فصول المادة =================
+// ================= 📂 1. عرض أبواب/فصول المادة المحددة =================
 function openSubjectChapters(sName) {
   currentTreeSubject = sName;
   currentTreeChapter = null;
 
   document.getElementById('treeSubjectsGrid').style.display = 'none';
   document.getElementById('treeChaptersView').style.display = 'block';
-  document.getElementById('treeBreadcrumb').innerHTML =
+  document.getElementById('treeBreadcrumb').innerHTML = 
     `<span onclick="renderSubjectTreePage()" style="cursor:pointer; color:var(--gold);">🌳 الشجرة</span> ← ${sName}`;
 
   const chapters = subjectLessonsTree[sName] || [];
   const container = document.getElementById('treeChaptersList');
 
-  container.innerHTML = chapters.map(ch => {
-    const doneCount = ch.lessons.filter(ls => getLessonSummaries(lessonKey(sName, ch.id, ls.id)).length > 0).length;
-    const pct = ch.lessons.length > 0 ? Math.round((doneCount / ch.lessons.length) * 100) : 0;
-    const chapterHasSummary = getLessonSummaries(chapterKey(sName, ch.id)).length > 0;
-
-    return `
-      <div class="athr-card" style="margin-bottom:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleChapterOpen('${ch.id}')">
-          <div style="font-weight:bold; color:var(--gold); font-size:14px;">📂 ${ch.name} ${chapterHasSummary ? '✅' : ''}</div>
-          <div style="font-size:11px; color:var(--text2);">${pct}%</div>
-        </div>
-        <div class="tree-progress-bar" style="margin-top:6px;"><div class="tree-progress-fill" style="width:${pct}%;"></div></div>
-
-        <div id="chapterBody_${ch.id}" style="display:none; margin-top:10px; border-top:1px dashed var(--border); padding-top:10px;">
-          <div id="lessonsList_${ch.id}"></div>
-          <button class="btn-small" style="width:100%; margin-top:8px; background:var(--green); color:#fff;" onclick="openChapterSummaryTools('${sName.replace(/'/g, "\\'")}', '${ch.id}')">
-            ✨ اضغط هنا لتلخيص الفصل كله
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
+  // عرض الأبواب على شكل كروت واضحة ومستقلة
+  container.innerHTML = `
+    <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 10px;">
+      📚 اختر الباب / الفصل لمذاكرة وتلخيص دروسه:
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      ${chapters.map(ch => {
+        return `
+          <div class="athr-card" style="cursor:pointer; transition:0.2s;" onclick="openChapterLessonsView('${sName.replace(/'/g, "\\'")}', '${ch.id}')">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="font-weight:bold; color:var(--gold); font-size:15px;">📁 ${ch.name}</div>
+              <span style="font-size:12px; color:var(--green); font-weight:bold;">${ch.lessons.length} دروس ➔</span>
+            </div>
+            <div style="font-size:11px; color:var(--text2); margin-top:4px;">اضغط لعرض الدروس وتلخيص الباب</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
 }
 
-function toggleChapterOpen(chapterId) {
-  const body = document.getElementById('chapterBody_' + chapterId);
-  const isOpen = body.style.display === 'block';
-  document.querySelectorAll('[id^="chapterBody_"]').forEach(b => b.style.display = 'none');
+// ================= 📖 2. فتح صفحة دروس الباب المحدد فقط =================
+async function openChapterLessonsView(sName, chapterId) {
+  currentTreeChapter = chapterId;
 
-  if (!isOpen) {
-    body.style.display = 'block';
-    renderLessonsList(chapterId);
-  }
-}
-
-async function renderLessonsList(chapterId) {
-  const chapters = subjectLessonsTree[currentTreeSubject] || [];
+  const chapters = subjectLessonsTree[sName] || [];
   const ch = chapters.find(c => c.id === chapterId);
   if (!ch) return;
 
-  const listEl = document.getElementById('lessonsList_' + chapterId);
-  
-  let html = '';
+  document.getElementById('treeBreadcrumb').innerHTML = 
+    `<span onclick="renderSubjectTreePage()" style="cursor:pointer; color:var(--gold);">🌳 الشجرة</span> ← 
+     <span onclick="openSubjectChapters('${sName.replace(/'/g, "\\'")}')" style="cursor:pointer; color:var(--gold);">${sName}</span> ← ${ch.name}`;
+
+  const container = document.getElementById('treeChaptersList');
+
+  // بناء قائمة الدروس الخاصة بهذا الباب فقط
+  let lessonsHtml = '';
   for (const ls of ch.lessons) {
-    const entries = await getLessonSummaries(lessonKey(currentTreeSubject, chapterId, ls.id));
+    const entries = await getLessonSummaries(lessonKey(sName, chapterId, ls.id));
     const hasSummary = entries.length > 0;
-    html += `
-      <div class="lesson-row" onclick="openLessonTools('${chapterId}', '${ls.id}')">
-        <span>${hasSummary ? '✅' : '⬜'} ${ls.name}</span>
-        <span style="font-size:11px; color:var(--gold);">${hasSummary ? entries.length + ' ملخص' : 'لخّص الدرس'}</span>
+    lessonsHtml += `
+      <div class="lesson-row" onclick="openLessonTools('${chapterId}', '${ls.id}')" style="display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:10px 12px; margin-bottom:8px; cursor:pointer;">
+        <span>${hasSummary ? '✅' : '⚪'} ${ls.name}</span>
+        <span class="btn-small" style="font-size:11px; padding:4px 10px;">${hasSummary ? entries.length + ' ملخص 📝' : 'لخّص الدرس ✍️'}</span>
       </div>
     `;
   }
-  listEl.innerHTML = html;
-}  
+
+  container.innerHTML = `
+    <button onclick="openSubjectChapters('${sName.replace(/'/g, "\\'")}')" class="btn-small" style="margin-bottom:12px; background:var(--card); color:var(--text); border:1px solid var(--border);">
+      ← رجوع لأبواب المادة
+    </button>
+
+    <div class="athr-card" style="margin-bottom:14px; border:1px solid var(--gold); background:rgba(212,175,55,0.05);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:bold; color:var(--gold); font-size:16px;">📂 ${ch.name}</div>
+          <div style="font-size:11px; color:var(--text2); margin-top:2px;">يحتوي على ${ch.lessons.length} دروس متتابعة</div>
+        </div>
+        <button class="btn-small" style="background:var(--green); color:#fff; padding:6px 12px;" onclick="openChapterSummaryTools('${sName.replace(/'/g, "\\'")}', '${ch.id}')">
+          ✨ تلخيص الباب ككل
+        </button>
+      </div>
+    </div>
+
+    <div style="font-size:13px; color:var(--text2); margin-bottom:8px; font-weight:bold;">دروس الباب:</div>
+    <div>${lessonsHtml}</div>
+  `;
+}
 
 // ================= 🛠️ بوب أب أدوات التلخيص (درس أو فصل) =================
 function openLessonTools(chapterId, lessonId) {
