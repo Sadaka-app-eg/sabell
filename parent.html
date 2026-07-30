@@ -383,7 +383,14 @@
   // 2. عرض البيانات والرسائل
   function renderParentDashboard(data) {
     document.getElementById('parentDashboardContent').style.display = 'block';
-    document.getElementById('parentStudentName').textContent = data.studentName || 'الطالب';
+document.getElementById('parentStudentName').innerHTML = `
+  <div style="display:flex; align-items:center; gap:8px;">
+    ${data.userAvatar ? `<img src="${data.userAvatar}" onclick="openImageViewer(this.src)" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; cursor:pointer;" title="تكبير الصورة">` : ''}
+    <span>${data.studentName || 'الطالب'}</span>
+  </div>
+`;
+
+    
     document.getElementById('parentStudentBranch').textContent = "الشعبة: " + (data.branch || 'غير محدد');
     
     if (data.lastUpdate) {
