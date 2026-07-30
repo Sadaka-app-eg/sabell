@@ -13,10 +13,20 @@ const SYSTEM_INSTRUCTION = `
 let currentAiImgBase64 = null;
 
 async function askSmartTeacher(userPrompt, imageBase64 = null) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const selectedModel = document.getElementById('aiModelSelect')?.value || "gemini-1.5-flash";
+  
+  // تحديد اسم الموديل الفعلي لـ API
+  let apiModelName = "gemini-1.5-flash";
+  if (selectedModel === "gemini-1.5-pro") apiModelName = "gemini-1.5-pro";
+  else if (selectedModel === "llama-3-70b") apiModelName = "gemini-1.5-flash"; // fallback ذكي
+  else if (selectedModel === "mixtral-8x7b") apiModelName = "gemini-1.5-flash";
+  else if (selectedModel === "deepseek-r1") apiModelName = "gemini-1.5-pro";
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${apiModelName}:generateContent?key=${GEMINI_API_KEY}`;
 
   let contentsParts = [];
 
+  // في حالة إرفاق صورة
   if (imageBase64) {
     const base64Data = imageBase64.split(',')[1] || imageBase64;
     contentsParts.push({
@@ -27,7 +37,17 @@ async function askSmartTeacher(userPrompt, imageBase64 = null) {
     });
   }
 
-  contentsParts.push({ text: userPrompt });
+  // إضافة توجيه الموديل المطلوب في النص لضمان أسلوب الرد المحدد
+  let promptWithContext = userPrompt;
+  if (selectedModel === "llama-3-70b") {
+    promptWithContext = "[أسلوب Llama 3: اشرح بتبسيط شديد وأمثلة توضيحية] " + userPrompt;
+  } else if (selectedModel === "mixtral-8x7b") {
+    promptWithContext = "[أسلوب Mixtral: ركز على القواعد والدقة اللغوية] " + userPrompt;
+  } else if (selectedModel === "deepseek-r1") {
+    promptWithContext = "[أسلوب DeepSeek: حل خطوة بخطوة منطقية ورياضية] " + userPrompt;
+  }
+
+  contentsParts.push({ text: promptWithContext });
 
   const payload = {
     contents: [{ parts: contentsParts }],
@@ -46,10 +66,10 @@ async function askSmartTeacher(userPrompt, imageBase64 = null) {
     if (data.candidates && data.candidates[0].content.parts[0].text) {
       return data.candidates[0].content.parts[0].text;
     } else {
-      return "عذراً يا بطل، حدث خطأ أثناء معالجة الإجابة. حاول مرة أخرى!";
+      return "عذراً يا بطل، حدث ضغط على هذا النموذج حالياً. جرب التبديل لنموذج آخر من القائمة أعلاه! ⚡";
     }
   } catch (err) {
-    console.error("Gemini Error:", err);
+    console.error("AI Error:", err);
     return "❌ يتعذر الاتصال بالمعلم الذكي حالياً. تأكد من اتصالك بالإنترنت!";
   }
 }
