@@ -457,5 +457,49 @@ async function recordFocusSessionForBuddy(minsAdded) {
   }
 }
 
+// الغرفة الحالية لجروب الشات (الافتراضي: عام)
+let currentChatRoom = "عام";
+
+// قائمة الغرف المتاحة بناءً على شعبة الطالب
+function getChatRoomsForUser() {
+  const branch = localStorage.getItem('sm_user_branch') || 'علمي علوم';
+  const commonRooms = ["عام", "عربي", "إنجليزي", "فيزياء", "كيمياء"];
+  
+  if (branch === 'علمي علوم') {
+    return [...commonRooms, "أحياء"];
+  } else {
+    return [...commonRooms, "تفاضل وتكامل", "جبر وهندسة", "استاتيكا وديناميكا"];
+  }
+}
+
+// رسم شريط أزرار الغرف/المواد
+function renderChatRoomsBar() {
+  const roomsBar = document.getElementById('chatRoomsBar');
+  if (!roomsBar) return;
+
+  const rooms = getChatRoomsForUser();
+  roomsBar.innerHTML = rooms.map(room => `
+    <button class="day-btn ${currentChatRoom === room ? 'active' : ''}" 
+            onclick="switchChatRoom('${room}')" 
+            style="font-size:11px; padding:4px 10px; min-width:max-content;">
+      ${room === 'عام' ? '💬 عام' : '📚 ' + room}
+    </button>
+  `).join('');
+}
+
+// التبديل بين غرف المواد
+function switchChatRoom(roomName) {
+  currentChatRoom = roomName;
+  renderChatRoomsBar();
+  const input = document.getElementById('buddyMsgInput');
+  if (input) input.placeholder = `اكتب رسالة في جروب (${roomName})...`;
+  
+  // إعادة تحميل محادثات هذه الغرفة فقط
+  if (typeof loadBuddyMessages === 'function') {
+    loadBuddyMessages(currentChatRoom);
+  }
+}
+
+// عند إرسال الرسالة يتم تضمين اسم الغرفة currentChatRoom مع البيانات المُرسلة لـ Firestore
 // إتاحة الدالة للنداء من مكان تايمر التركيز
 window.recordFocusSessionForBuddy = recordFocusSessionForBuddy;
