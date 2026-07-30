@@ -1085,6 +1085,16 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     </button>
   </div>
 </div>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
+  <label style="font-size: 11px; color: var(--gold); font-weight: bold;">🤖 اختر نموذج المعلم الذكي:</label>
+  <select id="aiModelSelect" style="background: var(--bg2); color: var(--text); border: 1px solid var(--border); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-family: 'Amiri', serif; outline: none; cursor: pointer;">
+    <option value="gemini-1.5-flash">⚡ Gemini Flash (سريع جداً ومباشر)</option>
+    <option value="gemini-1.5-pro">🧠 Gemini Pro (للمسائل والشرح المعقد)</option>
+    <option value="llama-3-70b">🚀 Llama 3 70B (شرح تفاعلي وبسيط)</option>
+    <option value="mixtral-8x7b">💡 Mixtral (قواعد عربي وإنجليزي)</option>
+    <option value="deepseek-r1">🎯 DeepSeek / Qwen (تفكير رياضي ومنطقي)</option>
+  </select>
+</div>
  <script>
     // ================= 📚 دليل المواد الشامل =================
     const subjectFullDetailsData = {
