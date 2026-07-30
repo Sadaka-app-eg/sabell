@@ -45,6 +45,7 @@ function cleanAiResponse(text) {
   if (!text) return "";
   let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  cleaned = cleaned.replace(/[\u4e00-\u9fa5]/g, ""); // مسح أي حروف صينية فوراً لو خرجت بالخطأ
   return cleaned.trim();
 }
 
@@ -124,6 +125,7 @@ async function sendAiMessage() {
     loadingEl.innerHTML = `<b style="color:var(--green); display:block; margin-bottom:4px;">🎯 المساعد الشخصي:</b>` + reply.replace(/\n/g, '<br>');
   }
   chatBox.scrollTop = chatBox.scrollHeight;
+  saveAiChatHistory(); // 👈 حفظ الشات بعد كل إجابة
 }
 
 // 🌐 دالة فتح النماذج الخارجية ونقل السؤال إليها فوراً
@@ -141,4 +143,31 @@ function openExternalAi(service) {
   }
 
   window.open(url, '_blank');
+}
+// 💾 حفظ واسترجاع المحادثة تلقائياً
+function saveAiChatHistory() {
+  const chatBox = document.getElementById('aiChatMessages');
+  if (chatBox) {
+    localStorage.setItem('sm_ai_chat_history', chatBox.innerHTML);
+  }
+}
+
+function loadAiChatHistory() {
+  const saved = localStorage.getItem('sm_ai_chat_history');
+  const chatBox = document.getElementById('aiChatMessages');
+  if (saved && chatBox) {
+    chatBox.innerHTML = saved;
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+}
+
+// استرجاع التاريخ أول ما الصفحة تحمل
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadAiChatHistory, 500);
+});
+function clearAiChat() {
+  if (confirm("هل تريد مسح المحادثة مع المساعد الشخصي وبدء شات جديد؟")) {
+    localStorage.removeItem('sm_ai_chat_history');
+    location.reload();
+  }
 }
