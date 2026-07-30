@@ -496,11 +496,16 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
         document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
         document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
       }
+      
 
       if (welcomeText) {
         welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
       }
-
+// تحديث اسم الطالب في الهيدر فوراً
+const savedName = localStorage.getItem('sm_user_name') || 'بطل';
+const headerNameEl = document.getElementById('headerStudentNameText');
+if (headerNameEl) headerNameEl.textContent = savedName;
+      
       // فصل خطة الحساب
       const userPlanKey = 'sm_active_plan_' + user.uid;
       const currentPlan = localStorage.getItem(userPlanKey);
@@ -579,10 +584,12 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
   </div>
 
-  <!-- 2. المنتصف: الترحيب والكود بنسق مرن -->
-  <div style="text-align: center;" id="headerWelcomeText">
-    <div style="font-size: 14px; font-weight: bold; color: var(--gold);">🌙 أهلاً بك</div>
+<!-- 2. المنتصف: الترحيب والاسم بقالب ديناميكي -->
+<div style="text-align: center;" id="headerWelcomeText">
+  <div style="font-size: 13px; font-weight: bold; color: var(--gold);">
+    🌙 أهلاً بك يا <span id="headerStudentNameText" style="color: #fff;">بطل</span>
   </div>
+</div>
 
   <!-- 3. اليسار: البروفايل والصورة فقط -->
   <div style="display: flex; align-items: center; gap: 6px;">
@@ -737,7 +744,20 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 
           <div id="weeklyLeadBadge" style="margin-top: 12px; text-align: center; font-size: 12px; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px;"></div>
         </div>
+<div class="header-card">
+    <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
+    <p style="font-size: 12px; color: var(--text2);">متابعة حية وإرسال تشجيع صوتي ونصي للطالب</p>
+    
+    <div class="code-input-group">
+      <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
+      <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
+    </div>
 
+    <!-- 🌟 زر تغيير الكود (يظهر للأب لما يكون الكود محفوظ) -->
+    <button id="btnChangeStudentCode" onclick="changeStudentCode()" style="display: none; margin-top: 10px; background: transparent; border: 1px dashed var(--gold); color: var(--gold); padding: 4px 12px; border-radius: 8px; font-size: 11px; cursor: pointer;">
+      🔄 تغيير كود الطالب
+    </button>
+  </div>
 <!-- 💬 كارت المحادثة والملاحظات بين الشريكين -->
 <div class="athr-card">
   <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
