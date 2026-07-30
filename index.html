@@ -560,6 +560,10 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   💡 بوصلة التفوق والتحذيرات
 </div>
     <div class="drawer-item" onclick="openShareModal()">🚀 مشاركة التطبيق وتواصل معنا</div>
+    <!-- تبويب مشاركة متابعة ولي الأمر -->
+<div class="drawer-item" onclick="shareParentLink()">
+  👨‍👦 مشاركة رابط المتابعة مع ولي الأمر
+</div>
   </div>
 
 <!-- HEADER الملكي على طريقة أثر -->
@@ -2429,6 +2433,26 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modal && img && src) {
     img.src = src;
     modal.style.display = 'flex';
+  }
+}
+   // 📲 دالة مشاركة رابط وموقع المتابعة لولي الأمر عبر الواتساب
+function shareParentLink() {
+  const code = window.getMyStudentCode ? window.getMyStudentCode() : (localStorage.getItem('sm_student_code') || 'SM-GUEST');
+  const studentName = window.getMyStudentName ? window.getMyStudentName() : 'ابنك';
+  
+  // رابط صفحة ولي الأمر المباشر
+  const parentPageUrl = window.location.origin + "/parent.html";
+  
+  const text = `السلام عليكم يا بابا 🌸\nده رابط متابعة مستواي ودراستي على تطبيق (سبيل المجد):\n🔗 ${parentPageUrl}\n\n🔑 كود المتابعة الخاص بي: *${code}*\n\nتقدر تتفرج على التزامي ودقائق تركيزي وتبعتلي فويس أو رسائل تشجيع تظهر عندي فوراً! ❤️`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: 'متابعة سبيل المجد',
+      text: text
+    }).catch(() => {});
+  } else {
+    // فتح الواتساب مباشرة لو الـ Native share مش متاح
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
 }
  </script>
