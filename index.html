@@ -1279,11 +1279,7 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
       }
     });
 
-    document.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-    }, { once: true });
+
 
     function selectInitialBranch(branchName) {
       userBranch = branchName;
@@ -2032,10 +2028,10 @@ ${m.audio ? `<audio controls src="${m.audio}" style="width:100%; height:36px; ma
     }
 
     // ================= NAV & THEME =================
-    function toggleMenu() {
-      document.getElementById('tabsDrawer').classList.toggle('open');
-      document.getElementById('menuOverlay').classList.toggle('show');
-    }
+function toggleMenu() {
+  document.getElementById('tabsDrawer').classList.toggle('open');
+  document.getElementById('menuOverlay').classList.toggle('show');
+}
 
     function showPage(pageId, el) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
