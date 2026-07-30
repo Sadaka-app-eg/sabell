@@ -558,7 +558,7 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 <div class="drawer-item" onclick="showPage('motivationWarningsPage', this); renderWarnings(); setRandomMotivation();">
   💡 بوصلة التفوق والتحذيرات
 </div>
-    
+    <div class="drawer-item" onclick="openShareModal()">🚀 مشاركة التطبيق وتواصل معنا</div>
   </div>
 
 <!-- HEADER الملكي على طريقة أثر -->
@@ -1012,6 +1012,38 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
       <div id="toolEntriesList"></div>
     </div>
   </div>
+  <!-- 🚀 نافذة مشاركة التطبيق والتواصل -->
+<div class="modal-overlay" id="shareAppModal" onclick="closeShareModal()" style="display:none; z-index: 9999999; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);">
+  <div class="modal-box" onclick="event.stopPropagation();" style="text-align: center; max-width: 400px; padding: 22px;">
+    <div style="font-size: 40px; margin-bottom: 8px;">🌟</div>
+    <h3 style="color: var(--gold); font-size: 18px; margin-bottom: 6px;">مشاركة تطبيق سَبِيلُ المَجْدِ</h3>
+    <p style="font-size: 12px; color: var(--text2); margin-bottom: 16px;">
+      "خيرُ الناسِ أنفعُهم للناسِ" .. شارك التطبيق مع زملائك بالثانوية لتعم البركة والنفع، ولا تنسونا من صالح دعائكم! 🤲
+    </p>
+
+    <!-- زر المشاركة السريع -->
+    <button onclick="shareAppNative()" style="width: 100%; background: var(--gold); color: #111; border: none; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      📲 مشاركة التطبيق مع صديق
+    </button>
+
+    <div style="border-top: 1px dashed var(--border); margin: 14px 0; padding-top: 12px;">
+      <div style="font-size: 12px; color: var(--gold); font-weight: bold; margin-bottom: 8px;">💬 للتواصل المباشر مع المطور:</div>
+      
+      <div style="display: flex; gap: 6px;">
+        <button onclick="openWhatsAppSupport('feature')" class="btn-small" style="flex: 1; padding: 8px 4px; background: rgba(111,191,115,0.15); border: 1px solid var(--green); color: var(--green);">
+          💡 اقتراح ميزة جديدة
+        </button>
+        <button onclick="openWhatsAppSupport('bug')" class="btn-small" style="flex: 1; padding: 8px 4px; background: rgba(255,107,107,0.15); border: 1px solid #ff6b6b; color: #ff6b6b;">
+          ⚠️ الإبلاغ عن مشكلة
+        </button>
+      </div>
+    </div>
+
+    <button onclick="closeShareModal()" style="width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text2); padding: 8px; border-radius: 10px; font-size: 12px; cursor: pointer; font-family: 'Amiri', serif; margin-top: 6px;">
+      إغلاق
+    </button>
+  </div>
+</div>
  <script>
     // ================= 📚 دليل المواد الشامل =================
     const subjectFullDetailsData = {
@@ -2288,6 +2320,8 @@ function renderStudentParentMessages(messages) {
 <!-- في نهاية ملف index.html قبل إغلاق body -->
 <script src="app.js" defer></script>
   <script src="subjectTree.js" defer></script>
+  <!-- استدعاء ملف المشاركة والتواصل -->
+<script src="shareApp.js" defer></script>
 <script src="studyBuddy.js" defer></script>
 </body>
 </html>
