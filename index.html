@@ -483,48 +483,47 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   });
 
   // 🔄 5. مراقبة حالة التسجيل لتحديث الشاشة فوراً
+// 🔄 مراقبة حالة التسجيل لتحديث الهيدر والاسم والكود فوراً
   onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('googleLoginBtn');
     const userProfile = document.getElementById('userProfileInfo');
     const welcomeText = document.getElementById('headerWelcomeText');
 
     if (user) {
+      // 1. الطالب مسجل دخول بحساب جوجل
       const studentCode = getOrCreateStudentCode(user);
+      const studentName = user.displayName || localStorage.getItem('sm_user_name') || 'يا بطل';
+
       if (loginBtn) loginBtn.style.display = 'none';
       if (userProfile) {
         userProfile.style.display = 'flex';
-        document.getElementById('userNameDisplay').textContent = user.displayName || 'الطالب';
-        document.getElementById('userImgDisplay').src = user.photoURL || 'https://via.placeholder.com/30';
+        // استرجاع الصورة المخصصة لو رافع صورة، أو صورة حساب جوجل
+        const customImg = localStorage.getItem('sm_user_custom_avatar');
+        document.getElementById('userImgDisplay').src = customImg || user.photoURL || 'https://via.placeholder.com/35';
       }
-      
 
+      // عرض اسم جوجل + كود الطالب الذهبي
       if (welcomeText) {
-        welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
-      }
-// تحديث اسم الطالب في الهيدر فوراً
-const savedName = localStorage.getItem('sm_user_name') || 'بطل';
-const headerNameEl = document.getElementById('headerStudentNameText');
-if (headerNameEl) headerNameEl.textContent = savedName;
-      
-      // فصل خطة الحساب
-      const userPlanKey = 'sm_active_plan_' + user.uid;
-      const currentPlan = localStorage.getItem(userPlanKey);
-      if (currentPlan) {
-        localStorage.setItem('sm_active_plan', currentPlan);
-      } else {
-        localStorage.removeItem('sm_active_plan');
+        welcomeText.innerHTML = `
+          <div style="font-size: 13px; font-weight: bold; color: var(--gold);">
+            🌙 أهلاً، <b style="color:#fff;">${studentName}</b>
+            <span style="display:inline-block; font-size:10px; background:rgba(212,175,55,0.2); border:1px solid var(--gold); padding:1px 8px; border-radius:10px; margin-right:4px; color:var(--gold);">كودك: ${studentCode}</span>
+          </div>
+        `;
       }
 
+      // مزامنة البيانات
       if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
-      window.syncStudentDataToCloud();
+      if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
       if (typeof listenToParentMessages === 'function') listenToParentMessages(studentCode);
+
     } else {
+      // 2. الطالب مش مسجل دخول (أو عمل خروج)
       if (loginBtn) loginBtn.style.display = 'flex';
       if (userProfile) userProfile.style.display = 'none';
-      if (welcomeText) welcomeText.textContent = `🌙 أهلاً بك`;
-
-      localStorage.removeItem('sm_active_plan');
-      if (typeof initPlanSetupUI === 'function') initPlanSetupUI();
+      if (welcomeText) {
+        welcomeText.innerHTML = `<div style="font-size: 13px; font-weight: bold; color: var(--gold);">🌙 أهلاً بك يا بطل</div>`;
+      }
     }
   });
 </script>
@@ -575,7 +574,7 @@ if (headerNameEl) headerNameEl.textContent = savedName;
   </div>
 
 <!-- HEADER الملكي على طريقة أثر -->
-<!-- HEADER الملكي المنظم والمريح للعين -->
+<!-- HEADER الملكي المنظم والمظبوط 100% -->
 <div class="header">
   
   <!-- 1. اليمين: القائمة وزر الثيم -->
@@ -584,26 +583,30 @@ if (headerNameEl) headerNameEl.textContent = savedName;
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
   </div>
 
-<!-- 2. المنتصف: الترحيب والاسم بقالب ديناميكي -->
-<div style="text-align: center;" id="headerWelcomeText">
-  <div style="font-size: 13px; font-weight: bold; color: var(--gold);">
-    🌙 أهلاً بك يا <span id="headerStudentNameText" style="color: #fff;">بطل</span>
+  <!-- 2. المنتصف: الترحيب والاسم والكود -->
+  <div style="text-align: center;" id="headerWelcomeText">
+    <div style="font-size: 13px; font-weight: bold; color: var(--gold);">
+      🌙 أهلاً بك يا بطل
+    </div>
   </div>
-</div>
 
-  <!-- 3. اليسار: البروفايل والصورة فقط -->
+  <!-- 3. اليسار: زر الدخول بجوجل أو صورة الحساب -->
   <div style="display: flex; align-items: center; gap: 6px;">
-    <button id="googleLoginBtn" onclick="loginWithGoogle()" style="display: flex; align-items: center; gap: 4px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
-      دخول
+    
+    <!-- زر الدخول (يظهر لو الطالب مش مسجل) -->
+    <button id="googleLoginBtn" onclick="loginWithGoogle()" style="display: flex; align-items: center; gap: 4px; background: rgba(212,175,55,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
+      دخول بجوجل
     </button>
 
+    <!-- البروفايل والصورة (يظهر بعد تسجيل الدخول فقط) -->
     <div id="userProfileInfo" style="display: none; align-items: center; gap: 6px;">
       <div style="position: relative;">
-        <img id="userImgDisplay" src="https://via.placeholder.com/35" onclick="if(this.src) openImageViewer(this.src)" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; cursor: pointer;">
-        <span onclick="document.getElementById('customAvatarInput').click()" style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: #111; font-size: 8px; border-radius: 50%; width: 13px; height: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer;">📷</span>
+        <img id="userImgDisplay" src="https://via.placeholder.com/35" onclick="if(this.src) openImageViewer(this.src)" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; cursor: pointer;" title="اضغط لتكبير صورتك">
+        <span onclick="document.getElementById('customAvatarInput').click()" style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: #111; font-size: 8px; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer;" title="تغيير الصورة">📷</span>
       </div>
       <input type="file" id="customAvatarInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(this)">
     </div>
+
   </div>
 
 </div>
