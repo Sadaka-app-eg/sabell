@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sabeel-almajd-v1';
+const CACHE_NAME = 'sabeel-almajd-v2';
 
 // قائمة الأصول والملفات المحلية والخارجية المطلوب تخزينها للأوفلاين
 const ASSETS_TO_CACHE = [
