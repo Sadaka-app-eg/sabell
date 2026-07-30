@@ -1,7 +1,8 @@
-const CACHE_NAME = 'sabeel-almajd-v2';
+// ⚠️ كل ما تعمل تحديث جديد للموقع، غيّر الرقم ده فقط (v3, v4, v5...)
+const CACHE_NAME = 'sabeel-almajd-v3';
 
-// قائمة الأصول والملفات المحلية والخارجية المطلوب تخزينها للأوفلاين
-const ASSETS_TO_CACHE = [
+// الملفات المحلية الخاصة بملفك فقط (المضمون تخزينها بدون مشاكل)
+const LOCAL_ASSETS = [
   './',
   './index.html',
   './parent.html',
@@ -13,36 +14,28 @@ const ASSETS_TO_CACHE = [
   './subjectTree.js',
   './studyBuddy.js',
   './aiAssistant.js',
-  './shareApp.js',
-
-  // الخطوط والمكتبات الخارجية
-  'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@600;700;800&display=swap',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js',
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
+  './shareApp.js'
 ];
 
-// 1. مرحلة التثبيت: كاش كافة الملفات
+// 1️⃣ التثبيت الإجباري والسريع
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // تجريب التحديث فوراً دون انتظار إغلاق المتصفح
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Caching all assets for offline use');
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+      console.log('[SW] Caching local assets...');
+      return cache.addAll(LOCAL_ASSETS);
+    })
   );
 });
 
-// 2. مرحلة التفعيل: تنظيف أي كاش قديم
+// 2️⃣ التفعيل وتنظيف الكاش القديم فوراً
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
-            console.log('[SW] Removing old cache:', cache);
+            console.log('[SW] Clearing old cache:', cache);
             return caches.delete(cache);
           }
         })
@@ -51,36 +44,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. مرحلة جلب الطلبات (Cache First Strategy)
+// 3️⃣ استراتيجية الاستجابة الذكية (Network First for Documents / Cache First for Assets)
 self.addEventListener('fetch', (event) => {
-  // تجنب كاش طلبات غير GET أو الطلبات الخاصة بالـ Extensions
   if (event.request.method !== 'GET') return;
+
+  // تجنب كاش روابط الفايربيس التفاعلية الخاصة بقواعد البيانات
+  const url = event.request.url;
+  if (url.includes('firestore.googleapis.com') || url.includes('identitytoolkit')) {
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // إرجاع النسخة المخزنة فوراً لسرعة التحميل بدون إنترنت
-        return cachedResponse;
-      }
-
-      // إذا لم تكن مخزنة، جلبها من الشبكة وتخزينها للمستقبل
-      return fetch(event.request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
+      // إرجاع الملف من الكاش لو موجود، مع جلبه من الشبكة في الخلفية لتحديثه للمرة القادمة
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
         }
-
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
-
         return networkResponse;
       }).catch(() => {
-        // في حالة قطع شبكة بالكامل
+        // لو مفيش نت خالص، ورابط الملاحة اطلب index.html
         if (event.request.mode === 'navigate') {
           return caches.match('./index.html');
         }
       });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
