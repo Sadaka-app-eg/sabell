@@ -81,11 +81,6 @@
       transition: all 0.3s;
     }
 
-    .code-input-group input:focus {
-      border-color: var(--gold);
-      box-shadow: 0 0 8px rgba(212, 175, 55, 0.3);
-    }
-
     .btn {
       background: var(--gold);
       color: #111;
@@ -95,15 +90,9 @@
       font-family: 'Amiri', serif;
       font-weight: bold;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
 
-    .btn:hover { opacity: 0.9; }
-
-    .btn-danger {
-      background: var(--red);
-      color: #fff;
-    }
+    .btn-danger { background: var(--red); color: #fff; }
 
     .stats-grid {
       display: grid;
@@ -155,20 +144,14 @@
       border-bottom: 1px dashed var(--border);
     }
 
-    .task-row:last-child { border-bottom: none; }
-
     .section-title {
       font-size: 14px;
       font-weight: bold;
       color: var(--gold);
       margin-bottom: 10px;
       font-family: 'Cairo', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
 
-    /* تنسيقات قسم الرسائل والفويسات */
     .chat-box {
       max-height: 250px;
       overflow-y: auto;
@@ -176,7 +159,6 @@
       flex-direction: column;
       gap: 10px;
       margin-bottom: 12px;
-      padding-left: 5px;
     }
 
     .msg-bubble {
@@ -187,47 +169,12 @@
       font-size: 13px;
     }
 
-    .msg-time {
-      font-size: 10px;
-      color: var(--text2);
-      margin-top: 4px;
-      text-align: left;
-    }
-
-    .audio-player {
-      width: 100%;
-      height: 35px;
-      margin-top: 5px;
-    }
-
-    .record-controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .recording-indicator {
-      color: var(--red);
-      font-size: 12px;
-      font-weight: bold;
-      display: none;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .pulse-dot {
-      width: 10px;
-      height: 10px;
-      background-color: var(--red);
-      border-radius: 50%;
-      animation: pulse 1s infinite;
-    }
-
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.3; }
-      100% { opacity: 1; }
-    }
+    .msg-time { font-size: 10px; color: var(--text2); margin-top: 4px; text-align: left; }
+    .audio-player { width: 100%; height: 35px; margin-top: 5px; }
+    .record-controls { display: flex; gap: 8px; align-items: center; }
+    .recording-indicator { color: var(--red); font-size: 12px; font-weight: bold; display: none; align-items: center; gap: 6px; }
+    .pulse-dot { width: 10px; height: 10px; background-color: var(--red); border-radius: 50%; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -239,17 +186,15 @@
     <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
     <p style="font-size: 12px; color: var(--text2);">متابعة حية وإرسال تشجيع صوتي ونصي للطالب</p>
     
-    <!-- قسم إدخال الكود -->
     <div class="code-input-group">
       <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
       <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
     </div>
   </div>
 
-  <!-- حاوية البيانات الحية (تظهر بعد إدخال الكود) -->
+  <!-- حاوية البيانات الحية -->
   <div id="parentDashboardContent" style="display: none;">
 
-    <!-- كارت بيانات الطالب -->
     <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
       <div>
         <h2 id="parentStudentName" style="font-size: 18px; color: var(--gold); font-family: 'Cairo', sans-serif;">اسم الطالب</h2>
@@ -260,7 +205,6 @@
       </div>
     </div>
 
-    <!-- شبكة الإحصائيات السريعة -->
     <div class="stats-grid">
       <div class="stat-box">
         <div class="stat-num" id="parentPlanCommitment">0%</div>
@@ -280,38 +224,28 @@
       </div>
     </div>
 
-    <!-- كارت تقييم المستوى -->
     <div class="card">
       <div class="section-title">📊 التقييم العام لأداء الطالب اليوم:</div>
-      <div id="parentEvaluationText" style="font-size: 13px; color: var(--text); line-height: 1.6;">
-        جاري تحليل البيانات...
-      </div>
+      <div id="parentEvaluationText" style="font-size: 13px; color: var(--text); line-height: 1.6;">جاري تحليل البيانات...</div>
     </div>
 
-    <!-- جدول إنجاز اليوم -->
     <div class="card">
       <div class="section-title">📋 جدول المهام اليومي (اليوم الحالي):</div>
       <div id="parentTasksTodayList" style="font-size: 13px;"></div>
     </div>
 
-    <!-- كارت الرسائل والتحفيز الصوتي والنصي -->
     <div class="card">
       <div class="section-title">🎙️ رسائل التحفيز والدعم للطالب:</div>
       
-      <!-- قائمة الرسائل المتبادلة/المرسلة -->
       <div class="chat-box" id="messagesChatBox">
-        <div style="color: var(--text2); text-align: center; font-size: 12px; padding: 10px;">
-          لا توجد رسائل تشجيعية بعد. استخدم الأدوات أدناه لإرسال فويس أو كلمة طيبة!
-        </div>
+        <div style="color: var(--text2); text-align: center; font-size: 12px; padding: 10px;">لا توجد رسائل بعد.</div>
       </div>
 
-      <!-- مؤشر جاري التسجيل الصوتي -->
       <div class="recording-indicator" id="recordingIndicator">
         <div class="pulse-dot"></div>
         <span>جاري تسجيل رسالة صوتية... (<span id="recordingTimer">0</span> ثانية)</span>
       </div>
 
-      <!-- نموذج إدخال الرسائل الصوتية والنصية -->
       <div class="record-controls" style="margin-top: 10px;">
         <input type="text" id="parentTextMsgInp" placeholder="اكتب كلمة تشجيعية هنا..." style="flex: 1; padding: 10px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); outline: none;">
         
@@ -324,11 +258,15 @@
 
 </div>
 
-<!-- Firebase Services (App, Firestore, Storage) -->
+<!-- 🖼️ نافذة تكبير الصورة -->
+<div id="imageViewerModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:9999999; background:rgba(0,0,0,0.9); align-items:center; justify-content:center;" onclick="this.style.display='none'">
+  <span style="position: absolute; top: 15px; left: 20px; color: #fff; font-size: 28px; cursor: pointer;">✕</span>
+  <img id="fullImageView" src="" style="max-width: 90vw; max-height: 85vh; border-radius: 12px; box-shadow: 0 0 20px rgba(212,175,55,0.4);">
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyD6lUURZNqgsHnjZaVz-T5Ww19TAjq6hjE",
@@ -341,25 +279,28 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
-  const storage = getStorage(app);
 
   let unsubscribeListener = null;
   let currentStudentCode = null;
 
-  // تسجيل الصوت
   let mediaRecorder = null;
   let audioChunks = [];
   let isRecording = false;
   let recordingInterval = null;
   let recordingSeconds = 0;
 
-  // 1. جلب بيانات الطالب للوحة ولي الأمر
+  window.openImageViewer = function(src) {
+    const modal = document.getElementById('imageViewerModal');
+    const img = document.getElementById('fullImageView');
+    if (modal && img && src) {
+      img.src = src;
+      modal.style.display = 'flex';
+    }
+  };
+
   window.fetchStudentDataForParent = function() {
     const code = document.getElementById('parentStudentCodeInp').value.trim().toUpperCase();
-    if (!code) {
-      alert("من فضلك أدخل كود الطالب أولاً");
-      return;
-    }
+    if (!code) { alert("من فضلك أدخل كود الطالب أولاً"); return; }
 
     currentStudentCode = code;
     if (unsubscribeListener) unsubscribeListener();
@@ -369,27 +310,23 @@
 
     unsubscribeListener = onSnapshot(studentRef, (docSnap) => {
       if (docSnap.exists()) {
-        const data = docSnap.data();
-        renderParentDashboard(data);
+        renderParentDashboard(docSnap.data());
       } else {
         alert("لم يتم العثور على طالب بهذا الكود! تأكد من كود الطالب.");
         document.getElementById('parentDashboardContent').style.display = 'none';
       }
-    }, (error) => {
-      console.error("خطأ في جلب البيانات:", error);
     });
   };
 
-  // 2. عرض البيانات والرسائل
   function renderParentDashboard(data) {
     document.getElementById('parentDashboardContent').style.display = 'block';
-document.getElementById('parentStudentName').innerHTML = `
-  <div style="display:flex; align-items:center; gap:8px;">
-    ${data.userAvatar ? `<img src="${data.userAvatar}" onclick="openImageViewer(this.src)" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; cursor:pointer;" title="تكبير الصورة">` : ''}
-    <span>${data.studentName || 'الطالب'}</span>
-  </div>
-`;
-
+    
+    document.getElementById('parentStudentName').innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px;">
+        ${data.userAvatar ? `<img src="${data.userAvatar}" onclick="openImageViewer(this.src)" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--gold); object-fit:cover; cursor:pointer;" title="تكبير الصورة">` : ''}
+        <span>${data.studentName || 'الطالب'}</span>
+      </div>
+    `;
     
     document.getElementById('parentStudentBranch').textContent = "الشعبة: " + (data.branch || 'غير محدد');
     
@@ -398,7 +335,6 @@ document.getElementById('parentStudentName').innerHTML = `
       document.getElementById('parentLastSync').textContent = "آخر تحديث: " + timeStr;
     }
 
-    // حساب جدول الإنجازات
     let totalCells = 0, doneCells = 0, tasksHtml = '';
     const currentDayIndex = data.currentDayIndex || 1;
 
@@ -407,21 +343,11 @@ document.getElementById('parentStudentName').innerHTML = `
       tasks.forEach(task => {
         const val = (data.plan.matrix && data.plan.matrix[task] && data.plan.matrix[task][currentDayIndex]) || 0;
         totalCells++;
-        
         let statusTag = '<span style="color:var(--text2);">⚪ لم تُحدد بعد</span>';
-        if (val === 1) { 
-          statusTag = '<span style="color:var(--green); font-weight:bold;">✅ تم الإنجاز</span>'; 
-          doneCells++; 
-        } else if (val === 2) { 
-          statusTag = '<span style="color:var(--red); font-weight:bold;">❌ قَصّر فيها</span>'; 
-        }
+        if (val === 1) { statusTag = '<span style="color:var(--green); font-weight:bold;">✅ تم الإنجاز</span>'; doneCells++; }
+        else if (val === 2) { statusTag = '<span style="color:var(--red); font-weight:bold;">❌ قَصّر فيها</span>'; }
 
-        tasksHtml += `
-          <div class="task-row">
-            <span style="font-weight:bold; color:var(--text);">${task}</span>
-            <span>${statusTag}</span>
-          </div>
-        `;
+        tasksHtml += `<div class="task-row"><span style="font-weight:bold; color:var(--text);">${task}</span><span>${statusTag}</span></div>`;
       });
     } else {
       tasksHtml = '<div style="color:var(--text2); text-align:center; padding: 10px;">لم يتم تقديم جدول بعد.</div>';
@@ -429,7 +355,6 @@ document.getElementById('parentStudentName').innerHTML = `
 
     document.getElementById('parentTasksTodayList').innerHTML = tasksHtml;
 
-    // الإحصائيات
     const commitmentPct = totalCells > 0 ? Math.round((doneCells / totalCells) * 100) : 0;
     document.getElementById('parentPlanCommitment').textContent = commitmentPct + "%";
     document.getElementById('parentCompletedTasksNum').textContent = `${doneCells}/${totalCells}`;
@@ -439,17 +364,11 @@ document.getElementById('parentStudentName').innerHTML = `
     document.getElementById('parentFocusMins').textContent = todayFocus;
     document.getElementById('parentStreakDays').textContent = (data.streak || 0) + " يوم";
 
-    // التقييم
     const evalBox = document.getElementById('parentEvaluationText');
-    if (commitmentPct >= 80) {
-      evalBox.innerHTML = "🌟 <b>أداء ممتاز:</b> ابنك ملتزم جداً بجدوله، أرسل له فويس تشجيعي ليكمل بإصرار!";
-    } else if (commitmentPct >= 50) {
-      evalBox.innerHTML = "⚡ <b>أداء جيد:</b> أداء مقبول ويحتاج لرسالة تذكير هادئة لمواصلة التركيز.";
-    } else {
-      evalBox.innerHTML = "⚠️ <b>تحذير متابعة:</b> الالتزام منخفض، أرسل له كلمة أو فويس داعم للوقوف معه.";
-    }
+    if (commitmentPct >= 80) evalBox.innerHTML = "🌟 <b>أداء ممتاز:</b> ابنك ملتزم جداً بجدوله، أرسل له فويس تشجيعي ليكمل بإصرار!";
+    else if (commitmentPct >= 50) evalBox.innerHTML = "⚡ <b>أداء جيد:</b> أداء مقبول ويحتاج لرسالة تذكير هادئة لمواصلة التركيز.";
+    else evalBox.innerHTML = "⚠️ <b>تحذير متابعة:</b> الالتزام منخفض، أرسل له كلمة أو فويس داعم للوقوف معه.";
 
-    // عرض الرسائل والفويسات المرسلة
     renderMessages(data.parentMessages || []);
   }
 
@@ -464,20 +383,9 @@ document.getElementById('parentStudentName').innerHTML = `
     messages.forEach(msg => {
       const timeStr = new Date(msg.timestamp).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
       if (msg.type === 'text') {
-        html += `
-          <div class="msg-bubble">
-            <div>💬 <b>ولي الأمر:</b> ${msg.content}</div>
-            <div class="msg-time">${timeStr}</div>
-          </div>
-        `;
+        html += `<div class="msg-bubble"><div>💬 <b>ولي الأمر:</b> ${msg.content}</div><div class="msg-time">${timeStr}</div></div>`;
       } else if (msg.type === 'audio') {
-        html += `
-          <div class="msg-bubble">
-            <div>🎙️ <b>رسالة صوتية تشجيعية:</b></div>
-            <audio controls class="audio-player" src="${msg.content}"></audio>
-            <div class="msg-time">${timeStr}</div>
-          </div>
-        `;
+        html += `<div class="msg-bubble"><div>🎙️ <b>رسالة صوتية تشجيعية:</b></div><audio controls class="audio-player" src="${msg.content}"></audio><div class="msg-time">${timeStr}</div></div>`;
       }
     });
 
@@ -485,42 +393,30 @@ document.getElementById('parentStudentName').innerHTML = `
     chatBox.scrollTop = chatBox.scrollHeight;
   }
 
-  // 3. إرسال رسالة نصية
   window.sendTextMessage = async function() {
     const input = document.getElementById('parentTextMsgInp');
     const text = input.value.trim();
     if (!text || !currentStudentCode) return;
 
     const studentRef = doc(db, "students", currentStudentCode);
-    const newMsg = {
-      type: 'text',
-      content: text,
-      timestamp: new Date().toISOString()
-    };
+    const newMsg = { type: 'text', content: text, timestamp: new Date().toISOString() };
 
     try {
-      await updateDoc(studentRef, {
-        parentMessages: arrayUnion(newMsg)
-      });
+      await updateDoc(studentRef, { parentMessages: arrayUnion(newMsg) });
       input.value = '';
     } catch (err) {
-      console.error("خطأ في إرسال الرسالة:", err);
       alert("تعذر إرسال الرسالة، تأكد من الاتصال.");
     }
   };
 
-  // 4. تسجيل وإرسال الفويس
+  // 🎙️ تسجيل الفويس وتحويله الفوري لـ Base64 بدقة وبدون معوقات سيرفر
   window.toggleAudioRecording = async function() {
-    if (!currentStudentCode) {
-      alert("يرجى إدخال كود الطالب أولاً");
-      return;
-    }
+    if (!currentStudentCode) { alert("يرجى إدخال كود الطالب أولاً"); return; }
 
     const btnRecord = document.getElementById('btnRecordAudio');
     const indicator = document.getElementById('recordingIndicator');
 
     if (!isRecording) {
-      // بدء التسجيل
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         mediaRecorder = new MediaRecorder(stream);
@@ -532,7 +428,24 @@ document.getElementById('parentStudentName').innerHTML = `
 
         mediaRecorder.onstop = async () => {
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          await uploadAndSendAudio(audioBlob);
+          
+          // تحويل الفويس لـ Base64 مباشر ورعه فوراً لـ Firestore
+          const reader = new FileReader();
+          reader.readAsDataURL(audioBlob);
+          reader.onloadend = async () => {
+            const base64Audio = reader.result;
+            const studentRef = doc(db, "students", currentStudentCode);
+            const newMsg = { type: 'audio', content: base64Audio, timestamp: new Date().toISOString() };
+
+            try {
+              await updateDoc(studentRef, { parentMessages: arrayUnion(newMsg) });
+            } catch (err) {
+              alert("تعذر حفظ الصوت، تأكد من اتصالك.");
+            } finally {
+              btnRecord.disabled = false;
+              btnRecord.textContent = "🎙️ فويس";
+            }
+          };
         };
 
         mediaRecorder.start();
@@ -549,54 +462,19 @@ document.getElementById('parentStudentName').innerHTML = `
         }, 1000);
 
       } catch (err) {
-        alert("لم يتم السماح بالوصول للميكروفون أو الأجهزة غير مدعومة.");
-        console.error(err);
+        alert("لم يتم السماح بالوصول للميكروفون.");
       }
     } else {
-      // إيقاف التسجيل والإرسال
       isRecording = false;
       mediaRecorder.stop();
       mediaRecorder.stream.getTracks().forEach(track => track.stop());
 
       clearInterval(recordingInterval);
-      btnRecord.textContent = "🎙️ فويس";
+      btnRecord.textContent = "جاري الحفظ... ⏳";
       btnRecord.classList.remove('btn-danger');
       indicator.style.display = 'none';
     }
   };
-
-  async function uploadAndSendAudio(blob) {
-    const btnRecord = document.getElementById('btnRecordAudio');
-    btnRecord.textContent = "جاري الرفع... ⏳";
-    btnRecord.disabled = true;
-
-    try {
-      // رفع الصوت لـ Firebase Storage
-      const fileName = `audio_msgs/${currentStudentCode}_${Date.now()}.webm`;
-      const storageRef = ref(storage, fileName);
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // حفظ الرابط في Firestore
-      const studentRef = doc(db, "students", currentStudentCode);
-      const newMsg = {
-        type: 'audio',
-        content: downloadURL,
-        timestamp: new Date().toISOString()
-      };
-
-      await updateDoc(studentRef, {
-        parentMessages: arrayUnion(newMsg)
-      });
-
-    } catch (err) {
-      console.error("خطأ أثناء رفع المقطع الصوتي:", err);
-      alert("حدث خطأ أثناء إرسال الفويس، تحقق من قواعد Firebase Storage.");
-    } finally {
-      btnRecord.disabled = false;
-      btnRecord.textContent = "🎙️ فويس";
-    }
-  }
 </script>
 
 </body>
