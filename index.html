@@ -831,14 +831,21 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
           جاهز للبدء؟ اضغط ابدأ واقفل أي حاجة تشغلك.
         </div>
 
-        <div style="display: flex; gap: 10px; justify-content: center;">
-          <button id="focusStartBtn" onclick="toggleFocusTimer()" style="background: var(--gold); color: #111; border: none; padding: 12px 30px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 15px; flex: 2;">
-            ⚡ ابدأ الجلسة
-          </button>
-          <button onclick="resetFocusTimer()" style="background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 18px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 14px; flex: 1;">
-            ↺ إعادة
-          </button>
-        </div>
+<div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+  <button id="focusStartBtn" onclick="toggleFocusTimer()" style="background: var(--gold); color: #111; border: none; padding: 12px 20px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 14px; flex: 2; min-width: 130px;">
+    ⚡ ابدأ الجلسة
+  </button>
+  
+  <!-- زر إنهاء وتسجيل الستوب ووتش المفتوح -->
+  <button id="focusStopSaveBtn" onclick="stopAndSaveStopwatch()" style="display: none; background: rgba(111, 191, 115, 0.2); border: 1px solid var(--green); color: var(--green); padding: 12px 16px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 13px; flex: 1.5;">
+    🛑 إنهاء وتسجيل
+  </button>
+
+  <button onclick="resetFocusTimer()" style="background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 12px 14px; border-radius: 14px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif; font-size: 13px; flex: 1;">
+    ↺ إلغاء
+  </button>
+</div>
+        
       </div>
 
       <div class="athr-card" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; margin-top: 10px;">
@@ -1589,23 +1596,23 @@ function toggleMatrixCell(taskName, dayNum) {
     }
 
     // ================= ⏱️ تايمر التركيز =================
-    function playTickSound() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.04);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.04);
-      } catch(e) {}
-    }
+function playTickSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1000, audioCtx.currentTime); // تردد أوضح
+    gain.gain.setValueAtTime(0.3, audioCtx.currentTime); // رفعنا الصوت من 0.04 لـ 0.3 (أقوى بـ 7 أضعاف!)
+    gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.08);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+  } catch(e) {}
+}
 
     let focusTimerInterval = null;
     let focusMode = 25;
@@ -1621,7 +1628,8 @@ function toggleMatrixCell(taskName, dayNum) {
       
       const activeBtn = document.getElementById('fMode_' + mode);
       if (activeBtn) activeBtn.classList.add('active');
-
+const stopSaveBtn = document.getElementById('focusStopSaveBtn');
+if (stopSaveBtn) stopSaveBtn.style.display = 'none';
       if (mode === 'stopwatch') {
         focusSecondsLeft = 0;
         stopwatchElapsedSecs = 0;
@@ -1641,72 +1649,90 @@ function toggleMatrixCell(taskName, dayNum) {
       document.getElementById('focusTimerDisplay').textContent = str;
     }
 
-    function toggleFocusTimer() {
-      const startBtn = document.getElementById('focusStartBtn');
+function toggleFocusTimer() {
+  // تفعيل الصوت عند الضغط
+  if (window.AudioContext || window.webkitAudioContext) {
+    const dummyCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (dummyCtx.state === 'suspended') dummyCtx.resume();
+  }
 
-      if (isFocusRunning) {
-        clearInterval(focusTimerInterval);
-        isFocusRunning = false;
-        startBtn.textContent = "⚡ استكمال الجلسة";
-        document.getElementById('focusStatusLabel').textContent = "الجلسة متوقفة مؤقتاً ⏸️";
-      } else {
-        isFocusRunning = true;
-        startBtn.textContent = "⏸️ إيقاف مؤقت";
-        document.getElementById('focusStatusLabel').textContent = "عاش يا بطل! التركيز شغال دلوقتي 🚀";
+  const startBtn = document.getElementById('focusStartBtn');
+  const stopSaveBtn = document.getElementById('focusStopSaveBtn');
 
-        focusTimerInterval = setInterval(() => {
-          if (focusMode === 'stopwatch') {
-            stopwatchElapsedSecs++;
-            updateFocusDisplay(stopwatchElapsedSecs);
-            playTickSound();
-          } else {
-            if (focusSecondsLeft > 0) {
-              focusSecondsLeft--;
-              updateFocusDisplay(focusSecondsLeft);
-              playTickSound();
-            } else {
-              completeFocusSession(focusMode);
-            }
-          }
-        }, 1000);
-      }
+  if (isFocusRunning) {
+    clearInterval(focusTimerInterval);
+    isFocusRunning = false;
+    startBtn.textContent = "⚡ استكمال الجلسة";
+    document.getElementById('focusStatusLabel').textContent = "الجلسة متوقفة مؤقتاً ⏸️";
+  } else {
+    isFocusRunning = true;
+    startBtn.textContent = "⏸️ إيقاف مؤقت";
+    document.getElementById('focusStatusLabel').textContent = "عاش يا بطل! التركيز شغال دلوقتي 🚀";
+
+    // لو شغال على وضع الستوب ووتش المفتوح نِظهر زرار الإنهاء والتسجيل
+    if (focusMode === 'stopwatch' && stopSaveBtn) {
+      stopSaveBtn.style.display = 'inline-block';
     }
+
+    focusTimerInterval = setInterval(() => {
+      if (focusMode === 'stopwatch') {
+        stopwatchElapsedSecs++;
+        updateFocusDisplay(stopwatchElapsedSecs);
+        playTickSound();
+      } else {
+        if (focusSecondsLeft > 0) {
+          focusSecondsLeft--;
+          updateFocusDisplay(focusSecondsLeft);
+          playTickSound();
+        } else {
+          completeFocusSession(focusMode);
+        }
+      }
+    }, 1000);
+  }
+}
 
     function resetFocusTimer() {
       clearInterval(focusTimerInterval);
       isFocusRunning = false;
       document.getElementById('focusStartBtn').textContent = "⚡ ابدأ الجلسة";
       setFocusMode(focusMode);
+      const stopSaveBtn = document.getElementById('focusStopSaveBtn');
+if (stopSaveBtn) stopSaveBtn.style.display = 'none';
     }
 
-    function completeFocusSession(minsCount) {
-      resetFocusTimer();
-      alert("🎉 الله ينور يا بطل! أتممت جلسة التركيز بنجاح. خُد 5 دقائق راحة ورست دماغك ✨");
+function completeFocusSession(minsCount) {
+  resetFocusTimer();
+  alert("🎉 الله ينور يا بطل! أتممت جلسة التركيز بنجاح. خُد 5 دقائق راحة ورست دماغك ✨");
 
-      const today = new Date().toLocaleDateString('en-CA');
-      let stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-      
-      if (!stats[today]) stats[today] = { mins: 0, sessions: 0 };
-      
-      stats[today].mins += (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
-      stats[today].sessions += 1;
+  const today = new Date().toLocaleDateString('en-CA'); // تاريخ اليوم YYYY-MM-DD
+  let stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+  
+  if (!stats[today]) stats[today] = { mins: 0, sessions: 0 };
+  
+  const addedMins = (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
+  stats[today].mins += addedMins;
+  stats[today].sessions += 1;
 
-localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
-      updateFocusStatsUI();
+  localStorage.setItem('sm_focus_stats', JSON.stringify(stats));
+  updateFocusStatsUI();
 
-      // 🤝 تسجيل الدقائق في تحدي شريك المذاكرة
-      const addedMins = (typeof minsCount === 'number' ? minsCount : Math.floor(stopwatchElapsedSecs / 60));
-      if (window.recordFocusSessionForBuddy) window.recordFocusSessionForBuddy(addedMins);
-    }
+  // المزامنة مع السحاب وشريك المذاكرة
+  if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
+  if (window.recordFocusSessionForBuddy) window.recordFocusSessionForBuddy(addedMins);
+}
 
-    function updateFocusStatsUI() {
-      const today = new Date().toLocaleDateString('en-CA');
-      const stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
-      const todayData = stats[today] || { mins: 0, sessions: 0 };
+function updateFocusStatsUI() {
+  const today = new Date().toLocaleDateString('en-CA');
+  const stats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+  const todayData = stats[today] || { mins: 0, sessions: 0 };
 
-      document.getElementById('todayFocusMins').textContent = todayData.mins;
-      document.getElementById('todayFocusSessions').textContent = todayData.sessions;
-    }
+  const minsEl = document.getElementById('todayFocusMins');
+  const sessEl = document.getElementById('todayFocusSessions');
+
+  if (minsEl) minsEl.textContent = todayData.mins;
+  if (sessEl) sessEl.textContent = todayData.sessions;
+}
 
     // ================= 📝 دفتر الأخطاء =================
     let currentMistakeImageBase64 = null;
@@ -2071,7 +2097,31 @@ function listenToParentMessages(studentCode) {
     }
   });
 }
+// 🛑 دالة إنهاء الستوب ووتش المفتوح وتسجيل الدقائق فوراً
+function stopAndSaveStopwatch() {
+  if (stopwatchElapsedSecs < 60) {
+    if (!confirm("أنت ذاكرت أقل من دقيقة، هل تريد إنهاء الجلسة وتسجيلها على أي حال؟")) {
+      return;
+    }
+  }
 
+  // إيقاف التايمر
+  clearInterval(focusTimerInterval);
+  isFocusRunning = false;
+
+  // حساب الدقائق المكتملة
+  const totalMins = Math.floor(stopwatchElapsedSecs / 60);
+
+  // إخفاء زر الإنهاء وإرجاع زر ابدأ لحالته الأصليّة
+  document.getElementById('focusStopSaveBtn').style.display = 'none';
+  document.getElementById('focusStartBtn').textContent = "⚡ ابدأ الجلسة";
+
+  // إرسال الدقائق للتسجيل في اليوم
+  completeFocusSession(totalMins);
+
+  // تصفير الستوب ووتش
+  setFocusMode('stopwatch');
+}
 // دالة طباعة الرسائل والفويسات في شاشة الطالب
 function renderStudentParentMessages(messages) {
   const container = document.getElementById('studentParentMessagesList');
