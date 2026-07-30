@@ -1,42 +1,67 @@
 // ===============================================
-// 🤖 المساعد الذكي لتطبيق سبيل المجد - aiAssistant.js
+// 🎯 المساعد الشخصي والموجه الدراسي - aiAssistant.js
 // ===============================================
 
-// مفتاح Groq المستقر والسريع جداً
 const GROQ_API_KEY = "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";
 
-const SYSTEM_INSTRUCTION = `
-أنت "المعلم الذكي" في تطبيق "سبيل المجد" للثانوية العامة المصرية.
-دورك شرح المفاهيم الصعبة، استخراج القوانين الفيزيائية والرياضية، وحل المسائل خطوة بخطوة.
-تنبيه هام جداً: اكتب جميع القوانين والرموز باللغة العربية الواضحة والأرقام العادية دون استخدام رموز مشفرة أو لغة LaTeX أو رموز غريبة.
-اجعل الإجابة دقيقة، واضحة، سهلة الفهم، وبأسلوب مشجع جداً.
+// دالة تجميع بيانات الطالب الحالية من LocalStorage
+function getStudentContextPrompt() {
+  const branch = localStorage.getItem('sm_user_branch') || 'غير محددة';
+  const plan = JSON.parse(localStorage.getItem('sm_active_plan') || 'null');
+  const mistakes = JSON.parse(localStorage.getItem('sm_user_mistakes') || '[]');
+  const focusStats = JSON.parse(localStorage.getItem('sm_focus_stats') || '{}');
+  
+  // حساب نسبة الالتزام والدقائق
+  let commitmentPct = 0;
+  if (plan && plan.matrix) {
+    let total = 0, done = 0;
+    Object.keys(plan.matrix).forEach(t => {
+      Object.keys(plan.matrix[t]).forEach(d => {
+        total++;
+        if (plan.matrix[t][d] === 1) done++;
+      });
+    });
+    commitmentPct = total > 0 ? Math.round((done / total) * 100) : 0;
+  }
+
+  const today = new Date().toLocaleDateString('en-CA');
+  const todayFocus = focusStats[today]?.mins || 0;
+
+  // ملخص الأخطاء حسب المواد
+  const mistakesSummary = mistakes.map(m => `${m.subj} (${m.chapter})`).join(', ') || 'لا توجد أخطاء مسجلة بعد';
+
+  return `
+[بيانات الطالب الحالية في التطبيق]:
+- الشعبة: ${branch}
+- نسبة الالتزام بالجدول: ${commitmentPct}%
+- دقائق التركيز اليوم: ${todayFocus} دقيقة
+- عدد الأخطاء المسجلة في دفتر الأخطاء: ${mistakes.length} سؤال.
+- تفاصيل الأخطاء والدروس الضعيف فيها: ${mistakesSummary}
 `;
+}
 
-let currentAiImgBase64 = null;
-
-// دالة تنظيف الردود من أي رموز غريبة أو تفكير مشفر
+// دالة تنظيف الردود
 function cleanAiResponse(text) {
   if (!text) return "";
   let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
-  cleaned = cleaned.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1 ÷ $2)");
-  cleaned = cleaned.replace(/\\times/g, " × ");
-  cleaned = cleaned.replace(/\\cdot/g, " · ");
-  cleaned = cleaned.replace(/[\$\\]/g, ""); 
   return cleaned.trim();
 }
 
-// الدالة الرئيسية المستقرة 100% عبر Groq
-async function askSmartTeacher(userPrompt, imageBase64 = null) {
-  const selectedModel = document.getElementById('aiModelSelect')?.value || "llama-3-70b";
+// دالة إرسال السؤال عبر Llama 3.3 الخرافي على Groq
+async function askSmartTeacher(userPrompt) {
+  const studentData = getStudentContextPrompt();
+  
+  const systemInstruction = `
+أنت "المساعد الشخصي والموجه الدراسي" للطالب في تطبيق "سبيل المجد" للثانوية العامة المصرية.
+لديك البيانات التالية الخاصة بالطالب:
+${studentData}
 
-  // تحديد الموديل المناسب المتاح على Groq
-  let groqModelName = "llama-3.3-70b-versatile"; 
-  if (selectedModel === "deepseek-r1") {
-    groqModelName = "deepseek-r1-distill-llama-70b";
-  } else if (selectedModel === "mixtral-8x7b") {
-    groqModelName = "qwen-2.5-coder-32b";
-  }
+دورك:
+1. تقديم تقييم شخصي صادق ومشجع لمستوى الطالب بناءً على التزامه وأخطائه المسجلة.
+2. توجييهه وتحديد نقاط ضعفه في المواد (استناداً لدفتر أخطائه) وتقديم خطة علاجية عملة.
+3. التحدث معه كأخ أكبر وموجه نفسي ودراسي مخلص، بإجابات ملخصة وواضحة جداً وبأسلوب مشجع.
+`;
 
   try {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -46,12 +71,12 @@ async function askSmartTeacher(userPrompt, imageBase64 = null) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: groqModelName,
+        model: "llama-3.3-70b-versatile",
         messages: [
-          { role: "system", content: SYSTEM_INSTRUCTION },
+          { role: "system", content: systemInstruction },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.5
+        temperature: 0.6
       })
     });
 
@@ -59,46 +84,35 @@ async function askSmartTeacher(userPrompt, imageBase64 = null) {
     if (data.choices && data.choices[0]?.message?.content) {
       return cleanAiResponse(data.choices[0].message.content);
     } else {
-      console.error("Groq Error Details:", data);
-      return "⚠️ المحرك يمر بتحديث سريع، حاول إرسال السؤال مرة أخرى!";
+      return "⚠️ الموجه الشخصي مشغول حالياً، أعد إرسال سؤالك بعد ثوانٍ!";
     }
   } catch (err) {
-    console.error("Groq Network Error:", err);
-    return "❌ يتعذر الاتصال بالخادم حالياً. تأكد من اتصالك بالإنترنت!";
+    return "❌ يتعذر الاتصال بالموجه الشخصي. تأكد من اتصالك بالإنترنت!";
   }
 }
 
-// 💬 واجهة الشات والإرسال
+// 💬 واجهة الشات
 async function sendAiMessage() {
   const inp = document.getElementById('aiMsgInput');
   const val = inp.value.trim();
-  if (!val && !currentAiImgBase64) return;
+  if (!val) return;
 
   const chatBox = document.getElementById('aiChatMessages');
   
-  let userHtml = `<div style="align-self: flex-start; background: rgba(212,175,55,0.15); border: 1px solid var(--gold); padding: 8px 12px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 13px;">`;
-  if (currentAiImgBase64) {
-    userHtml += `<img src="${currentAiImgBase64}" style="max-width: 100%; max-height: 150px; border-radius: 8px; margin-bottom: 6px; display: block;">`;
-  }
-  userHtml += `${val || "شرح الصورة المرفقة"}</div>`;
-  
+  let userHtml = `<div style="align-self: flex-start; background: rgba(212,175,55,0.15); border: 1px solid var(--gold); padding: 8px 12px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 13px;">${val}</div>`;
   chatBox.insertAdjacentHTML('beforeend', userHtml);
   
-  const promptText = val || "اشرح لي هذه المسألة والقوانين الخاصة بها بالتفصيل.";
-  const imgData = currentAiImgBase64;
   inp.value = '';
-  document.getElementById('aiImgPreview').style.display = 'none';
-  currentAiImgBase64 = null;
 
   const loadingId = 'loading_' + Date.now();
   chatBox.insertAdjacentHTML('beforeend', `
     <div id="${loadingId}" style="align-self: flex-end; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 12px; color: var(--gold);">
-      🤖 المعلم الذكي يكتب الإجابة والقوانين... ☕
+      🎯 المساعد الشخصي يحلل بياناتك ويكتب التوجيه... ☕
     </div>
   `);
   chatBox.scrollTop = chatBox.scrollHeight;
 
-  const reply = await askSmartTeacher(promptText, imgData);
+  const reply = await askSmartTeacher(val);
 
   const loadingEl = document.getElementById(loadingId);
   if (loadingEl) {
@@ -107,22 +121,24 @@ async function sendAiMessage() {
     loadingEl.style.color = "var(--text)";
     loadingEl.style.fontSize = "13px";
     loadingEl.style.lineHeight = "1.6";
-    loadingEl.innerHTML = `<b style="color:var(--green); display:block; margin-bottom:4px;">🤖 المعلم الذكي:</b>` + reply.replace(/\n/g, '<br>');
+    loadingEl.innerHTML = `<b style="color:var(--green); display:block; margin-bottom:4px;">🎯 المساعد الشخصي:</b>` + reply.replace(/\n/g, '<br>');
   }
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function handleAiImageUpload(inp) {
-  const file = inp.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    currentAiImgBase64 = e.target.result;
-    const prev = document.getElementById('aiImgPreview');
-    if (prev) {
-      prev.style.display = 'block';
-      prev.textContent = "📸 تم إرفاق الصورة، اكتب سؤالك واضغط إرسال";
-    }
-  };
-  reader.readAsDataURL(file);
+// 🌐 دالة فتح النماذج الخارجية ونقل السؤال إليها فوراً
+function openExternalAi(service) {
+  const inp = document.getElementById('aiMsgInput');
+  const query = encodeURIComponent(inp.value.trim() || "اشرح لي منهج الثانوية العامة والمسائل الصعبة خطوة بخطوة.");
+  
+  let url = "";
+  if (service === 'chatgpt') {
+    url = `https://chatgpt.com/?q=${query}`;
+  } else if (service === 'claude') {
+    url = `https://claude.ai/new`;
+  } else if (service === 'gemini') {
+    url = `https://gemini.google.com/app`;
+  }
+
+  window.open(url, '_blank');
 }
