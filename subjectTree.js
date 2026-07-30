@@ -233,22 +233,32 @@ async function saveSummaryEntry(key, entry) {
 }
 
 // حذف ملخص معين
-async function deleteSummaryEntry(key, entryId) {
-  const user = auth.currentUser;
-  const userKey = user ? `sm_summaries_${user.uid}` : 'sm_summaries_guest';
-  
+// جلب دالة المفتاح الموحد
+function getSummaryUserKey() {
+  const user = (window.firebase && window.firebase.auth) ? window.firebase.auth().currentUser : null;
+  return user ? `sm_summaries_${user.uid}` : 'sm_summaries_guest';
+}
+
+async function getLessonSummaries(key) {
+  const userKey = getSummaryUserKey();
+  const all = await localforage.getItem(userKey) || {};
+  return all[key] || [];
+}
+
+async function saveSummaryEntry(key, entry) {
+  const userKey = getSummaryUserKey();
   let all = await localforage.getItem(userKey) || {};
-  if (!all[key]) return;
-  
-  all[key] = all[key].filter(e => e.id !== entryId);
+  if (!all[key]) all[key] = [];
+  all[key].push(entry);
   await localforage.setItem(userKey, all);
 }
 
-function deleteSummaryEntry(key, entryId) {
-  const all = JSON.parse(localStorage.getItem('sm_summaries') || '{}');
+async function deleteSummaryEntry(key, entryId) {
+  const userKey = getSummaryUserKey();
+  let all = await localforage.getItem(userKey) || {};
   if (!all[key]) return;
   all[key] = all[key].filter(e => e.id !== entryId);
-  localStorage.setItem('sm_summaries', JSON.stringify(all));
+  await localforage.setItem(userKey, all);
 }
 
 function lessonKey(subject, chapterId, lessonId) {
@@ -342,23 +352,26 @@ function toggleChapterOpen(chapterId) {
   }
 }
 
-function renderLessonsList(chapterId) {
+async function renderLessonsList(chapterId) {
   const chapters = subjectLessonsTree[currentTreeSubject] || [];
   const ch = chapters.find(c => c.id === chapterId);
   if (!ch) return;
 
   const listEl = document.getElementById('lessonsList_' + chapterId);
-  listEl.innerHTML = ch.lessons.map(ls => {
-    const entries = getLessonSummaries(lessonKey(currentTreeSubject, chapterId, ls.id));
+  
+  let html = '';
+  for (const ls of ch.lessons) {
+    const entries = await getLessonSummaries(lessonKey(currentTreeSubject, chapterId, ls.id));
     const hasSummary = entries.length > 0;
-    return `
+    html += `
       <div class="lesson-row" onclick="openLessonTools('${chapterId}', '${ls.id}')">
         <span>${hasSummary ? '✅' : '⬜'} ${ls.name}</span>
         <span style="font-size:11px; color:var(--gold);">${hasSummary ? entries.length + ' ملخص' : 'لخّص الدرس'}</span>
       </div>
     `;
-  }).join('');
-}
+  }
+  listEl.innerHTML = html;
+}  
 
 // ================= 🛠️ بوب أب أدوات التلخيص (درس أو فصل) =================
 function openLessonTools(chapterId, lessonId) {
@@ -420,11 +433,11 @@ ${e.type === 'image' ? `<img src="${e.content}" onclick="openImageViewer(this.sr
   `).join('');
 }
 
-function removeToolEntry(entryId) {
+async function removeToolEntry(entryId) {
   const key = getCurrentKey();
-  deleteSummaryEntry(key, entryId);
-  renderToolEntries(key);
-  if (currentTreeChapter) renderLessonsList(currentTreeChapter);
+  await deleteSummaryEntry(key, entryId);
+  await renderToolEntries(key);
+  if (currentTreeChapter) await renderLessonsList(currentTreeChapter);
 }
 
 function closeLessonToolsModal() {
@@ -449,21 +462,25 @@ function handleToolImageUpload(inputEl) {
   const file = inputEl.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
-    saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'image', content: e.target.result, date: new Date().toLocaleDateString('ar-EG') });
-    renderToolEntries(getCurrentKey());
-    if (currentTreeChapter) renderLessonsList(currentTreeChapter);
+  reader.onload = async (e) => {
+    await saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'image', content: e.target.result, date: new Date().toLocaleDateString('ar-EG') });
+    await renderToolEntries(getCurrentKey());
+    if (currentTreeChapter) await renderLessonsList(currentTreeChapter);
     inputEl.value = '';
   };
   reader.readAsDataURL(file);
 }
 
 // ---- تسجيل فويس ----
+let recordingTimerInterval = null;
+let recordingSeconds = 0;
+
 async function toggleVoiceRecording() {
   const btn = document.getElementById('toolRecordBtn');
 
   if (activeMediaRecorder && activeMediaRecorder.state === 'recording') {
     activeMediaRecorder.stop();
+    clearInterval(recordingTimerInterval);
     return;
   }
 
@@ -474,12 +491,13 @@ async function toggleVoiceRecording() {
 
     activeMediaRecorder.ondataavailable = (e) => recordedAudioChunks.push(e.data);
     activeMediaRecorder.onstop = () => {
+      clearInterval(recordingTimerInterval);
       const blob = new Blob(recordedAudioChunks, { type: 'audio/webm' });
       const reader = new FileReader();
-      reader.onload = (e) => {
-        saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'audio', content: e.target.result, date: new Date().toLocaleDateString('ar-EG') });
-        renderToolEntries(getCurrentKey());
-        if (currentTreeChapter) renderLessonsList(currentTreeChapter);
+      reader.onload = async (e) => {
+        await saveSummaryEntry(getCurrentKey(), { id: Date.now(), type: 'audio', content: e.target.result, date: new Date().toLocaleDateString('ar-EG') });
+        await renderToolEntries(getCurrentKey());
+        if (currentTreeChapter) await renderLessonsList(currentTreeChapter);
       };
       reader.readAsDataURL(blob);
       stream.getTracks().forEach(t => t.stop());
@@ -488,7 +506,16 @@ async function toggleVoiceRecording() {
     };
 
     activeMediaRecorder.start();
-    btn.textContent = "⏹️ إيقاف التسجيل";
+    recordingSeconds = 0;
+    
+    // العداد التفاعلي بالثواني
+    recordingTimerInterval = setInterval(() => {
+      recordingSeconds++;
+      const mins = Math.floor(recordingSeconds / 60);
+      const secs = recordingSeconds % 60;
+      btn.textContent = `🔴 جاري التسجيل (${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')})`;
+    }, 1000);
+
     btn.style.background = "#ff6b6b";
   } catch (err) {
     alert("مش قادر أوصل للميكروفون، تأكد من إذن الميكروفون في المتصفح 🎙️");
