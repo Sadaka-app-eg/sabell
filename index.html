@@ -2430,12 +2430,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 }
    // 📲 دالة مشاركة رابط وموقع المتابعة لولي الأمر عبر الواتساب
+// 📲 دالة مشاركة رابط وموقع المتابعة لولي الأمر عبر الواتساب
 function shareParentLink() {
   const code = window.getMyStudentCode ? window.getMyStudentCode() : (localStorage.getItem('sm_student_code') || 'SM-GUEST');
-  const studentName = window.getMyStudentName ? window.getMyStudentName() : 'ابنك';
   
-  // رابط صفحة ولي الأمر المباشر
-  const parentPageUrl = window.location.origin + "/parent.html";
+  // الرابط المباشر والدقيق لصفحة ولي الأمر على Vercel
+  const parentPageUrl = "https://sabell.vercel.app/parent.html";
   
   const text = `السلام عليكم يا بابا 🌸\nده رابط متابعة مستواي ودراستي على تطبيق (سبيل المجد):\n🔗 ${parentPageUrl}\n\n🔑 كود المتابعة الخاص بي: *${code}*\n\nتقدر تتفرج على التزامي ودقائق تركيزي وتبعتلي فويس أو رسائل تشجيع تظهر عندي فوراً! ❤️`;
 
@@ -2445,7 +2445,6 @@ function shareParentLink() {
       text: text
     }).catch(() => {});
   } else {
-    // فتح الواتساب مباشرة لو الـ Native share مش متاح
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
 }
