@@ -576,12 +576,26 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 14px; height: 14px;">
   دخول
 </button>
+<!-- كارت حث الطالب على رفع صورته الشخصية -->
+<div id="uploadPhotoBanner" class="athr-card" style="display: none; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); text-align: center; margin-bottom: 12px;">
+  <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 6px;">📸 ضع صورتك الشخصية لتزيين حسابك ولوحة المتابعة!</div>
+  <button onclick="document.getElementById('customAvatarInput').click()" class="btn-small">اختيار صورة شخصية الآن</button>
+</div>
+<!-- بروفايل الصورة والاسم في الهيدر الرئيسي -->
+<div id="userProfileInfo" style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px;">
+  
+  <div style="position: relative;">
+    <!-- الضغط على الصورة يكبرها فوراً -->
+    <img id="userImgDisplay" src="https://via.placeholder.com/35" onclick="if(this.src) openImageViewer(this.src)" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; box-shadow: 0 0 8px rgba(212,175,55,0.3); cursor: pointer;" title="اضغط لتكبير الصورة 🔍">
+    
+    <!-- الضغط على أيقونة الكاميرا يفتح اختيار صورة جديدة -->
+    <span onclick="document.getElementById('customAvatarInput').click()" style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: #111; font-size: 8px; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer;" title="تغيير الصورة">📷</span>
+  </div>
 
-    <!-- بروفايل المستخدم (يظهر بعد تسجيل الدخول) -->
-    <div id="userProfileInfo" style="display: none; align-items: center; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 3px 10px; border-radius: 20px; cursor: pointer;" onclick="logoutGoogle()">
-      <img id="userImgDisplay" src="" style="width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--gold);">
-      <span id="userNameDisplay" style="font-size: 12px; font-weight: bold; color: var(--gold);"></span>
-    </div>
+  <span id="userNameDisplay" style="font-size: 12px; font-weight: bold; color: var(--gold); cursor: pointer;" onclick="logoutGoogle()" title="اضغط لتسجيل الخروج">الطالب</span>
+
+  <input type="file" id="customAvatarInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(this)">
+</div>
 
   </div>
 
@@ -2362,6 +2376,60 @@ function renderStudentParentMessages(messages) {
   container.innerHTML = html;
   // التمرير للتلقائي لآخر رسالة
   container.scrollTop = container.scrollHeight;
+}
+   // 📸 دالة رفع الصورة الشخصية وتحديثها في كل الصفحة
+function handleCustomAvatarUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const base64Img = e.target.result;
+    
+    // 1. حفظ الصورة في الذاكرة
+    localStorage.setItem('sm_user_custom_avatar', base64Img);
+    
+    // 2. تحديث صورة الهيدر فوراً
+    const imgDisplay = document.getElementById('userImgDisplay');
+    if (imgDisplay) imgDisplay.src = base64Img;
+
+    // 3. إخفاء كارت الحث على رفع الصورة
+    const banner = document.getElementById('uploadPhotoBanner');
+    if (banner) banner.style.display = 'none';
+
+    // 4. رفع وتحديث البيانات في السحاب لو متاح
+    if (window.syncStudentDataToCloud) window.syncStudentDataToCloud();
+    
+    alert("✨ تم تحديث صورتك الشخصية بنجاح!");
+  };
+  reader.readAsDataURL(file);
+}
+
+// 🔄 دالة استرجاع الصورة المحفوظة أول ما الموقع يفتح
+function loadSavedCustomAvatar() {
+  const savedAvatar = localStorage.getItem('sm_user_custom_avatar');
+  const imgDisplay = document.getElementById('userImgDisplay');
+  const banner = document.getElementById('uploadPhotoBanner');
+
+  if (savedAvatar && imgDisplay) {
+    imgDisplay.src = savedAvatar;
+    if (banner) banner.style.display = 'none';
+  } else if (banner) {
+    banner.style.display = 'block';
+  }
+}
+
+// تشغيل الاسترجاع عند الفتح
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(loadSavedCustomAvatar, 800);
+});
+   function openImageViewer(src) {
+  const modal = document.getElementById('imageViewerModal');
+  const img = document.getElementById('fullImageView');
+  if (modal && img && src) {
+    img.src = src;
+    modal.style.display = 'flex';
+  }
 }
  </script>
   
