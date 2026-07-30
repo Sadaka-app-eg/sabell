@@ -66,7 +66,8 @@ function handleMyDocUpdate(data) {
   renderIncomingRequests(requests);
 
   const cheers = data.buddyCheers || [];
-  renderCheersInbox(cheers);
+const messages = data.buddyChatMessages || [];
+  renderBuddyChatBox(messages);
 
   if (data.buddyCode) {
     myBuddyCode = data.buddyCode;
@@ -293,25 +294,120 @@ async function sendQuickCheer(emoji) {
   setTimeout(() => { updateWeeklyLeadBadge(); }, 1800);
 }
 
-function renderCheersInbox(cheers) {
-  const box = document.getElementById('cheersInboxBox');
+// ================= 💬 نظام الشات المباشر (نص / صور / فويس) =================
+
+// 1. عرض صندوق الشات
+function renderBuddyChatBox(messages) {
+  const box = document.getElementById('buddyChatBox');
   if (!box) return;
 
-  if (!cheers || cheers.length === 0) {
-    box.innerHTML = `<div style="font-size:12px; color:var(--text2); text-align:center;">لسه مفيش تحفيز وصلك من شريكك 🌿</div>`;
+  if (!messages || messages.length === 0) {
+    box.innerHTML = `<div style="font-size:11px; color:var(--text2); text-align:center; padding:10px;">لسه مفيش رسائل بينكم. ابدأ وشجع صاحبك! 🌿</div>`;
     return;
   }
 
-  const recent = cheers.slice(-5).reverse();
-  box.innerHTML = `
-    <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:8px;">💌 آخر تحفيزات وصلتك:</div>
-    ${recent.map(c => `
-      <div style="font-size:13px; color:var(--text); margin-bottom:4px;">
-        ${c.emoji} من <b>${c.from}</b>
-        <span style="font-size:10px; color:var(--text2);"> - ${new Date(c.at).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
+  const recent = messages.slice(-20); // عرض آخر 20 رسالة
+  box.innerHTML = recent.map(m => {
+    const isMe = (m.from === myOwnName);
+    const timeStr = new Date(m.at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const alignStyle = isMe ? 'align-self: flex-start; background: rgba(212,175,55,0.12); border-color: var(--gold);' : 'align-self: flex-end; background: rgba(111,191,115,0.12); border-color: var(--green);';
+
+    let contentHtml = '';
+    if (m.type === 'text') {
+      contentHtml = `<div style="font-size:12px; color:var(--text); line-height:1.5;">${m.content}</div>`;
+    } else if (m.type === 'image') {
+      contentHtml = `<img src="${m.content}" onclick="openImageViewer(this.src)" style="max-width:180px; max-height:140px; border-radius:8px; border:1px solid var(--border); cursor:pointer;" title="اضغط لتكبير الصورة">`;
+    } else if (m.type === 'audio') {
+      contentHtml = `<audio controls src="${m.content}" style="width:180px; height:32px;"></audio>`;
+    }
+
+    return `
+      <div style="max-width:80%; padding:6px 10px; border-radius:10px; border:1px solid var(--border); ${alignStyle}">
+        <div style="font-size:10px; color:var(--gold); font-weight:bold; margin-bottom:2px;">${isMe ? 'إنت' : m.from}</div>
+        ${contentHtml}
+        <div style="font-size:9px; color:var(--text2); text-align:left; margin-top:2px;">${timeStr}</div>
       </div>
-    `).join('')}
-  `;
+    `;
+  }).join('');
+
+  box.scrollTop = box.scrollHeight; // التمرير التلقائي لأحدث رسالة
+}
+
+// 2. إرسال رسالة عامة (متبادلة بين الطرفين)
+async function sendBuddyChatMessage(type, content) {
+  if (!myBuddyCode) return;
+
+  const entry = { from: myOwnName, type: type, content: content, at: Date.now() };
+
+  // رفع الرسالة في مستندي ومستند الشريك لظهورها فوراً
+  const myRef = window.fireDoc(window.fireDB, "students", myOwnCode);
+  const buddyRef = window.fireDoc(window.fireDB, "students", myBuddyCode);
+
+  await window.fireUpdateDoc(myRef, { buddyChatMessages: window.fireArrayUnion(entry) });
+  await window.fireUpdateDoc(buddyRef, { buddyChatMessages: window.fireArrayUnion(entry) });
+}
+
+// 3. إرسال نص
+async function sendBuddyTextMessage() {
+  const inp = document.getElementById('buddyMsgInput');
+  const val = inp.value.trim();
+  if (!val) return;
+
+  inp.value = '';
+  await sendBuddyChatMessage('text', val);
+}
+
+// 4. إرسال صورة
+function handleBuddyImageSend(fileInp) {
+  const file = fileInp.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    await sendBuddyChatMessage('image', e.target.result);
+    fileInp.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+// 5. تسجيل وإرسال فويس
+let buddyAudioRecorder = null;
+let buddyAudioChunks = [];
+let isBuddyRecording = false;
+
+async function toggleBuddyVoiceRecord() {
+  const btn = document.getElementById('buddyVoiceBtn');
+
+  if (!isBuddyRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      buddyAudioRecorder = new MediaRecorder(stream);
+      buddyAudioChunks = [];
+
+      buddyAudioRecorder.ondataavailable = e => buddyAudioChunks.push(e.data);
+      buddyAudioRecorder.onstop = () => {
+        const blob = new Blob(buddyAudioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          await sendBuddyChatMessage('audio', reader.result);
+        };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      buddyAudioRecorder.start();
+      isBuddyRecording = true;
+      btn.textContent = "🛑";
+      btn.style.background = "#ff6b6b";
+    } catch (e) {
+      alert("يرجى إعطاء إذن استخدام الميكروفون للتسجيل 🎙️");
+    }
+  } else {
+    buddyAudioRecorder.stop();
+    isBuddyRecording = false;
+    btn.textContent = "🎙️";
+    btn.style.background = "var(--card)";
+  }
 }
 
 // ================= 🏆 سجل الأسابيع =================
