@@ -294,10 +294,21 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 <body>
 <!-- Firebase App, Auth & Firestore Services -->
 <!-- Firebase App, Auth & Firestore Services -->
+<!-- Firebase App, Auth & Firestore Services -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-  import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signInWithPopup, 
+    signInWithRedirect, 
+    getRedirectResult, 
+    signOut, 
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence 
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   // إعدادات المشروع
@@ -318,7 +329,10 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   const provider = new GoogleAuthProvider();
   const db = getFirestore(app);
 
-  // 🔓 إتاحة أدوات Firestore لملف شريك المذاكرة (studyBuddy.js)
+  // تثبيت حفظ جلسة الدخول في ذاكرة المتصفح الدائمة
+  setPersistence(auth, browserLocalPersistence).catch(err => console.error("Persistence error:", err));
+
+  // 🔓 إتاحة أدوات Firestore لجميع الملفات الخارجية
   window.fireDB = db;
   window.fireDoc = doc;
   window.fireSetDoc = setDoc;
@@ -350,7 +364,7 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   // ☁️ 2. دالة رفع حالة الطالب للسحاب
   window.syncStudentDataToCloud = async function() {
     const user = auth.currentUser;
-    if (!user) return; // عدم التنفيذ إذا لم يكن مسجلاً
+    if (!user) return;
     const studentCode = getOrCreateStudentCode(user);
     
     const activePlan = JSON.parse(localStorage.getItem('sm_active_plan_' + user.uid) || localStorage.getItem('sm_active_plan') || 'null');
@@ -390,12 +404,23 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     }
   };
 
-  // 🚪 3. تسجيل الدخول والخروج
+  // 🚪 3. تسجيل الدخول بأسلوب هجين ذكي (Popup أولاً ثم Redirect لو فشل)
   window.loginWithGoogle = async function() {
     try {
-      await signInWithRedirect(auth, provider);
+      // نحاول أولاً باستخدام Popup لأنه يعمل فوراً في أغلب المتصفحات بدون فقدان الجلسة
+      await signInWithPopup(auth, provider);
     } catch (error) {
-      alert("حدث خطأ في تسجيل الدخول: " + error.message);
+      console.warn("Popup blocked/failed, switching to Redirect...", error.code);
+      // إذا تم حظر الـ Popup على الموبايل تحول فوراً للـ Redirect
+      if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirError) {
+          alert("حدث خطأ في تسجيل الدخول: " + redirError.message);
+        }
+      } else {
+        alert("حدث خطأ في تسجيل الدخول: " + error.message);
+      }
     }
   };
 
@@ -407,16 +432,16 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     }
   };
 
-  // 🔄 4. التقاط نتيجة الـ Redirect فور تحميل الصفحة
+  // 🔄 4. التقاط نتيجة الـ Redirect عند العودة للموقع
   getRedirectResult(auth).then((result) => {
     if (result && result.user) {
-      console.log("تم استلام بيانات تسجيل الدخول بأسلوب Redirect!");
+      console.log("تم استلام بيانات تسجيل الدخول بأسلوب Redirect بنجاح!");
     }
   }).catch((error) => {
-    console.error("خطأ Redirect:", error);
+    console.error("خطأ استلام Redirect:", error);
   });
 
-  // 🔄 5. عند تغير حالة الدخول
+  // 🔄 5. مراقبة حالة التسجيل لتحديث الشاشة فوراً
   onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById('googleLoginBtn');
     const userProfile = document.getElementById('userProfileInfo');
@@ -435,7 +460,7 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
         welcomeText.innerHTML = `🌙 أهلاً <b>${user.displayName || 'بالبطل'}</b> <span style="font-size:11px; opacity:0.8; background:rgba(212,175,55,0.2); padding:2px 6px; border-radius:10px;">كودك: ${studentCode}</span>`;
       }
 
-      // فصل جدول الحساب بناءً على الـ UID
+      // فصل خطة الحساب
       const userPlanKey = 'sm_active_plan_' + user.uid;
       const currentPlan = localStorage.getItem(userPlanKey);
       if (currentPlan) {
