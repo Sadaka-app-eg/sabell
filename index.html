@@ -58,14 +58,17 @@
     }
 
     /* ===== HEADER ===== */
-    .header {
-      background: var(--bg2);
-      padding: 10px 14px;
-      display: flex; justify-content: space-between; align-items: center;
-      position: sticky; top:0; z-index: 200;
-      border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(10px);
-    }
+.header {
+  background: var(--bg2);
+  padding: 8px 12px;
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  position: sticky; top:0; z-index: 200;
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  width: 100%;
+}
     .header h1 { font-size: 15px; color: var(--gold); font-family: 'Amiri', serif; font-weight: bold; }
     .icon-btn {
       background: var(--card); border: 1px solid var(--border); color: var(--text);
@@ -567,49 +570,34 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   </div>
 
 <!-- HEADER الملكي على طريقة أثر -->
+<!-- HEADER الملكي المنظم والمريح للعين -->
 <div class="header">
   
-  <!-- 1. الجهة اليسرى: تسجيل الدخول أو حساب المستخدم + زر الثيم -->
-  <div style="display: flex; align-items: center; gap: 8px;">
-    
-    <!-- زر الثيم (ليلي / نهاري) -->
+  <!-- 1. اليمين: القائمة وزر الثيم -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <button class="icon-btn" onclick="toggleMenu()">☰</button>
     <button class="icon-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
-
-<!-- زر تسجيل الدخول بجوجل -->
-<button id="googleLoginBtn" onclick="loginWithGoogle()" style="display: flex; align-items: center; gap: 6px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
-  <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width: 14px; height: 14px;">
-  دخول
-</button>
-<!-- كارت حث الطالب على رفع صورته الشخصية -->
-<div id="uploadPhotoBanner" class="athr-card" style="display: none; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); text-align: center; margin-bottom: 12px;">
-  <div style="font-size: 13px; color: var(--gold); font-weight: bold; margin-bottom: 6px;">📸 ضع صورتك الشخصية لتزيين حسابك ولوحة المتابعة!</div>
-  <button onclick="document.getElementById('customAvatarInput').click()" class="btn-small">اختيار صورة شخصية الآن</button>
-</div>
-<!-- بروفايل الصورة والاسم في الهيدر الرئيسي -->
-<div id="userProfileInfo" style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px;">
-  
-  <div style="position: relative;">
-    <!-- الضغط على الصورة يكبرها فوراً -->
-    <img id="userImgDisplay" src="https://via.placeholder.com/35" onclick="if(this.src) openImageViewer(this.src)" style="width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; box-shadow: 0 0 8px rgba(212,175,55,0.3); cursor: pointer;" title="اضغط لتكبير الصورة 🔍">
-    
-    <!-- الضغط على أيقونة الكاميرا يفتح اختيار صورة جديدة -->
-    <span onclick="document.getElementById('customAvatarInput').click()" style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: #111; font-size: 8px; border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer;" title="تغيير الصورة">📷</span>
   </div>
 
-  <span id="userNameDisplay" style="font-size: 12px; font-weight: bold; color: var(--gold); cursor: pointer;" onclick="logoutGoogle()" title="اضغط لتسجيل الخروج">الطالب</span>
-
-  <input type="file" id="customAvatarInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(this)">
-</div>
-
+  <!-- 2. المنتصف: الترحيب والكود بنسق مرن -->
+  <div style="text-align: center;" id="headerWelcomeText">
+    <div style="font-size: 14px; font-weight: bold; color: var(--gold);">🌙 أهلاً بك</div>
   </div>
 
-  <!-- 2. المنتصف: الترحيب باسم المستخدم -->
-  <div style="font-size: 16px; font-weight: bold; color: var(--gold); font-family: 'Amiri', serif;" id="headerWelcomeText">
-    🥐 أهلاً بك
-  </div>
+  <!-- 3. اليسار: البروفايل والصورة فقط -->
+  <div style="display: flex; align-items: center; gap: 6px;">
+    <button id="googleLoginBtn" onclick="loginWithGoogle()" style="display: flex; align-items: center; gap: 4px; background: rgba(212,175,55,0.12); border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; font-family: 'Amiri', serif;">
+      دخول
+    </button>
 
-  <!-- 3. الجهة اليمنى: القائمة الجانبية -->
-  <button class="icon-btn" onclick="toggleMenu()">☰</button>
+    <div id="userProfileInfo" style="display: none; align-items: center; gap: 6px;">
+      <div style="position: relative;">
+        <img id="userImgDisplay" src="https://via.placeholder.com/35" onclick="if(this.src) openImageViewer(this.src)" style="width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; cursor: pointer;">
+        <span onclick="document.getElementById('customAvatarInput').click()" style="position: absolute; bottom: -2px; right: -2px; background: var(--gold); color: #111; font-size: 8px; border-radius: 50%; width: 13px; height: 13px; display: flex; align-items: center; justify-content: center; cursor: pointer;">📷</span>
+      </div>
+      <input type="file" id="customAvatarInput" accept="image/*" style="display: none;" onchange="handleCustomAvatarUpload(this)">
+    </div>
+  </div>
 
 </div>
 
@@ -645,7 +633,13 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
           لا توجد فترة مذاكرة نشطة في هذا الوقت. استغل وقتك بالراحة أو المراجعة! ☕
         </div>
       </div>
-
+<!-- كارت حث الطالب العرضي الشيك -->
+<div id="uploadPhotoBanner" class="athr-card" style="display: none; background: rgba(212,175,55,0.06); border: 1px dashed var(--gold); padding: 10px 14px; margin: 10px 0;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+    <div style="font-size: 12px; color: var(--gold); font-weight: bold;">📸 زيّن حسابك بصورتك الشخصية!</div>
+    <button onclick="document.getElementById('customAvatarInput').click()" class="btn-small" style="padding: 4px 10px; font-size: 11px;">رفع صورة</button>
+  </div>
+</div>
       <!-- وصول سريع للمواد -->
       <div style="font-size: 14px; color: var(--gold); font-weight: bold; margin: 12px 0 6px; border-right: 3px solid var(--gold); padding-right: 8px;">
         📚 موادك الدراسية المعتمدة:
