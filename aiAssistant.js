@@ -1,57 +1,41 @@
 // ===============================================
-// 🤖 المساعد الذكي لتطبيق سبيل المجد - aiAssistant.js (النسخة المفلترة)
+// 🤖 المساعد الذكي لتطبيق سبيل المجد - aiAssistant.js
 // ===============================================
 
-const GEMINI_API_KEY = "AQ.Ab8RN6LSJfTjj_r_sAwCsAfA7bsPYcmQiB2gWiObnK9s3o94Ww"; 
+// مفتاح Groq المستقر والسريع جداً
 const GROQ_API_KEY = "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";
 
 const SYSTEM_INSTRUCTION = `
-أنت "المعلم الذكي" في تطبيق "سبيل المجد" للثانوية العامة المصرية. 
-دورك شرح المفاهيم الصعبة والقوانين الفيزيائية والرياضية وحل المسائل خطوة بخطوة.
-تنبيه مهم جداً: اكتب القوانين والرموز الرياضية والفيزيائية بأحرف واضحة ونصوص عادية، ولا تستخدم رموز مشفرة أو لغة LaTeX أو أقواس غريبة. 
-اجعل الإجابة دقيقة، منسقة، واضحة، سهلة الفهم، وبأسلوب مشجع ورائع.
+أنت "المعلم الذكي" في تطبيق "سبيل المجد" للثانوية العامة المصرية.
+دورك شرح المفاهيم الصعبة، استخراج القوانين الفيزيائية والرياضية، وحل المسائل خطوة بخطوة.
+تنبيه هام جداً: اكتب جميع القوانين والرموز باللغة العربية الواضحة والأرقام العادية دون استخدام رموز مشفرة أو لغة LaTeX أو رموز غريبة.
+اجعل الإجابة دقيقة، واضحة، سهلة الفهم، وبأسلوب مشجع جداً.
 `;
 
 let currentAiImgBase64 = null;
 
-// دالة لتنظيف الردود من الرموز الغريبة أو رموز التفكير المسربة
+// دالة تنظيف الردود من أي رموز غريبة أو تفكير مشفر
 function cleanAiResponse(text) {
   if (!text) return "";
-  
-  // 1. إزالة أي أقواس تفكير من موديلات DeepSeek أو اللغات الغريبة
   let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
-
-  // 2. تحويل الرموز الرياضية والمعادلات من صيغة LaTeX إلى نص عربي واضح
   cleaned = cleaned.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1 ÷ $2)");
   cleaned = cleaned.replace(/\\times/g, " × ");
   cleaned = cleaned.replace(/\\cdot/g, " · ");
-  cleaned = cleaned.replace(/[\$\\]/g, ""); // إزالة العلامات المفاجئة
-
+  cleaned = cleaned.replace(/[\$\\]/g, ""); 
   return cleaned.trim();
 }
 
-// الدالة الرئيسية للتوجيه
+// الدالة الرئيسية المستقرة 100% عبر Groq
 async function askSmartTeacher(userPrompt, imageBase64 = null) {
-  const selectedModel = document.getElementById('aiModelSelect')?.value || "gemini-1.5-flash";
+  const selectedModel = document.getElementById('aiModelSelect')?.value || "llama-3-70b";
 
-  if (imageBase64 || selectedModel.startsWith("gemini")) {
-    return await fetchFromGemini(selectedModel, userPrompt, imageBase64);
-  }
-
-  return await fetchFromGroq(selectedModel, userPrompt);
-}
-
-// 🌐 1. دالة Groq المحدثة
-async function fetchFromGroq(modelType, userPrompt) {
+  // تحديد الموديل المناسب المتاح على Groq
   let groqModelName = "llama-3.3-70b-versatile"; 
-
-  if (modelType === "deepseek-r1") {
-    groqModelName = "deepseek-r1-distill-llama-70b"; 
-  } else if (modelType === "mixtral-8x7b") {
-    groqModelName = "qwen-2.5-coder-32b"; 
-  } else if (modelType === "llama-3-70b") {
-    groqModelName = "llama-3.3-70b-versatile";
+  if (selectedModel === "deepseek-r1") {
+    groqModelName = "deepseek-r1-distill-llama-70b";
+  } else if (selectedModel === "mixtral-8x7b") {
+    groqModelName = "qwen-2.5-coder-32b";
   }
 
   try {
@@ -75,47 +59,16 @@ async function fetchFromGroq(modelType, userPrompt) {
     if (data.choices && data.choices[0]?.message?.content) {
       return cleanAiResponse(data.choices[0].message.content);
     } else {
-      return await fetchFromGemini("gemini-1.5-flash", userPrompt, null);
+      console.error("Groq Error Details:", data);
+      return "⚠️ المحرك يمر بتحديث سريع، حاول إرسال السؤال مرة أخرى!";
     }
   } catch (err) {
-    return await fetchFromGemini("gemini-1.5-flash", userPrompt, null);
+    console.error("Groq Network Error:", err);
+    return "❌ يتعذر الاتصال بالخادم حالياً. تأكد من اتصالك بالإنترنت!";
   }
 }
 
-// 🌐 2. دالة Gemini
-async function fetchFromGemini(modelName, userPrompt, imageBase64) {
-  const apiModel = (modelName === "gemini-1.5-pro") ? "gemini-1.5-pro" : "gemini-1.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${GEMINI_API_KEY}`;
-
-  let contentsParts = [];
-  if (imageBase64) {
-    const base64Data = imageBase64.split(',')[1] || imageBase64;
-    contentsParts.push({ inline_data: { mime_type: "image/jpeg", data: base64Data } });
-  }
-  contentsParts.push({ text: userPrompt });
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: contentsParts }],
-        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }
-      })
-    });
-    
-    const data = await response.json();
-    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-      return cleanAiResponse(data.candidates[0].content.parts[0].text);
-    } else {
-      return "عذراً يا بطل، حاول مرة أخرى خلال لحظات!";
-    }
-  } catch (err) {
-    return "❌ يتعذر الاتصال بالسيرفر حالياً. تأكد من اتصالك بالإنترنت!";
-  }
-}
-
-// 💬 3. التحكم في واجهة الشات
+// 💬 واجهة الشات والإرسال
 async function sendAiMessage() {
   const inp = document.getElementById('aiMsgInput');
   const val = inp.value.trim();
@@ -131,7 +84,7 @@ async function sendAiMessage() {
   
   chatBox.insertAdjacentHTML('beforeend', userHtml);
   
-  const promptText = val || "اشرح لي هذه الصورة بالتفصيل واذكر القوانين إن وجدت.";
+  const promptText = val || "اشرح لي هذه المسألة والقوانين الخاصة بها بالتفصيل.";
   const imgData = currentAiImgBase64;
   inp.value = '';
   document.getElementById('aiImgPreview').style.display = 'none';
@@ -140,7 +93,7 @@ async function sendAiMessage() {
   const loadingId = 'loading_' + Date.now();
   chatBox.insertAdjacentHTML('beforeend', `
     <div id="${loadingId}" style="align-self: flex-end; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 12px; color: var(--gold);">
-      🤖 المعلم الذكي يكتب الشرح والقوانين... ☕
+      🤖 المعلم الذكي يكتب الإجابة والقوانين... ☕
     </div>
   `);
   chatBox.scrollTop = chatBox.scrollHeight;
