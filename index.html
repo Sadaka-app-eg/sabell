@@ -696,108 +696,105 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
         <div id="treeChaptersList"></div>
       </div>
     </div>
-  <!-- ==================== صفحة شريك المذاكرة ==================== -->
-    <div class="page" id="studyBuddyPage">
-      <div style="text-align: center; margin-bottom: 12px;">
-        <h2 style="color: var(--gold); font-size: 20px;">🤝 شَرِيكُ المُذَاكَرَةِ</h2>
-        <p style="font-size: 12px; color: var(--text2);">تحدَّ صاحبك أو حد من عيلتك على مين يخلص جلسات تركيز أكتر الأسبوع ده!</p>
-      </div>
-
-      <!-- لسه مفيش شريك -->
-      <div id="noBuddyState" class="athr-card">
-        <div style="font-size: 13px; color: var(--text2); margin-bottom: 10px;">مفيش شريك مذاكرة لسه. اطلب كوده وابعتله دعوة:</div>
-        <div style="display: flex; gap: 6px;">
-          <input type="text" id="buddyCodeInput" placeholder="مثلاً: SM-4921" style="flex:1; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none;">
-          <button onclick="sendBuddyRequest()" class="btn-small">إرسال دعوة</button>
-        </div>
-        <div id="myOwnCodeDisplay" style="font-size: 11px; color: var(--gold); margin-top: 10px; text-align: center;"></div>
-      </div>
-
-      <!-- الدعوات الواردة -->
-      <div id="incomingRequestsBox"></div>
-
-      <!-- في وجود شريك -->
-      <div id="activeBuddyState" style="display:none;">
-
-        <div class="athr-card" style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <div style="font-size: 12px; color: var(--text2);">شريكك الحالي:</div>
-            <div id="buddyNameDisplay" style="font-size: 15px; font-weight: bold; color: var(--gold);"></div>
-          </div>
-          <button onclick="removeBuddy()" style="background:transparent; border:1px solid #ff6b6b; color:#ff6b6b; padding:6px 12px; border-radius:10px; font-size:11px; cursor:pointer;">فسخ الشراكة</button>
-        </div>
-
-        <div class="athr-card">
-          <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📊 تحدي الأسبوع (<span id="weekIdDisplay"></span>)</div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div style="text-align: center;">
-              <div style="font-size: 12px; color: var(--text2);">إنتَ</div>
-              <div style="font-size: 26px; font-weight: bold; color: var(--gold);" id="myWeeklyMins">0</div>
-              <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
-              <div class="tree-progress-bar"><div class="tree-progress-fill" id="myWeeklyBar" style="width:0%;"></div></div>
-            </div>
-            <div style="text-align: center;">
-              <div style="font-size: 12px; color: var(--text2);">شريكك</div>
-              <div style="font-size: 26px; font-weight: bold; color: var(--green);" id="buddyWeeklyMins">0</div>
-              <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
-              <div class="tree-progress-bar"><div class="tree-progress-fill" id="buddyWeeklyBar" style="width:0%; background:var(--green);"></div></div>
-            </div>
-          </div>
-
-          <div id="weeklyLeadBadge" style="margin-top: 12px; text-align: center; font-size: 12px; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px;"></div>
-        </div>
-<div class="header-card">
-    <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
-    <p style="font-size: 12px; color: var(--text2);">متابعة حية وإرسال تشجيع صوتي ونصي للطالب</p>
-    
-    <div class="code-input-group">
-      <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
-      <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
-    </div>
-
-    <!-- 🌟 زر تغيير الكود (يظهر للأب لما يكون الكود محفوظ) -->
-    <button id="btnChangeStudentCode" onclick="changeStudentCode()" style="display: none; margin-top: 10px; background: transparent; border: 1px dashed var(--gold); color: var(--gold); padding: 4px 12px; border-radius: 8px; font-size: 11px; cursor: pointer;">
-      🔄 تغيير كود الطالب
-    </button>
+<!-- ==================== صفحة شريك المذاكرة ==================== -->
+<div class="page" id="studyBuddyPage">
+  <div style="text-align: center; margin-bottom: 12px;">
+    <h2 style="color: var(--gold); font-size: 20px;">🤝 شَرِيكُ المُذَاكَرَةِ</h2>
+    <p style="font-size: 12px; color: var(--text2);">تحدَّ أصدقاءك وذاكروا مع بعض في مجموعات المواد المختلفة!</p>
   </div>
-<!-- 💬 كارت المحادثة والملاحظات بين الشريكين -->
-<div class="athr-card">
-  <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 10px; display:flex; justify-content:space-between; align-items:center;">
-    <span>💬 الشات المباشر مع شريكك:</span>
-    <div style="display: flex; gap: 4px;">
-      <button onclick="sendQuickCheer('🔥')" class="btn-small" style="padding:2px 6px;">🔥</button>
-      <button onclick="sendQuickCheer('💪')" class="btn-small" style="padding:2px 6px;">💪</button>
-      <button onclick="sendQuickCheer('🚀')" class="btn-small" style="padding:2px 6px;">🚀</button>
+
+  <!-- لسه مفيش شركاء -->
+  <div id="noBuddyState" class="athr-card">
+    <div style="font-size: 13px; color: var(--text2); margin-bottom: 10px;">إضافة شريك مذاكرة جديد (اطلب كوده وابعتله دعوة):</div>
+    <div style="display: flex; gap: 6px;">
+      <input type="text" id="buddyCodeInput" placeholder="مثلاً: SM-4921" style="flex:1; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none;">
+      <button onclick="sendBuddyRequest()" class="btn-small">إرسال دعوة</button>
+    </div>
+    <div id="myOwnCodeDisplay" style="font-size: 11px; color: var(--gold); margin-top: 10px; text-align: center;"></div>
+  </div>
+
+  <!-- الدعوات الواردة -->
+  <div id="incomingRequestsBox"></div>
+
+  <!-- قائمة الشركاء الحاليين (دعم حتى 5 شركاء) -->
+  <div class="athr-card" id="buddiesListCard" style="display:none;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span style="font-size: 13px; font-weight:bold; color: var(--gold);">👥 مجموعتك (الشركاء الحاليين):</span>
+      <button onclick="document.getElementById('noBuddyState').style.display='block'" class="btn-small" style="font-size:10px; padding:3px 8px;">➕ إضافة شريك آخر</button>
+    </div>
+    <div id="buddiesListContainer" style="display:flex; flex-wrap:wrap; gap:6px;">
+      <!-- سيتم عرض أسماء الشركاء هنا برمجياً -->
     </div>
   </div>
 
-  <!-- صندوق عرض الرسائل والفويسات والصور -->
-  <div id="buddyChatBox" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px;">
-    <div style="text-align: center; color: var(--text2); font-size: 11px;">جاري تحميل المحادثة... ☕</div>
-  </div>
+  <!-- في وجود شركاء -->
+  <div id="activeBuddyState" style="display:none;">
 
-  <!-- أزرار الإدخال والرفع -->
-<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-  <input type="text" id="buddyMsgInput" placeholder="اكتب رسالة لشريكك..." style="flex: 1; min-width: 160px; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none; font-size:12px;">
-  
-  <div style="display: flex; gap: 4px; flex-shrink: 0;">
-    <button onclick="sendBuddyTextMessage()" class="btn-small">إرسال</button>
-    <button onclick="document.getElementById('buddyImgFileInput').click()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">📷</button>
-    <button id="buddyVoiceBtn" onclick="toggleBuddyVoiceRecord()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">🎙️</button>
+    <!-- كارت التحدي الأسبوعي -->
+    <div class="athr-card">
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 10px;">📊 تحدي الأسبوع (<span id="weekIdDisplay"></span>)</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text2);">إنتَ</div>
+          <div style="font-size: 26px; font-weight: bold; color: var(--gold);" id="myWeeklyMins">0</div>
+          <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
+          <div class="tree-progress-bar"><div class="tree-progress-fill" id="myWeeklyBar" style="width:0%;"></div></div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 12px; color: var(--text2);">المجموعة / الشريك</div>
+          <div style="font-size: 26px; font-weight: bold; color: var(--green);" id="buddyWeeklyMins">0</div>
+          <div style="font-size: 10px; color: var(--text2);">دقيقة تركيز</div>
+          <div class="tree-progress-bar"><div class="tree-progress-fill" id="buddyWeeklyBar" style="width:0%; background:var(--green);"></div></div>
+        </div>
+      </div>
+
+      <div id="weeklyLeadBadge" style="margin-top: 12px; text-align: center; font-size: 12px; background: rgba(212,175,55,0.08); border: 1px dashed var(--gold); border-radius: 10px; padding: 8px;"></div>
+    </div>
+
+    <!-- 💬 الشات المباشر مقسّم لجروبات/غرف -->
+    <div class="athr-card">
+      <div style="font-size: 14px; font-weight: bold; color: var(--gold); margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
+        <span>💬 الشات الجماعي والمواد:</span>
+        <div style="display: flex; gap: 4px;">
+          <button onclick="sendQuickCheer('🔥')" class="btn-small" style="padding:2px 6px;">🔥</button>
+          <button onclick="sendQuickCheer('💪')" class="btn-small" style="padding:2px 6px;">💪</button>
+          <button onclick="sendQuickCheer('🚀')" class="btn-small" style="padding:2px 6px;">🚀</button>
+        </div>
+      </div>
+
+      <!-- 🏷️ شريط التنقل بين جروبات المواد (غرف المحادثة) -->
+      <div id="chatRoomsBar" style="display: flex; gap: 4px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 8px; -webkit-overflow-scrolling: touch;">
+        <!-- سيتم توليد أزرار الغرف ديناميكياً بحسب شعبة الطالب -->
+      </div>
+
+      <!-- صندوق عرض الرسائل والفويسات والصور -->
+      <div id="buddyChatBox" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 10px;">
+        <div style="text-align: center; color: var(--text2); font-size: 11px;">جاري تحميل المحادثة... ☕</div>
+      </div>
+
+      <!-- أزرار الإدخال والرفع -->
+      <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+        <input type="text" id="buddyMsgInput" placeholder="اكتب رسالة في هذا الجروب..." style="flex: 1; min-width: 150px; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none; font-size:12px;">
+        
+        <div style="display: flex; gap: 4px; flex-shrink: 0;">
+          <button onclick="sendBuddyTextMessage()" class="btn-small">إرسال</button>
+          <button onclick="document.getElementById('buddyImgFileInput').click()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">📷</button>
+          <button id="buddyVoiceBtn" onclick="toggleBuddyVoiceRecord()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">🎙️</button>
+        </div>
+      </div>
+      <input type="file" id="buddyImgFileInput" accept="image/*" style="display:none;" onchange="handleBuddyImageSend(this)">
+    </div>
+
+    <div id="cheersInboxBox" class="athr-card"></div>
+
+    <div class="athr-card">
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">🏆 سجل الأسابيع السابقة</div>
+      <div id="buddyHistoryList" style="font-size: 12px; color: var(--text2);">لسه مفيش أسابيع سابقة.</div>
+    </div>
+
   </div>
 </div>
-  <input type="file" id="buddyImgFileInput" accept="image/*" style="display:none;" onchange="handleBuddyImageSend(this)">
-</div>
-
-        <div id="cheersInboxBox" class="athr-card"></div>
-
-        <div class="athr-card">
-          <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">🏆 سجل الأسابيع السابقة</div>
-          <div id="buddyHistoryList" style="font-size: 12px; color: var(--text2);">لسه مفيش أسابيع سابقة.</div>
-        </div>
-      </div>
-    </div>
     <!-- ==================== صفحة خطة التفوق والجدول (SCHEDULE) ==================== -->
     <div class="page" id="schedulePage">
       <div style="text-align: center; margin-bottom: 12px;">
@@ -1127,6 +1124,14 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     </div>
   </div>
 </div>
+  <div class="header-card">
+    <h1>👨‍👦 لوحة متابعة ولي الأمر</h1>
+    <p style="font-size: 12px; color: var(--text2);">متابعة حية وإرسال تشجيع صوتي ونصي للطالب</p>
+    
+    <div class="code-input-group">
+      <input type="text" id="parentStudentCodeInp" placeholder="أدخل كود الطالب (مثال: SM-4921)">
+      <button class="btn" onclick="fetchStudentDataForParent()">متابعة</button>
+    </div>
  <script>
     // ================= 📚 دليل المواد الشامل =================
     const subjectFullDetailsData = {
