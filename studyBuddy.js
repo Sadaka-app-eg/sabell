@@ -503,3 +503,19 @@ function switchChatRoom(roomName) {
 // عند إرسال الرسالة يتم تضمين اسم الغرفة currentChatRoom مع البيانات المُرسلة لـ Firestore
 // إتاحة الدالة للنداء من مكان تايمر التركيز
 window.recordFocusSessionForBuddy = recordFocusSessionForBuddy;
+function switchChatRoom(roomName, btnEl) {
+  currentChatRoom = roomName;
+  
+  // تحديث شكل الأزرار
+  document.querySelectorAll('#chatRoomsBar .day-btn').forEach(btn => btn.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+  
+  // تحديث نص الإدخال
+  const input = document.getElementById('buddyMsgInput');
+  if (input) input.placeholder = `اكتب رسالة في (جروب ${roomName})...`;
+
+  // تحميل رسائل الغرفة المحددة
+  if (typeof loadBuddyMessages === 'function') {
+    loadBuddyMessages(currentChatRoom);
+  }
+}
