@@ -150,7 +150,15 @@
       border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;
       font-family: 'Amiri', serif;
     }
-
+/* ضبط العرض والأزرار على الموبايل */
+@media (max-width: 480px) {
+  #buddyChatBox audio {
+    max-width: 140px !important; /* تصغير مشغل الصوت قليلاً ليناسب شاشة الفون */
+  }
+  #buddyChatBox img {
+    max-width: 130px !important; /* تصغير الصور المصغرة بالشات */
+  }
+}
     /* ===== SCHEDULE SECTION ===== */
     .day-tabs {
       display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 12px;
@@ -704,12 +712,15 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
   </div>
 
   <!-- أزرار الإدخال والرفع -->
-  <div style="display: flex; gap: 6px; align-items: center;">
-    <input type="text" id="buddyMsgInput" placeholder="اكتب رسالة لشريكك..." style="flex:1; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none; font-size:12px;">
+<div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+  <input type="text" id="buddyMsgInput" placeholder="اكتب رسالة لشريكك..." style="flex: 1; min-width: 160px; padding:8px; border-radius:10px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-family:'Amiri', serif; outline:none; font-size:12px;">
+  
+  <div style="display: flex; gap: 4px; flex-shrink: 0;">
     <button onclick="sendBuddyTextMessage()" class="btn-small">إرسال</button>
-    <button onclick="document.getElementById('buddyImgFileInput').click()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text);">📷</button>
-    <button id="buddyVoiceBtn" onclick="toggleBuddyVoiceRecord()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text);">🎙️</button>
+    <button onclick="document.getElementById('buddyImgFileInput').click()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">📷</button>
+    <button id="buddyVoiceBtn" onclick="toggleBuddyVoiceRecord()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding: 5px 10px;">🎙️</button>
   </div>
+</div>
   <input type="file" id="buddyImgFileInput" accept="image/*" style="display:none;" onchange="handleBuddyImageSend(this)">
 </div>
 
