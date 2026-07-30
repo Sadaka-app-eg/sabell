@@ -223,7 +223,13 @@
         <div class="stat-label">أيام التتابع 🔥</div>
       </div>
     </div>
-
+<!-- 🌳 كارت متابعة إنجاز المواد والدروس للأب -->
+<div class="card">
+  <div class="section-title">🌳 متابعة إنجاز المواد والدروس (شجرة المواد):</div>
+  <div id="parentTreeProgressList" style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="color:var(--text2); font-size:12px; text-align:center;">جاري جلب إنجاز المواد...</div>
+  </div>
+</div>
     <div class="card">
       <div class="section-title">📊 التقييم العام لأداء الطالب اليوم:</div>
       <div id="parentEvaluationText" style="font-size: 13px; color: var(--text); line-height: 1.6;">جاري تحليل البيانات...</div>
@@ -319,6 +325,31 @@
   };
 
   function renderParentDashboard(data) {
+
+    // 🌳 عرض شجرة المواد المنجزة للأب
+    const treeContainer = document.getElementById('parentTreeProgressList');
+    if (treeContainer) {
+      if (data.treeProgress && Object.keys(data.treeProgress).length > 0) {
+        let treeHtml = '';
+        Object.keys(data.treeProgress).forEach(subjName => {
+          const item = data.treeProgress[subjName];
+          treeHtml += `
+            <div style="background: var(--bg2); border: 1px solid var(--border); padding: 10px; border-radius: 10px;">
+              <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: var(--gold);">
+                <span>📘 ${subjName}</span>
+                <span>${item.done} / ${item.total} درس (${item.pct}%)</span>
+              </div>
+              <div class="progress-bar-box" style="width: 100%; height: 8px; background: rgba(255,255,255,0.06); border-radius: 10px; margin-top: 6px; overflow: hidden;">
+                <div class="progress-bar-fill" style="height: 100%; background: var(--gold); border-radius: 10px; width: ${item.pct}%;"></div>
+              </div>
+            </div>
+          `;
+        });
+        treeContainer.innerHTML = treeHtml;
+      } else {
+        treeContainer.innerHTML = '<div style="color:var(--text2); font-size:12px; text-align:center;">لم يقم الطالب بتلخيص دروس الشجرة بعد.</div>';
+      }
+    }
     document.getElementById('parentDashboardContent').style.display = 'block';
     
     document.getElementById('parentStudentName').innerHTML = `
