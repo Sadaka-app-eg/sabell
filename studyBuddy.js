@@ -457,10 +457,12 @@ async function recordFocusSessionForBuddy(minsAdded) {
   }
 }
 
+// ================= 💬 تفعيل الشات المباشر والجروبات =================
+
 // المتغير العام لمتابعة الجروب النشط
 window.currentChatRoom = "عام";
 
-// 1️⃣ دالة التبديل بين الجروبات
+// 1️⃣ دالة التبديل بين الجروبات وتصفيتها
 window.switchChatRoom = function(roomName, btnEl) {
   window.currentChatRoom = roomName;
 
@@ -472,108 +474,105 @@ window.switchChatRoom = function(roomName, btnEl) {
   const input = document.getElementById('buddyMsgInput');
   if (input) input.placeholder = `اكتب رسالة في (جروب ${roomName})...`;
 
-  // تفريغ الشات وتحميل رسائل الجروب الجديد فوراً
-  const chatBox = document.getElementById('buddyChatBox');
-  if (chatBox) chatBox.innerHTML = `<div style="text-align:center; color:var(--text2); font-size:11px;">جاري تحميل محادثة (${roomName})... ☕</div>`;
-
-  // إعادة الاستماع لرسائل الجروب المحدد
-  listenToBuddyMessages();
-};
-
-// 2️⃣ دالة إرسال النص
-window.sendBuddyTextMessage = async function() {
-  const input = document.getElementById('buddyMsgInput');
-  const text = input ? input.value.trim() : "";
-  if (!text) return;
-
-  const msgData = {
-    senderCode: window.getMyStudentCode(),
-    senderName: window.getMyStudentName(),
-    type: "text",
-    text: text,
-    room: window.currentChatRoom || "عام", // 👈 تسجيل اسم الجروب
-    timestamp: Date.now()
-  };
-
-  input.value = "";
-  await saveBuddyMessageToCloud(msgData);
-};
-
-// 3️⃣ دالة إرسال الصور
-window.handleBuddyImageSend = function(fileInput) {
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const msgData = {
-      senderCode: window.getMyStudentCode(),
-      senderName: window.getMyStudentName(),
-      type: "image",
-      image: e.target.result,
-      room: window.currentChatRoom || "عام", // 👈 تسجيل اسم الجروب
-      timestamp: Date.now()
-    };
-    await saveBuddyMessageToCloud(msgData);
-    fileInput.value = "";
-  };
-  reader.readAsDataURL(file);
-};
-
-// 4️⃣ دالة الاستماع والفلترة حسب الجروب
-let buddyChatUnsubscribe = null;
-
-window.listenToBuddyMessages = function() {
-  const myCode = window.getMyStudentCode();
-  const pairId = window.currentBuddyPairId; // أو المعرف الخاص بمحادثة الشركاء عندك
-
-  if (!pairId || !window.fireDB) return;
-
-  // إلغاء الاستماع القديم لمنع تكرار البيانات
-  if (buddyChatUnsubscribe) buddyChatUnsubscribe();
-
-  const chatDocRef = window.fireDoc(window.fireDB, "buddy_chats", pairId);
-
-  buddyChatUnsubscribe = window.fireOnSnapshot(chatDocRef, (docSnap) => {
-    const chatBox = document.getElementById('buddyChatBox');
-    if (!chatBox) return;
-
-    if (docSnap.exists()) {
-      const allMessages = docSnap.data().messages || [];
-
-      // 🎯 الفلترة السحرية: جلب رسائل الجروب الحالي فقط!
-      const currentRoom = window.currentChatRoom || "عام";
-      const roomMessages = allMessages.filter(m => {
-        // لو الرسائل القديمة مفيهاش حقل room نعتبرها في الجروب الـ "عام"
-        const msgRoom = m.room || "عام";
-        return msgRoom === currentRoom;
-      });
-
-      if (roomMessages.length === 0) {
-        chatBox.innerHTML = `<div style="text-align:center; color:var(--text2); font-size:11px; padding:20px;">لا توجد رسائل في (جروب ${currentRoom}) حتى الآن. كن أول من يراسل أصدقاءه! 🚀</div>`;
-        return;
-      }
-
-      // رسم رسائل الجروب المفتوح فقط
-      chatBox.innerHTML = roomMessages.map(m => renderSingleBuddyMessage(m)).join('');
-      chatBox.scrollTop = chatBox.scrollHeight;
-    } else {
-      chatBox.innerHTML = `<div style="text-align:center; color:var(--text2); font-size:11px;">ابدأ المحادثة الآن! 👋</div>`;
+  // إعادة قراءة وتصفية الشات الحالي فوراً
+  const myRef = window.fireDoc(window.fireDB, "students", myOwnCode);
+  window.fireGetDoc(myRef).then(snap => {
+    if (snap.exists()) {
+      renderBuddyChatBox(snap.data().buddyChatMessages || []);
     }
   });
 };
 
-// 5️⃣ دالة حفظ الرسالة في Firestore
-async function saveBuddyMessageToCloud(msgData) {
-  const pairId = window.currentBuddyPairId;
-  if (!pairId || !window.fireDB) return;
+// 2️⃣ دالة إرسال النص مع تسجيل الجروب
+async function sendBuddyTextMessage() {
+  const inp = document.getElementById('buddyMsgInput');
+  const val = inp ? inp.value.trim() : "";
+  if (!val) return;
 
-  try {
-    const chatDocRef = window.fireDoc(window.fireDB, "buddy_chats", pairId);
-    await window.fireSetDoc(chatDocRef, {
-      messages: window.fireArrayUnion(msgData)
-    }, { merge: true });
-  } catch (err) {
-    console.error("خطأ أثناء إرسال الرسالة:", err);
+  inp.value = '';
+  await sendBuddyChatMessage('text', val);
+}
+
+// 3️⃣ دالة إرسال الصورة مع تسجيل الجروب
+function handleBuddyImageSend(fileInp) {
+  const file = fileInp.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    await sendBuddyChatMessage('image', e.target.result);
+    fileInp.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+// 4️⃣ دالة حفظ الرسالة في السحاب بحسب الجروب
+async function sendBuddyChatMessage(type, content) {
+  if (!myBuddyCode) {
+    alert("لا يوجد شريك مذاكرة مربوط حالياً!");
+    return;
   }
+
+  const entry = {
+    from: myOwnName,
+    type: type,
+    content: content,
+    room: window.currentChatRoom || "عام", // 👈 تسجيل اسم الجروب
+    at: Date.now()
+  };
+
+  const myRef = window.fireDoc(window.fireDB, "students", myOwnCode);
+  const buddyRef = window.fireDoc(window.fireDB, "students", myBuddyCode);
+
+  await window.fireUpdateDoc(myRef, { buddyChatMessages: window.fireArrayUnion(entry) });
+  await window.fireUpdateDoc(buddyRef, { buddyChatMessages: window.fireArrayUnion(entry) });
+}
+
+// 5️⃣ دالة عرض وتصفية الرسائل حسب الجروب (تعديل الدالة القديمة)
+function renderBuddyChatBox(messages) {
+  const box = document.getElementById('buddyChatBox');
+  if (!box) return;
+
+  if (!messages || messages.length === 0) {
+    box.innerHTML = `<div style="font-size:11px; color:var(--text2); text-align:center; padding:10px;">لسه مفيش رسائل بينكم. ابدأ وشجع صاحبك! 🌿</div>`;
+    return;
+  }
+
+  // 🎯 الفلترة السحرية حسب الجروب المفتوح
+  const currentRoom = window.currentChatRoom || "عام";
+  const filteredMessages = messages.filter(m => {
+    const msgRoom = m.room || "عام"; // الرسائل القديمة تعتبر في جروب عام
+    return msgRoom === currentRoom;
+  });
+
+  if (filteredMessages.length === 0) {
+    box.innerHTML = `<div style="font-size:11px; color:var(--text2); text-align:center; padding:15px;">لا توجد رسائل في (جروب ${currentRoom}) حتى الآن. ابدأ المحادثة! 🚀</div>`;
+    return;
+  }
+
+  const recent = filteredMessages.slice(-30); // عرض آخر 30 رسالة للجروب
+  box.innerHTML = recent.map(m => {
+    const isMe = (m.from === myOwnName);
+    const timeStr = new Date(m.at).toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+    const alignStyle = isMe ? 'align-self: flex-start; background: rgba(212,175,55,0.12); border-color: var(--gold);' : 'align-self: flex-end; background: rgba(111,191,115,0.12); border-color: var(--green);';
+
+    let contentHtml = '';
+    if (m.type === 'text') {
+      contentHtml = `<div style="font-size:12px; color:var(--text); line-height:1.5;">${m.content}</div>`;
+    } else if (m.type === 'image') {
+      contentHtml = `<img src="${m.content}" onclick="openImageViewer(this.src)" style="max-width:180px; max-height:140px; border-radius:8px; border:1px solid var(--border); cursor:pointer;" title="اضغط لتكبير الصورة">`;
+    } else if (m.type === 'audio') {
+      contentHtml = `<audio controls src="${m.content}" style="width:180px; height:32px;"></audio>`;
+    }
+
+    return `
+      <div style="max-width:80%; padding:6px 10px; border-radius:10px; border:1px solid var(--border); ${alignStyle}">
+        <div style="font-size:10px; color:var(--gold); font-weight:bold; margin-bottom:2px;">${isMe ? 'إنت' : m.from}</div>
+        ${contentHtml}
+        <div style="font-size:9px; color:var(--text2); text-align:left; margin-top:2px;">${timeStr}</div>
+      </div>
+    `;
+  }).join('');
+
+  box.scrollTop = box.scrollHeight;
 }
