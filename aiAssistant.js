@@ -1,33 +1,56 @@
 // ===============================================
-// 🤖 المساعد الذكي لتطبيق سبيل المجد - aiAssistant.js
+// 🤖 المساعد الذكي لتطبيق سبيل المجد - aiAssistant.js (النسخة المفلترة)
 // ===============================================
 
-// مفتاح Groq الخاص بك (مباشر وسريع جداً)
+const GEMINI_API_KEY = "AQ.Ab8RN6LSJfTjj_r_sAwCsAfA7bsPYcmQiB2gWiObnK9s3o94Ww"; 
 const GROQ_API_KEY = "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";
 
 const SYSTEM_INSTRUCTION = `
 أنت "المعلم الذكي" في تطبيق "سبيل المجد" للثانوية العامة المصرية. 
-دورك شرح المفاهيم الصعبة، استخراج القوانين الفيزيائية والرياضية وحل المسائل خطوة بخطوة، مع تقديم النصائح الدراسية والتحفيز.
-إجاباتك يجب أن تكون دقيقة، منسقة، واضحة، سهلة الفهم، وبأسلوب مشجع جداً.
+دورك شرح المفاهيم الصعبة والقوانين الفيزيائية والرياضية وحل المسائل خطوة بخطوة.
+تنبيه مهم جداً: اكتب القوانين والرموز الرياضية والفيزيائية بأحرف واضحة ونصوص عادية، ولا تستخدم رموز مشفرة أو لغة LaTeX أو أقواس غريبة. 
+اجعل الإجابة دقيقة، منسقة، واضحة، سهلة الفهم، وبأسلوب مشجع ورائع.
 `;
 
 let currentAiImgBase64 = null;
 
-// الدالة الرئيسية لاستدعاء النماذج من Groq فوراً
+// دالة لتنظيف الردود من الرموز الغريبة أو رموز التفكير المسربة
+function cleanAiResponse(text) {
+  if (!text) return "";
+  
+  // 1. إزالة أي أقواس تفكير من موديلات DeepSeek أو اللغات الغريبة
+  let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
+  cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
+
+  // 2. تحويل الرموز الرياضية والمعادلات من صيغة LaTeX إلى نص عربي واضح
+  cleaned = cleaned.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "($1 ÷ $2)");
+  cleaned = cleaned.replace(/\\times/g, " × ");
+  cleaned = cleaned.replace(/\\cdot/g, " · ");
+  cleaned = cleaned.replace(/[\$\\]/g, ""); // إزالة العلامات المفاجئة
+
+  return cleaned.trim();
+}
+
+// الدالة الرئيسية للتوجيه
 async function askSmartTeacher(userPrompt, imageBase64 = null) {
-  const selectedModel = document.getElementById('aiModelSelect')?.value || "llama-3-70b";
+  const selectedModel = document.getElementById('aiModelSelect')?.value || "gemini-1.5-flash";
 
-  // تحديد اسم الموديل الحقيقي المعتمد داخل Groq حالياً
-  let groqModelName = "llama-3.3-70b-versatile"; // الموديل الافتراضي السريع
+  if (imageBase64 || selectedModel.startsWith("gemini")) {
+    return await fetchFromGemini(selectedModel, userPrompt, imageBase64);
+  }
 
-  if (selectedModel === "gemini-1.5-pro" || selectedModel === "deepseek-r1") {
-    // موديل التفكير والرياضيات العميق
+  return await fetchFromGroq(selectedModel, userPrompt);
+}
+
+// 🌐 1. دالة Groq المحدثة
+async function fetchFromGroq(modelType, userPrompt) {
+  let groqModelName = "llama-3.3-70b-versatile"; 
+
+  if (modelType === "deepseek-r1") {
     groqModelName = "deepseek-r1-distill-llama-70b"; 
-  } else if (selectedModel === "mixtral-8x7b") {
-    // موديل النحو واللغات
-    groqModelName = "mixtral-8x7b-32768";
-  } else if (selectedModel === "gemini-1.5-flash" || selectedModel === "llama-3-70b") {
-    // موديل الإجابات السريعة والمباشرة
+  } else if (modelType === "mixtral-8x7b") {
+    groqModelName = "qwen-2.5-coder-32b"; 
+  } else if (modelType === "llama-3-70b") {
     groqModelName = "llama-3.3-70b-versatile";
   }
 
@@ -49,20 +72,50 @@ async function askSmartTeacher(userPrompt, imageBase64 = null) {
     });
 
     const data = await response.json();
-    
-    if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
-      return data.choices[0].message.content;
+    if (data.choices && data.choices[0]?.message?.content) {
+      return cleanAiResponse(data.choices[0].message.content);
     } else {
-      console.error("Groq API Error Details:", data);
-      return "⚠️ المحرك يمر بتحديث بسيط، حاول مرة أخرى بعد ثوانٍ.";
+      return await fetchFromGemini("gemini-1.5-flash", userPrompt, null);
     }
   } catch (err) {
-    console.error("Groq Network Error:", err);
-    return "❌ يتطلب الاتصال شبكة إنترنت مستقرة. حاول مجدداً!";
+    return await fetchFromGemini("gemini-1.5-flash", userPrompt, null);
   }
 }
 
-// 💬 واجهة الشات والإرسال
+// 🌐 2. دالة Gemini
+async function fetchFromGemini(modelName, userPrompt, imageBase64) {
+  const apiModel = (modelName === "gemini-1.5-pro") ? "gemini-1.5-pro" : "gemini-1.5-flash";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${apiModel}:generateContent?key=${GEMINI_API_KEY}`;
+
+  let contentsParts = [];
+  if (imageBase64) {
+    const base64Data = imageBase64.split(',')[1] || imageBase64;
+    contentsParts.push({ inline_data: { mime_type: "image/jpeg", data: base64Data } });
+  }
+  contentsParts.push({ text: userPrompt });
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: contentsParts }],
+        systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] }
+      })
+    });
+    
+    const data = await response.json();
+    if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+      return cleanAiResponse(data.candidates[0].content.parts[0].text);
+    } else {
+      return "عذراً يا بطل، حاول مرة أخرى خلال لحظات!";
+    }
+  } catch (err) {
+    return "❌ يتعذر الاتصال بالسيرفر حالياً. تأكد من اتصالك بالإنترنت!";
+  }
+}
+
+// 💬 3. التحكم في واجهة الشات
 async function sendAiMessage() {
   const inp = document.getElementById('aiMsgInput');
   const val = inp.value.trim();
@@ -78,7 +131,7 @@ async function sendAiMessage() {
   
   chatBox.insertAdjacentHTML('beforeend', userHtml);
   
-  const promptText = val || "اشرح لي هذه المسألة والقوانين الخاصة بها بالتفصيل.";
+  const promptText = val || "اشرح لي هذه الصورة بالتفصيل واذكر القوانين إن وجدت.";
   const imgData = currentAiImgBase64;
   inp.value = '';
   document.getElementById('aiImgPreview').style.display = 'none';
@@ -87,7 +140,7 @@ async function sendAiMessage() {
   const loadingId = 'loading_' + Date.now();
   chatBox.insertAdjacentHTML('beforeend', `
     <div id="${loadingId}" style="align-self: flex-end; background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; max-width: 85%; margin-bottom: 8px; font-size: 12px; color: var(--gold);">
-      🤖 المعلم الذكي يجلب الشرح والقوانين... ☕
+      🤖 المعلم الذكي يكتب الشرح والقوانين... ☕
     </div>
   `);
   chatBox.scrollTop = chatBox.scrollHeight;
