@@ -268,8 +268,8 @@ function chapterKey(subject, chapterId) {
   return `${subject}::${chapterId}::__chapter__`;
 }
 
-// ================= 🌳 الصفحة الرئيسية للشجرة (المواد) =================
-function renderSubjectTreePage() {
+// ================= 🌳 الصفحة الرئيسية للشجرة (مع معالجة الـ Async المظبوطة) =================
+async function renderSubjectTreePage() {
   currentTreeSubject = null;
   currentTreeChapter = null;
 
@@ -277,31 +277,56 @@ function renderSubjectTreePage() {
   const container = document.getElementById('treeSubjectsGrid');
   if (!container) return;
 
-  container.innerHTML = subjs.map(sName => {
+  let subjectsProgressData = {}; // تجميع الإحصائيات للأب
+
+  let html = "";
+  for (const sName of subjs) {
     const chapters = subjectLessonsTree[sName] || [];
     let totalLessons = 0, doneLessons = 0;
-    chapters.forEach(ch => {
-      ch.lessons.forEach(ls => {
+
+    for (const ch of chapters) {
+      for (const ls of ch.lessons) {
         totalLessons++;
-        if (getLessonSummaries(lessonKey(sName, ch.id, ls.id)).length > 0) doneLessons++;
-      });
-    });
+        const summaries = await getLessonSummaries(lessonKey(sName, ch.id, ls.id));
+        if (summaries && summaries.length > 0) doneLessons++;
+      }
+    }
+
     const pct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
     const icon = (subjectFullDetailsData[sName] && subjectFullDetailsData[sName].icon) || "📘";
 
-    return `
+    // حفظ البيانات لرفعها للأب
+    subjectsProgressData[sName] = { done: doneLessons, total: totalLessons, pct: pct };
+
+    html += `
       <div class="tree-subject-chip" onclick="openSubjectChapters('${sName.replace(/'/g, "\\'")}')">
         <div style="font-size:26px;">${icon}</div>
         <div style="font-size:13px; font-weight:bold; color:var(--text); margin-top:6px;">${sName}</div>
         <div class="tree-progress-bar"><div class="tree-progress-fill" style="width:${pct}%;"></div></div>
-        <div style="font-size:11px; color:var(--gold); margin-top:4px;">${pct}% مُلخّص</div>
+        <div style="font-size:11px; color:var(--gold); margin-top:4px;">${doneLessons} من ${totalLessons} درس (${pct}%)</div>
       </div>
     `;
-  }).join('');
+  }
 
+  container.innerHTML = html;
   document.getElementById('treeBreadcrumb').textContent = "اختر المادة اللي عايز تشتغل عليها 👇";
   document.getElementById('treeChaptersView').style.display = 'none';
   document.getElementById('treeSubjectsGrid').style.display = 'grid';
+
+  // ☁️ مزامنة تقدم شجرة المواد مع السحاب للأب
+  syncTreeProgressToCloud(subjectsProgressData);
+}
+
+// دالة رفع تقدم شجرة المواد لـ Firestore
+async function syncTreeProgressToCloud(treeData) {
+  if (!window.fireDB || !window.getMyStudentCode) return;
+  const studentCode = window.getMyStudentCode();
+  try {
+    const studentRef = window.fireDoc(window.fireDB, "students", studentCode);
+    await window.fireSetDoc(studentRef, { treeProgress: treeData }, { merge: true });
+  } catch (e) {
+    console.error("خطأ مزامنة الشجرة:", e);
+  }
 }
 
 // ================= 📂 أبواب/فصول المادة =================
