@@ -42,6 +42,8 @@ function getStudentContextPrompt() {
 
 // دالة تنظيف الردود
 function cleanAiResponse(text) {
+  // تنظيف أي حروف غير عربية أو لاتينية غريبة متداخلة
+cleaned = cleaned.replace(/[^\u0600-\u06FF\s\d.,!؟:()\-]/g, "");
   if (!text) return "";
   let cleaned = text.replace(/<thought>[\s\S]*?<\/thought>/gi, "");
   cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "");
@@ -54,8 +56,8 @@ async function askSmartTeacher(userPrompt) {
   const studentData = getStudentContextPrompt();
   
   const systemInstruction = `
-أنت "المساعد الشخصي والموجه الدراسي" للطالب في تطبيق "سبيل المجد" للثانوية العامة المصرية.
-لديك البيانات التالية الخاصة بالطالب:
+أنت "المساعد الشخصي والموجه الدراسي" للطالب.
+تنبيه صارم جداً: أجب باللغة العربية الفصحى البسيطة والمفهومة فقط. يمنع تماماً استخدام العامية المعقدة، الفرانكو، أو إدخال أي كلمات بلغات أجنبية أو رموز غير عربية.
 ${studentData}
 
 دورك:
