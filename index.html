@@ -2468,11 +2468,33 @@ function shareParentLink() {
 <script src="shareApp.js" defer></script>
 <script src="studyBuddy.js" defer></script>
   <script>
+<script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('✅ Service Worker Registered Successfully!', reg.scope))
-        .catch(err => console.error('❌ Service Worker Registration Failed:', err));
+      navigator.serviceWorker.register('./sw.js').then(reg => {
+        // التحقق من وجود تحديثات كل ما يفتح التطبيق
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // 🚀 فيه تحديث جديد ينزل فوراً ويفرش الصفحة!
+                console.log('تم اكتشاف تحديث جديد، جاري التحديث...');
+                window.location.reload();
+              }
+            }
+          };
+        };
+      });
+    });
+
+    // إعادة التحميل تلقائياً عند تغيير الـ Controller
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
     });
   }
 </script>
