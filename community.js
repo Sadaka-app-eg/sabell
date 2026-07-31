@@ -76,11 +76,12 @@ function switchCommunityMainView(viewType) {
       if (categoryFilterBox) categoryFilterBox.style.display = 'none';
       filterUnansweredPostsOnly();
     } 
-      else if (viewType === 'dms') {
+else if (viewType === 'dms') {
   const btn = document.getElementById('mainViewDmsBtn');
   if (btn) btn.classList.add('active');
   if (createPostCard) createPostCard.style.display = 'none';
-  renderMyPrivateDmsAndRequestsUI();
+  if (categoryFilterBox) categoryFilterBox.style.display = 'none';
+  renderMyPrivateDmsOnlyUI(); // استدعاء العرض الخاص للـ DMs فقط
 }
         else if (viewType === 'friends') {
   const btn = document.getElementById('mainViewFriendsBtn');
@@ -584,7 +585,7 @@ function openUserProfileModal(code, name, avatar, branch) {
 
   modal.innerHTML = `
     <div class="modal-box user-profile-modal-box" onclick="event.stopPropagation();">
-      <img src="${avatar}" class="profile-modal-avatar">
+<img src="${avatar}" class="profile-modal-avatar" onclick="openImageViewer(this.src)" style="cursor:pointer;" title="اضغط لتكبير الصورة 🔍">      
       <h3 style="color:var(--gold); font-size:16px;">${name}</h3>
       <div style="font-size:11px; color:var(--text2); margin-bottom:12px;">شعبة: ${branch} • كود: ${code}</div>
       
