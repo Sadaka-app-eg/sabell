@@ -261,3 +261,45 @@
   border: 2px solid var(--gold);
   margin-bottom: 8px;
 }
+/* 📱 تصغير وتنسيق كارت البوستات والمجتمع على الهواتف */
+.create-post-card {
+  padding: 8px 10px !important;
+  margin-bottom: 8px !important;
+}
+
+.create-post-input {
+  min-height: 38px !important;
+  font-size: 12px !important;
+  padding: 6px 8px !important;
+}
+
+.post-card {
+  padding: 8px 10px !important;
+  margin-bottom: 8px !important;
+}
+
+.post-content-text {
+  font-size: 12px !important;
+  line-height: 1.4 !important;
+  margin-bottom: 6px !important;
+}
+
+.post-media-img {
+  max-height: 180px !important;
+  border-radius: 8px !important;
+}
+
+.post-reactions-bar {
+  padding-top: 4px !important;
+  margin-top: 4px !important;
+}
+
+.reaction-btn {
+  font-size: 10px !important;
+}
+
+.poll-opt-inp {
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  margin-bottom: 4px !important;
+}
