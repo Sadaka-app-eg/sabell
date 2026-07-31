@@ -453,9 +453,60 @@ function openUserProfileModal(code, name, avatar, branch) {
 function listenToCommunityPublicChat() {
   const box = document.getElementById('communityChatMessagesBox');
   if (!box) return;
-  box.innerHTML = `<div style="text-align:center; font-size:12px; color:var(--text2); padding:20px;">مرحباً بك في غرفة دردشة المجتمع المباشرة 💬</div>`;
-}
 
+  if (!window.fireDB || !window.fireOnSnapshot) {
+    box.innerHTML = `<div style="text-align:center; font-size:12px; color:var(--text2); padding:20px;">مرحباً بك في شات المجتمع المباشر! 💬</div>`;
+    return;
+  }
+
+  // الاستماع المباشر للرسائل
+  window.fireOnSnapshot(window.fireDoc(window.fireDB, "community", "public_chat"), (docSnap) => {
+    if (docSnap.exists()) {
+      const messages = Object.values(docSnap.data() || {});
+      const user = getCommunityUserData();
+      
+      box.innerHTML = messages.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map(m => {
+        const isMe = m.authorCode === user.code;
+        return `
+          <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+            <span style="font-size:10px; color:var(--gold); margin-bottom:2px;">${m.authorName} (${m.authorBranch})</span>
+            <div style="background:${isMe ? 'var(--gold)' : 'var(--bg2)'}; color:${isMe ? '#111' : 'var(--text)'}; padding:8px 12px; border-radius:12px; max-width:80%; font-size:12px; border:1px solid var(--border);">
+              ${m.text}
+            </div>
+            <span style="font-size:9px; color:var(--text2); margin-top:2px;">${formatCommunityTime(m.timestamp)}</span>
+          </div>
+        `;
+      }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+  });
+}
+// 2. دالة إرسال رسالة للشات العام (أضفها واربطها بزرار إرسال الشات)
+async function sendPublicChatMessage() {
+  const inp = document.getElementById('communityChatMsgInp');
+  const text = inp ? inp.value.trim() : '';
+  if (!text) return;
+
+  const user = getCommunityUserData();
+  const msgPayload = {
+    id: "msg_" + Date.now(),
+    authorCode: user.code,
+    authorName: user.name,
+    authorBranch: user.branch,
+    text: text,
+    timestamp: new Date().toISOString()
+  };
+
+  if (window.fireDB && window.fireGetDoc && window.fireSetDoc) {
+    const chatRef = window.fireDoc(window.fireDB, "community", "public_chat");
+    const docSnap = await window.fireGetDoc(chatRef);
+    let msgs = docSnap.exists() ? (docSnap.data() || {}) : {};
+    msgs[msgPayload.id] = msgPayload;
+    await window.fireSetDoc(chatRef, msgs, { merge: true });
+  }
+
+  if (inp) inp.value = '';
+}
 // 1️⃣7️⃣ رفع الصورة المرفقة بالبوست
 function handlePostMediaUpload(input) {
   const file = input.files[0];
@@ -480,4 +531,111 @@ function formatCommunityTime(isoString) {
   if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
   if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
   return `منذ ${Math.floor(diff / 86400)} يوم`;
+}
+// 📩 1. فتح نافذة المحادثة الخاصة (DM)
+function openDirectMessageModal(targetCode, targetName) {
+  let modal = document.getElementById('communityDMModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'communityDMModal';
+    modal.className = 'modal-overlay';
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div class="modal-box" onclick="event.stopPropagation();" style="max-width:400px; padding:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:8px;">
+        <span style="font-size:13px; font-weight:bold; color:var(--gold);">💬 محادثة خاصة مع: ${targetName}</span>
+        <button onclick="document.getElementById('communityDMModal').classList.remove('show')" style="background:transparent; border:none; color:#ff6b6b; font-size:16px; cursor:pointer;">✕</button>
+      </div>
+
+      <div id="privateDmMessagesBox" style="height:220px; overflow-y:auto; background:rgba(0,0,0,0.2); border-radius:10px; padding:8px; margin-bottom:8px; font-size:12px;">
+        <div style="text-align:center; color:var(--text2); padding:10px;">بدء المحادثة الخاصة مع ${targetName}... 🌸</div>
+      </div>
+
+      <div style="display:flex; gap:4px;">
+        <input type="text" id="privateDmMsgInp" placeholder="اكتب رسالة خاصة..." style="flex:1; padding:6px; border-radius:8px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-size:11px; outline:none; font-family:'Amiri', serif;">
+        <button onclick="sendPrivateDirectMessage('${targetCode}')" class="btn-small">إرسال</button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('show');
+  listenToPrivateDmMessages(targetCode);
+}
+
+// 📩 2. الاستماع للرسائل الخاصة وإرسالها
+function listenToPrivateDmMessages(targetCode) {
+  const user = getCommunityUserData();
+  const chatId = [user.code, targetCode].sort().join('_');
+  const box = document.getElementById('privateDmMessagesBox');
+  if (!box || !window.fireDB) return;
+
+  window.fireOnSnapshot(window.fireDoc(window.fireDB, "community_dms", chatId), (docSnap) => {
+    if (docSnap.exists()) {
+      const msgs = Object.values(docSnap.data() || {});
+      box.innerHTML = msgs.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map(m => `
+        <div style="text-align:${m.sender === user.code ? 'left' : 'right'}; margin-bottom:6px;">
+          <div style="display:inline-block; background:${m.sender === user.code ? 'var(--gold)' : 'var(--bg2)'}; color:${m.sender === user.code ? '#111' : 'var(--text)'}; padding:6px 10px; border-radius:10px; font-size:11px;">
+            ${m.text}
+          </div>
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+  });
+}
+
+async function sendPrivateDirectMessage(targetCode) {
+  const inp = document.getElementById('privateDmMsgInp');
+  const text = inp ? inp.value.trim() : '';
+  if (!text) return;
+
+  const user = getCommunityUserData();
+  const chatId = [user.code, targetCode].sort().join('_');
+  const msgPayload = {
+    id: "dm_" + Date.now(),
+    sender: user.code,
+    text: text,
+    timestamp: new Date().toISOString()
+  };
+
+  if (window.fireDB && window.fireGetDoc && window.fireSetDoc) {
+    const dmRef = window.fireDoc(window.fireDB, "community_dms", chatId);
+    const docSnap = await window.fireGetDoc(dmRef);
+    let msgs = docSnap.exists() ? (docSnap.data() || {}) : {};
+    msgs[msgPayload.id] = msgPayload;
+    await window.fireSetDoc(dmRef, msgs, { merge: true });
+  }
+
+  if (inp) inp.value = '';
+}
+// 🤝 1. إرسال طلب صداقة
+async function sendFriendRequestFromModal(targetCode) {
+  const user = getCommunityUserData();
+  if (targetCode === user.code) {
+    alert("لا يمكنك إرسال طلب صداقة لنفسك! 😄");
+    return;
+  }
+
+  if (window.fireDB && window.fireSetDoc && window.fireDoc) {
+    const reqRef = window.fireDoc(window.fireDB, "friend_requests", `${user.code}_${targetCode}`);
+    await window.fireSetDoc(reqRef, {
+      from: user.code,
+      fromName: user.name,
+      to: targetCode,
+      status: 'pending',
+      timestamp: new Date().toISOString()
+    });
+    alert("✅ تم إرسال طلب الصداقة بنجاح!");
+  } else {
+    alert("✅ تم إرسال طلب الصداقة!");
+  }
+}
+// 🔖 عرض البوستات المحفوظة فقط
+function filterSavedPostsOnly() {
+  const user = getCommunityUserData();
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const saved = localPosts.filter(p => p.savedBy && p.savedBy.includes(user.code));
+  renderCommunityPostsUI(saved);
 }
