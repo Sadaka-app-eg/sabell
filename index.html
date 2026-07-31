@@ -391,18 +391,20 @@ window.fireDeleteDoc = deleteDoc;
     return auth.currentUser ? (auth.currentUser.displayName || "الطالب") : "الطالب";
   };
 
-  // 🔑 1. توليد كود قصير وسهل للطالب
-  function getOrCreateStudentCode(user) {
-    if (!user) return localStorage.getItem('sm_student_code') || "SM-GUEST";
-    const userStorageKey = 'sm_student_code_' + user.uid;
-    let code = localStorage.getItem(userStorageKey);
-    if (!code) {
-      const randomDigits = Math.floor(1000 + Math.random() * 9000);
-      code = "SM-" + randomDigits;
-      localStorage.setItem(userStorageKey, code);
-    }
-    return code;
+function getOrCreateStudentCode(user) {
+  if (!user) return localStorage.getItem('sm_student_code') || "SM-GUEST";
+  
+  // توليد كود ثابت مشتق من ID الحساب نفسه عشان ما يتغيرش لو خرجت ودخلت 100 مرة
+  let numCode = 0;
+  for (let i = 0; i < user.uid.length; i++) {
+    numCode += user.uid.charCodeAt(i);
   }
+  const fixedCode = "SM-" + (1000 + (numCode % 8999));
+  
+  // توحيد المفتاح في كل الذاكرة
+  localStorage.setItem('sm_student_code', fixedCode);
+  return fixedCode;
+}
 
   // ☁️ 2. دالة رفع حالة الطالب للسحاب
   window.syncStudentDataToCloud = async function() {
