@@ -1,0 +1,263 @@
+/* ===============================================
+   🌐 مجتمع سبيل المجد - Sabeel Community Styles
+   =============================================== */
+
+/* 📱 الحاوية الرئيسية للمجتمع */
+.community-container {
+  padding: 8px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* 🏷️ شريط الأقسام والمواد العلوي (Horizontal Filter Bar) */
+.community-nav-bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.community-nav-bar::-webkit-scrollbar { display: none; }
+
+.community-nav-btn {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Amiri', serif;
+}
+.community-nav-btn.active {
+  background: var(--gold);
+  color: #111;
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+/* ✍️ كارت إنشاء بوست جديد (Compact Create Post) */
+.create-post-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.create-post-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.create-post-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  object-fit: cover;
+}
+.create-post-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'Amiri', serif;
+  font-size: 12px;
+  outline: none;
+  resize: vertical;
+  min-height: 45px;
+}
+
+.create-post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px dashed var(--border);
+  padding-top: 6px;
+}
+.post-action-btn {
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Amiri', serif;
+}
+
+/* 📰 كارت البوست المصغر والمحبوك للموبايل (Compact Post Card) */
+.post-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+  position: relative;
+}
+.post-card.pinned-post {
+  border: 1px solid var(--gold);
+  background: linear-gradient(145deg, rgba(212,175,55,0.06) 0%, var(--bg2) 100%);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.post-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.post-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  object-fit: cover;
+}
+.post-user-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.post-user-badge {
+  font-size: 9px;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+.post-time {
+  font-size: 10px;
+  color: var(--text2);
+}
+
+.post-content-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+.post-media-img {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* 📊 كارت الاستطلاعات والـ Polls */
+.poll-option-btn {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Amiri', serif;
+}
+.poll-fill-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  background: rgba(212, 175, 55, 0.2);
+  z-index: 0;
+  transition: width 0.3s;
+}
+
+/* 👍 شريط التفاعلات السفلي للبوست */
+.post-reactions-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+.reaction-btn {
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Amiri', serif;
+  transition: transform 0.1s;
+}
+.reaction-btn:active { transform: scale(1.15); }
+.reaction-btn.active-like { color: var(--gold); }
+.reaction-btn.active-love { color: #ff6b6b; }
+
+/* 💬 صندوق التعليقات المصغر */
+.comments-section {
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 8px;
+}
+.comment-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+.comment-item.best-answer {
+  border: 1px solid var(--green);
+  background: rgba(111, 191, 115, 0.08);
+}
+.comment-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+}
+.comment-body { flex: 1; }
+.comment-user-name { font-size: 11px; font-weight: bold; color: var(--gold); }
+.comment-text { font-size: 12px; color: var(--text); line-height: 1.4; }
+
+/* 💌 كارت البروفايل السريع ومحادثة DMs */
+.user-profile-modal-box {
+  text-align: center;
+  padding: 16px;
+}
+.profile-modal-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  margin-bottom: 8px;
+}
