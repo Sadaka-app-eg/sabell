@@ -1397,41 +1397,41 @@ function initAppUI() {
       worshipGrid.innerHTML = presetWorshipTasks.map(w => renderTaskConfigRow(w)).join('');
     }
 
-    function renderTaskConfigRow(taskName) {
-      const isSelected = !!selectedPlanTasks[taskName];
-      const mode = selectedPlanTasks[taskName] || 'daily';
+function renderTaskConfigRow(taskName) {
+  const isSelected = !!selectedPlanTasks[taskName];
+  const mode = selectedPlanTasks[taskName] || 'daily';
 
-      return `
-        <div style="background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; margin-bottom:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:13px; font-weight:bold; color:var(--text);">${taskName}</span>
-            <button onclick="togglePlanTaskSelection('${taskName}')" class="btn-small" style="background:${isSelected ? 'var(--green)' : 'var(--card)'}; color:${isSelected ? '#fff' : 'var(--gold)'}; border:1px solid var(--gold);">
-              ${isSelected ? '✓ مضافة' : '+ إضافة'}
-            </button>
+  return `
+    <div style="background:var(--card); border:1px solid var(--border); padding:8px; border-radius:10px; margin-bottom:6px; box-sizing:border-box; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:13px; font-weight:bold; color:var(--text); white-space:normal; word-break:break-word;">${taskName}</span>
+        <button onclick="togglePlanTaskSelection('${taskName}')" class="btn-small" style="background:${isSelected ? 'var(--green)' : 'var(--card)'}; color:${isSelected ? '#fff' : 'var(--gold)'}; border:1px solid var(--gold); flex-shrink:0;">
+          ${isSelected ? '✓ مضافة' : '+ إضافة'}
+        </button>
+      </div>
+      
+      ${isSelected ? `
+        <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
+          <div style="font-size:10px; color:var(--text2); margin-bottom:4px;">تكرار المهمة:</div>
+          <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            <button onclick="setTaskFrequency('${taskName}', 'daily')" class="day-btn ${mode === 'daily' ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">يومياً</button>
+            <button onclick="setTaskFrequency('${taskName}', 'custom')" class="day-btn ${Array.isArray(mode) ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">أيام محددة</button>
           </div>
           
-          ${isSelected ? `
-            <div style="margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;">
-              <div style="font-size:10px; color:var(--text2); margin-bottom:4px;">تكرار المهمة:</div>
-              <div style="display:flex; gap:4px; flex-wrap:wrap;">
-                <button onclick="setTaskFrequency('${taskName}', 'daily')" class="day-btn ${mode === 'daily' ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">يومياً</button>
-                <button onclick="setTaskFrequency('${taskName}', 'custom')" class="day-btn ${Array.isArray(mode) ? 'active' : ''}" style="padding:2px 6px; font-size:10px;">أيام محددة</button>
-              </div>
-              
-              ${Array.isArray(mode) ? `
-                <div style="display:flex; gap:3px; margin-top:6px; overflow-x:auto;">
-                  ${weekDaysList.map(day => `
-                    <button onclick="toggleSpecificDay('${taskName}', '${day}')" class="day-btn ${mode.includes(day) ? 'active' : ''}" style="padding:2px 4px; font-size:9px; min-width:32px;">
-                      ${day.replace('الأربعاء', 'أربعاء')}
-                    </button>
-                  `).join('')}
-                </div>
-              ` : ''}
+          ${Array.isArray(mode) ? `
+            <div style="display:flex; gap:4px; margin-top:6px; flex-wrap:wrap; width:100%; box-sizing:border-box;">
+              ${weekDaysList.map(day => `
+                <button onclick="toggleSpecificDay('${taskName}', '${day}')" class="day-btn ${mode.includes(day) ? 'active' : ''}" style="padding:3px 6px; font-size:9px; flex:1; min-width:35px; max-width:48px; text-align:center;">
+                  ${day.replace('الأربعاء', 'أربعاء').replace('الخميس', 'خميس').replace('الجمعة', 'جمعة')}
+                </button>
+              `).join('')}
             </div>
           ` : ''}
         </div>
-      `;
-    }
+      ` : ''}
+    </div>
+  `;
+}
 
     function togglePlanTaskSelection(taskName) {
       if (selectedPlanTasks[taskName]) {
@@ -2467,7 +2467,6 @@ function shareParentLink() {
   <!-- استدعاء ملف المشاركة والتواصل -->
 <script src="shareApp.js" defer></script>
 <script src="studyBuddy.js" defer></script>
-  <script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
