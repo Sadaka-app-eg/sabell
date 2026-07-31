@@ -1272,49 +1272,86 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     </div>
   </div>
 </div>
-<!-- ==================== 🌐 صفحة مجتمع سبيل المجد ==================== -->
+<!-- ==================== 🌐 صفحة مجتمع سبيل المجد (المطورة) ==================== -->
 <div class="page" id="communityPage">
-  <!-- شريط المواد والأقسام العلوي -->
-  <div class="community-nav-bar">
-    <button class="community-nav-btn active" onclick="switchCommunityTab('عام', this)">🌐 العامة</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('عربي', this)">📖 عربي</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('إنجليزي', this)">🇬🇧 إنجليزي</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('فيزياء', this)">⚡ فيزياء</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('كيمياء', this)">🧪 كيمياء</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('أحياء', this)">🧬 أحياء</button>
-    <button class="community-nav-btn" onclick="switchCommunityTab('رياضيات', this)">📐 رياضيات</button>
+
+  <!-- 1. شريط التبديل الرئيسي (بوستات / شات عام مباشر) -->
+  <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+    <button id="mainViewPostsBtn" class="day-btn active" onclick="switchCommunityMainView('posts')" style="flex: 1; padding: 8px;">
+      📰 منشورات وأسئلة الطلاب
+    </button>
+    <button id="mainViewChatBtn" class="day-btn" onclick="switchCommunityMainView('chat')" style="flex: 1; padding: 8px;">
+      💬 الشات العام المباشر
+    </button>
   </div>
 
-  <!-- كارت إضافة بوست سريع -->
-  <div class="create-post-card">
-    <div class="create-post-header">
+  <!-- ================= قسم البوستات ================= -->
+  <div id="communityPostsSection">
+    
+    <!-- 2. القائمة المنسدلة لاختيار المادة / القسم -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg2); border: 1px solid var(--border); padding: 8px 12px; border-radius: 12px; margin-bottom: 10px;">
+      <span style="font-size: 12px; color: var(--gold); font-weight: bold;">🎯 تصفية حسب المادة:</span>
+      <select onchange="changeCommunityCategorySelect(this)" style="padding: 6px 12px; border-radius: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
+        <option value="عام">🌐 العامة (كل المواد)</option>
+        <option value="عربي">📖 اللغة العربية</option>
+        <option value="إنجليزي">🇬🇧 اللغة الإنجليزية</option>
+        <option value="فيزياء">⚡ الفيزياء</option>
+        <option value="كيمياء">🧪 الكيمياء</option>
+        <option value="أحياء">🧬 الأحياء</option>
+        <option value="رياضيات">📐 الرياضيات</option>
+      </select>
+    </div>
+
+    <!-- 3. كارت إنشاء البوست المدمج والذكي -->
+    <div class="create-post-card">
       <textarea id="communityPostTextInput" class="create-post-input" placeholder="اسأل سؤالاً، انشر فكرة، أو شارك زملائك تجربة..."></textarea>
-    </div>
 
-    <!-- حقول إضافية اختيارية للاستطلاع -->
-    <div id="pollInputsBox" style="display:none; margin-bottom:8px;">
-      <input type="text" id="communityPollOpt1" placeholder="الخيار الأول (مثلاً: أ)" style="width:100%; padding:5px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:11px; margin-bottom:4px;">
-      <input type="text" id="communityPollOpt2" placeholder="الخيار الثاني (مثلاً: ب)" style="width:100%; padding:5px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:11px;">
-    </div>
-
-    <div id="postMediaPreviewNotice" style="font-size:11px; color:var(--green); display:none; margin-bottom:6px;"></div>
-
-    <div class="create-post-actions">
-      <div style="display:flex; gap:8px;">
-        <button class="post-action-btn" onclick="document.getElementById('communityPostImgInp').click()">🖼️ صورة</button>
-        <button class="post-action-btn" onclick="document.getElementById('pollInputsBox').style.display='block'">📊 استطلاع</button>
-        <label style="font-size:11px; color:var(--text2); display:flex; align-items:center; gap:4px; cursor:pointer;">
-          <input type="checkbox" id="communityPostAnonCheck"> مجهول 🕵️
-        </label>
+      <!-- وعاء الخيارات الديناميكية للاستطلاع (مخفي افتراضياً) -->
+      <div id="pollCreatorBox" style="display: none; background: rgba(0,0,0,0.2); border: 1px dashed var(--gold); padding: 8px; border-radius: 10px; margin: 8px 0;">
+        <div style="font-size: 11px; color: var(--gold); margin-bottom: 6px; font-weight: bold;">📊 خيارات الاستطلاع:</div>
+        <div id="pollOptionsContainer">
+          <input type="text" class="poll-opt-inp" placeholder="الخيار 1..." style="width:100%; padding:7px; border-radius:8px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; margin-bottom:6px; font-family:'Amiri', serif;">
+          <input type="text" class="poll-opt-inp" placeholder="الخيار 2..." style="width:100%; padding:7px; border-radius:8px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; margin-bottom:6px; font-family:'Amiri', serif;">
+        </div>
+        <button onclick="addPollOptionInput()" class="btn-small" style="padding: 4px 10px; font-size: 10px; background: var(--card); border: 1px solid var(--gold); color: var(--gold);">
+          ➕ إضافة خيار آخر
+        </button>
       </div>
 
-      <button onclick="createNewCommunityPost()" class="btn-small">نشر ✨</button>
+      <div id="postMediaNotice" style="font-size: 11px; color: var(--green); display: none; margin-top: 4px;"></div>
+
+      <div class="create-post-actions">
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="post-action-btn" onclick="document.getElementById('communityImgInp').click()">🖼️ صورة</button>
+          <button class="post-action-btn" onclick="togglePollCreator()">📊 استطلاع</button>
+          <label style="font-size: 11px; color: var(--text2); display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            <input type="checkbox" id="communityPostAnonCheck"> مجهول 🕵️
+          </label>
+        </div>
+
+        <button onclick="createNewCommunityPost()" class="btn-small">نشر ✨</button>
+      </div>
+      <input type="file" id="communityImgInp" accept="image/*" style="display: none;" onchange="handlePostMediaUpload(this)">
     </div>
-    <input type="file" id="communityPostImgInp" accept="image/*" style="display:none;" onchange="handlePostMediaUpload(this)">
+
+    <!-- 4. خلاصة البوستات -->
+    <div id="communityPostsFeed"></div>
+
   </div>
 
-  <!-- خلاصة المشاركات والبوستات -->
-  <div id="communityPostsFeed"></div>
+  <!-- ================= قسم الشات العام المباشر ================= -->
+  <div id="communityChatSection" style="display: none;">
+    <div class="athr-card">
+      <div style="font-size: 13px; font-weight: bold; color: var(--gold); margin-bottom: 8px;">💬 غُرْفَةُ الشَّاتِ العَامِّ المَبَاشِرِ</div>
+      <div id="communityChatMessagesBox" style="height: 350px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 8px; margin-bottom: 10px;"></div>
+      
+      <div style="display: flex; gap: 6px;">
+        <input type="text" id="communityChatMsgInp" placeholder="اكتب رسالة للجميع..." style="flex: 1; padding: 8px; border-radius: 10px; background: var(--bg2); color: var(--text); border: 1px solid var(--border); font-family: 'Amiri', serif; outline: none; font-size: 12px;">
+        <button class="btn-small" style="padding: 8px 16px;">إرسال</button>
+      </div>
+    </div>
+  </div>
+
 </div>
  <script>
     // ================= 📚 دليل المواد الشامل =================
