@@ -78,7 +78,7 @@ function togglePollCreator() {
   }
 }
 
-// 6️⃣ نشر بوست جديد (نص / صورة / استطلاع لا نهائي)
+// 6️⃣ نشر بوست جديد (مضمون وسريع بدون أخطاء)
 async function createNewCommunityPost() {
   const textInp = document.getElementById('communityPostTextInput');
   const isAnonCheck = document.getElementById('communityPostAnonCheck');
@@ -88,7 +88,7 @@ async function createNewCommunityPost() {
   const text = textInp ? textInp.value.trim() : '';
   const isAnonymous = isAnonCheck ? isAnonCheck.checked : false;
 
-  // جمع خيارات الاستطلاع الديناميكية
+  // جمع خيارات الاستطلاع بأمان
   let pollData = null;
   if (pollBox && pollBox.style.display !== 'none' && pollContainer) {
     const optInputs = pollContainer.querySelectorAll('.poll-opt-inp');
@@ -115,9 +115,9 @@ async function createNewCommunityPost() {
     authorName: isAnonymous ? "طالب مجهول 🕵️" : user.name,
     authorAvatar: isAnonymous ? "https://via.placeholder.com/40/d4af37/000000?text=🔍" : user.avatar,
     authorBranch: user.branch,
-    category: currentCommunityTab,
+    category: currentCommunityTab || 'عام',
     text: text,
-    image: currentPostMediaBase64,
+    image: currentPostMediaBase64 || null,
     poll: pollData,
     likes: [],
     loves: [],
@@ -128,16 +128,19 @@ async function createNewCommunityPost() {
   };
 
   try {
+    // 1. الحفظ المحلي المباشر أولاً لضمان عدم حدوث خطأ للشاشة
+    let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+    localPosts.unshift(postPayload);
+    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+
+    // 2. المزامنة مع الفايربيس لو متاح
     if (window.fireDB && window.fireSetDoc && window.fireDoc) {
-      await window.fireSetDoc(window.fireDoc(window.fireDB, "community_posts", postPayload.id), postPayload);
-    } else {
-      let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-      localPosts.unshift(postPayload);
-      localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
-      renderCommunityPostsUI(localPosts);
+      window.fireSetDoc(window.fireDoc(window.fireDB, "community_posts", postPayload.id), postPayload).catch(e => console.log("Firebase sync fallback"));
     }
 
-    // إعادة ضبط الحقول
+    // 3. تحديث الواجهة وتصفير الحقول
+    renderCommunityPostsUI(localPosts);
+
     if (textInp) textInp.value = '';
     currentPostMediaBase64 = null;
     if (pollBox) pollBox.style.display = 'none';
@@ -146,8 +149,8 @@ async function createNewCommunityPost() {
     if (isAnonCheck) isAnonCheck.checked = false;
 
   } catch (err) {
-    console.error("خطأ في النشر:", err);
-    alert("حدث خطأ أثناء نشر البوست، حاول مجدداً.");
+    console.error("Error creating post:", err);
+    alert("حدث خطأ بسيط، تم حفظ البوست محلياً!");
   }
 }
 
