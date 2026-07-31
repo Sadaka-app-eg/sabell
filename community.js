@@ -10,7 +10,21 @@ let commentAudioRecorder = null;
 let commentAudioChunks = [];
 let isCommentRecording = false;
 // 🔐 التحقق من أن المستخدم مسجل دخول بجوجل
-// 🔐 التحقق من أن المستخدم مسجل دخول بجوجل
+
+// 🔒 فتح صفحة المجتمع بأمان (حظر الزوار من الرؤية كلياً)
+function openCommunityPageSecure(el) {
+  if (!checkUserIsLoggedIn()) {
+    return; // يوقف الفتح ويطلع الـ alert ورسالة الدخول فوراً
+  }
+  
+  // لو مسجل دخول يفتح الصفحة عادي
+  if (window.showPage) {
+    window.showPage('communityPage', el);
+  }
+  listenToCommunityPosts();
+}
+
+
 function checkUserIsLoggedIn() {
   const code = localStorage.getItem('sm_student_code') || (window.getMyStudentCode ? window.getMyStudentCode() : 'SM-GUEST');
   if (!code || code === 'SM-GUEST' || code.includes('GUEST')) {
