@@ -1275,15 +1275,21 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
 <!-- ==================== 🌐 صفحة مجتمع سبيل المجد (المطورة) ==================== -->
 <div class="page" id="communityPage">
 
-  <!-- 1. شريط التبديل الرئيسي (بوستات / شات عام مباشر) -->
-  <div style="display: flex; gap: 6px; margin-bottom: 10px;">
-    <button id="mainViewPostsBtn" class="day-btn active" onclick="switchCommunityMainView('posts')" style="flex: 1; padding: 8px;">
-      📰 منشورات وأسئلة الطلاب
-    </button>
-    <button id="mainViewChatBtn" class="day-btn" onclick="switchCommunityMainView('chat')" style="flex: 1; padding: 8px;">
-      💬 الشات العام المباشر
-    </button>
-  </div>
+<!-- شريط التبويبات والمميزات الكامل والمظبوط للموبايل -->
+<div style="display: flex; gap: 4px; overflow-x: auto; margin-bottom: 10px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+  <button id="mainViewPostsBtn" class="day-btn active" onclick="switchCommunityMainView('posts')" style="padding: 6px 12px; white-space: nowrap; font-size: 11px;">
+    📰 منشورات وأسئلة الطلاب
+  </button>
+  <button id="mainViewChatBtn" class="day-btn" onclick="switchCommunityMainView('chat')" style="padding: 6px 12px; white-space: nowrap; font-size: 11px;">
+    💬 الشات العام المباشر
+  </button>
+  <button id="mainViewSavedBtn" class="day-btn" onclick="switchCommunityMainView('saved')" style="padding: 6px 12px; white-space: nowrap; font-size: 11px;">
+    🔖 أسئلتي المحفوظة
+  </button>
+  <button id="mainViewUnansweredBtn" class="day-btn" onclick="switchCommunityMainView('unanswered')" style="padding: 6px 12px; white-space: nowrap; font-size: 11px;">
+    🎯 أسئلة تحتاج إجابة
+  </button>
+</div>
 
   <!-- ================= قسم البوستات ================= -->
   <div id="communityPostsSection">
