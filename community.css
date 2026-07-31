@@ -303,3 +303,26 @@
   font-size: 11px !important;
   margin-bottom: 4px !important;
 }
+/* 🎭 قائمة التفاعلات عند الضغط المطول */
+.reactions-popover {
+  display: none;
+  position: absolute;
+  bottom: 35px;
+  right: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--gold);
+  border-radius: 20px;
+  padding: 4px 8px;
+  gap: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  z-index: 100;
+}
+.reactions-popover.show { display: flex; }
+.reaction-emoji-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.reaction-emoji-btn:active { transform: scale(1.3); }
