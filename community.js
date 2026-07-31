@@ -783,7 +783,10 @@ function formatCommunityTime(isoString) {
   return `منذ ${Math.floor(diff / 86400)} يوم`;
 }
 // 📩 1. فتح نافذة المحادثة الخاصة (DM)
+// 💬 نافذة المحادثة الخاصة المطابقة لتصميم أثر
 function openDirectMessageModal(targetCode, targetName) {
+  if (!checkUserIsLoggedIn()) return;
+
   let modal = document.getElementById('communityDMModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -793,20 +796,32 @@ function openDirectMessageModal(targetCode, targetName) {
   }
 
   modal.innerHTML = `
-    <div class="modal-box" onclick="event.stopPropagation();" style="max-width:400px; padding:12px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:6px; margin-bottom:8px;">
-        <span style="font-size:13px; font-weight:bold; color:var(--gold);">💬 محادثة خاصة مع: ${targetName}</span>
-        <button onclick="document.getElementById('communityDMModal').classList.remove('show')" style="background:transparent; border:none; color:#ff6b6b; font-size:16px; cursor:pointer;">✕</button>
+    <div class="modal-box" onclick="event.stopPropagation();" style="width:95vw; max-width:900px; height:85vh; padding:16px; display:flex; flex-direction:column; justify-content:space-between; background:var(--bg); border:1px solid var(--border); border-radius:18px;">
+      
+      <!-- الهيدر العلوي -->
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
+        <span style="font-size:14px; font-weight:bold; color:var(--gold);">💬 المحادثة الخاصة مع: <b style="color:var(--text);">${targetName}</b></span>
+        <button onclick="document.getElementById('communityDMModal').classList.remove('show')" style="background:transparent; border:none; color:var(--gold); font-size:12px; cursor:pointer; text-decoration:underline;">رجوع للصندوق</button>
       </div>
 
-      <div id="privateDmMessagesBox" style="height:220px; overflow-y:auto; background:rgba(0,0,0,0.2); border-radius:10px; padding:8px; margin-bottom:8px; font-size:12px;">
-        <div style="text-align:center; color:var(--text2); padding:10px;">بدء المحادثة الخاصة مع ${targetName}... 🌸</div>
+      <!-- منطقة عرض الرسائل -->
+      <div id="privateDmMessagesBox" style="flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; background:rgba(0,0,0,0.2); border-radius:12px; margin-bottom:10px;">
+        <div style="text-align:center; color:var(--text2); font-size:12px;">جاري تحميل المحادثة... ☕</div>
       </div>
 
-      <div style="display:flex; gap:4px;">
-        <input type="text" id="privateDmMsgInp" placeholder="اكتب رسالة خاصة..." style="flex:1; padding:6px; border-radius:8px; background:var(--bg2); color:var(--text); border:1px solid var(--border); font-size:11px; outline:none; font-family:'Amiri', serif;">
-        <button onclick="sendPrivateDirectMessage('${targetCode}')" class="btn-small">إرسال</button>
+      <!-- شريط الإدخال المطور مع أزرار الميديا -->
+      <div style="display:flex; gap:8px; align-items:center; background:var(--bg2); border:1px solid var(--border); border-radius:30px; padding:6px 12px;">
+        <button onclick="sendPrivateDirectMessage('${targetCode}', '${targetName}')" style="background:var(--gold); border:none; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; flex-shrink:0;">🕊️</button>
+        
+        <input type="text" id="privateDmMsgInp" placeholder="اكتب رسالة خاصة آمنة..." onkeypress="if(event.key==='Enter') sendPrivateDirectMessage('${targetCode}', '${targetName}')" style="flex:1; background:transparent; border:none; color:var(--text); font-family:'Amiri', serif; font-size:13px; outline:none; padding:0 6px;">
+
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button id="dmVoiceBtn" onclick="alert('جاري تجهيز الفويس...')" style="background:transparent; border:none; color:var(--text2); font-size:16px; cursor:pointer;" title="تسجيل صوتي">🎙️</button>
+          <button onclick="document.getElementById('dmImgInp').click()" style="background:transparent; border:none; color:var(--text2); font-size:16px; cursor:pointer;" title="إرفاق صورة">🖼️</button>
+        </div>
+        <input type="file" id="dmImgInp" accept="image/*" style="display:none;" onchange="handleDmImageSend('${targetCode}', '${targetName}', this)">
       </div>
+
     </div>
   `;
 
@@ -815,6 +830,7 @@ function openDirectMessageModal(targetCode, targetName) {
 }
 
 // 📩 2. الاستماع للرسائل الخاصة وإرسالها
+// 📩 رسم الفقاعات المماثلة لتطبيق أثر
 function listenToPrivateDmMessages(targetCode) {
   const user = getCommunityUserData();
   const chatId = [user.code, targetCode].sort().join('_');
@@ -824,13 +840,19 @@ function listenToPrivateDmMessages(targetCode) {
   window.fireOnSnapshot(window.fireDoc(window.fireDB, "community_dms", chatId), (docSnap) => {
     if (docSnap.exists()) {
       const msgs = Object.values(docSnap.data() || {});
-      box.innerHTML = msgs.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map(m => `
-        <div style="text-align:${m.sender === user.code ? 'left' : 'right'}; margin-bottom:6px;">
-          <div style="display:inline-block; background:${m.sender === user.code ? 'var(--gold)' : 'var(--bg2)'}; color:${m.sender === user.code ? '#111' : 'var(--text)'}; padding:6px 10px; border-radius:10px; font-size:11px;">
-            ${m.text}
+      box.innerHTML = msgs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)).map(m => {
+        const isMe = m.sender === user.code;
+        return `
+          <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'};">
+            <div style="background:${isMe ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg2)'}; border:1px solid ${isMe ? 'var(--gold)' : 'var(--border)'}; color:var(--text); padding:8px 14px; border-radius:14px; max-width:75%; font-size:13px; line-height:1.5;">
+              <div style="font-size:10px; color:var(--gold); margin-bottom:2px; font-weight:bold;">${isMe ? user.name : (m.senderName || 'الصديق')}</div>
+              ${m.text ? `<div>${m.text}</div>` : ''}
+              ${m.image ? `<img src="${m.image}" onclick="openImageViewer(this.src)" style="max-width:200px; border-radius:8px; margin-top:4px; cursor:pointer;">` : ''}
+            </div>
+            <span style="font-size:9px; color:var(--text2); margin-top:2px; padding:0 4px;">${formatCommunityTime(m.timestamp)}</span>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
       box.scrollTop = box.scrollHeight;
     }
   });
@@ -1147,8 +1169,7 @@ async function rejectFriendRequest(fromCode) {
     } catch(e) {}
   }
 }
-// 📩 دالة عرض تبويب المحادثات الخاصة المنفصل بالكامل
-// 📩 عرض تبويب المحادثات الخاصة مع الصورة والاسم والرسالة الأخيرة
+// 📩 صندوق الرسائل الخاصة المطور (تصميم أثر)
 async function renderMyPrivateDmsOnlyUI() {
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
@@ -1156,20 +1177,17 @@ async function renderMyPrivateDmsOnlyUI() {
   const user = getCommunityUserData();
 
   container.innerHTML = `
-    <div class="athr-card">
-      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:10px; border-right:3px solid var(--gold); padding-right:6px;">
-        💬 المحادثات الخاصة النشطة (DMs):
+    <div style="direction: rtl; font-family: 'Amiri', serif;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span style="font-size:14px; font-weight:bold; color:var(--gold);">📬 صندوق رسائلك الخاصة</span>
       </div>
-      <div id="privateDmsFeedList" style="font-size:12px; color:var(--text2);">
-        جاري جلب المحادثات...
+      <div id="privateDmsFeedList" style="display:flex; flex-direction:column; gap:8px;">
+        <div style="text-align:center; padding:20px; color:var(--text2); font-size:12px;">جاري جلب الرسائل...</div>
       </div>
     </div>
   `;
 
-  if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) {
-    document.getElementById('privateDmsFeedList').innerHTML = "يرجى الاتصال بالإنترنت لعرض محادثاتك الخاصّة.";
-    return;
-  }
+  if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) return;
 
   try {
     const dmsColl = window.fireCollection(window.fireDB, "community_dms");
@@ -1186,17 +1204,14 @@ async function renderMyPrivateDmsOnlyUI() {
             const lastMsg = msgsArray[0];
             const otherCode = chatId.replace(user.code, '').replace('_', '');
 
-            // استخراج اسم وصورة الطرف الآخر من الرسالة
             const isMeLast = lastMsg.sender === user.code;
-            const otherName = isMeLast ? "محادثة خاصة" : (lastMsg.senderName || "طالب متميز");
-            const otherAvatar = (!isMeLast && lastMsg.senderAvatar) ? lastMsg.senderAvatar : "https://via.placeholder.com/40";
+            const otherName = isMeLast ? (lastMsg.targetName || "Ahmed Mohamed") : (lastMsg.senderName || "Ahmed Mohamed");
 
             myDms.push({
               chatId: chatId,
               otherCode: otherCode,
               otherName: otherName,
-              otherAvatar: otherAvatar,
-              lastMsgText: lastMsg.text || 'مرفق ميديا',
+              lastMsgText: (isMeLast ? "أنت: " : "") + (lastMsg.text || 'مرفق ميديا'),
               lastTime: lastMsg.timestamp
             });
           }
@@ -1206,22 +1221,17 @@ async function renderMyPrivateDmsOnlyUI() {
       const dmsBox = document.getElementById('privateDmsFeedList');
       if (dmsBox) {
         if (myDms.length === 0) {
-          dmsBox.innerHTML = `
-            <div style="text-align:center; padding:25px; color:var(--text2);">
-              لا توجد محادثات خاصة حتى الآن! 🌸<br>
-              <small style="font-size:11px; color:var(--gold);">اضغط على اسم أو بروفايل أي طالب في المجتمع وابدأ معه محادثة مباشرة.</small>
-            </div>`;
+          dmsBox.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text2); border:1px solid var(--border); border-radius:12px; background:var(--bg2);">لا توجد رسائل خاصة حتى الآن. 🌸</div>`;
         } else {
           dmsBox.innerHTML = myDms.map(d => `
-            <div onclick="openDirectMessageModal('${d.otherCode}', '${d.otherName}')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <img src="${d.otherAvatar}" onclick="event.stopPropagation(); openImageViewer(this.src)" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--gold); object-fit:cover;" title="اضغط للتكبير 🔍">
-                <div>
-                  <b style="color:var(--gold); font-size:13px;">${d.otherName}</b>
-                  <div style="font-size:11px; color:var(--text); margin-top:2px;">${d.lastMsgText}</div>
-                </div>
+            <div onclick="openDirectMessageModal('${d.otherCode}', '${d.otherName}')" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid var(--border); padding:14px 18px; border-radius:12px; cursor:pointer; transition:0.2s;">
+              <div>
+                <div style="font-size:14px; font-weight:bold; color:var(--text); margin-bottom:4px;">${d.otherName}</div>
+                <div style="font-size:12px; color:var(--text2);">${d.lastMsgText}</div>
               </div>
-              <span style="font-size:9px; color:var(--text2);">${formatCommunityTime(d.lastTime)}</span>
+              <span style="font-size:11px; color:var(--gold); display:flex; align-items:center; gap:3px;">
+                ✨ ${formatCommunityTime(d.lastTime)}
+              </span>
             </div>
           `).join('');
         }
