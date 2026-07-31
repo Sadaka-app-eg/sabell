@@ -353,3 +353,41 @@
 #communityPage > div:first-child::-webkit-scrollbar {
   display: none !important;
 }
+/* 📱 جعل التبويبات سحب ناعم وملموم على الفون */
+#communityPage > div:first-child {
+  display: flex !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  padding: 4px 2px 8px !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+}
+
+#communityPage > div:first-child::-webkit-scrollbar {
+  display: none !important;
+}
+
+#communityPage .day-btn {
+  flex: 0 0 auto !important; /* يمنع تمطيط الزرار */
+  padding: 6px 14px !important;
+  font-size: 11px !important;
+  border-radius: 20px !important;
+}
+/* 📱 ضبط شريط التعليق للموبايل */
+.comments-section div[style*="display:flex"] {
+  display: flex !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+.comments-section input[type="text"] {
+  min-width: 0 !important; /* بيخلي الانبوت يتضغط ويسيب مساحة للأزرار */
+  flex: 1 1 auto !important;
+}
+
+.comments-section .btn-small {
+  padding: 5px 8px !important;
+  font-size: 11px !important;
+  flex-shrink: 0 !important; /* يمنع اختفاء المايك والصورة */
+}
