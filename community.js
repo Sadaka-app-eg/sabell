@@ -252,20 +252,18 @@ async function createNewCommunityPost() {
   }
 }
 
-// 4️⃣ الاستماع الحي لكل البوستات المرفوعة على الفايربيس لجميع الطلاب
+// 4️⃣ الاستماع الحي المظبوط (يحدّث فقط إذا كان المستخدم واقفاً في تبويب المنشورات)
 function listenToCommunityPosts() {
-  const container = document.getElementById('communityPostsFeed');
-  
-  // أخذ نسخة محلياً للعرض السريع
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-  if (localPosts.length > 0) {
+  
+  // 1️⃣ تحديث العرض محلياً فقط لو المستخدم واقف في تبويب المنشورات الرئيسي
+  if (localPosts.length > 0 && currentCommunityView === 'posts') {
     renderCommunityPostsUI(localPosts);
   }
 
   if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) return;
 
   try {
-    // الاستماع المباشر للمجلد الحقيقي
     const postsColl = window.fireCollection(window.fireDB, "community_posts");
     window.fireOnSnapshot(postsColl, (querySnap) => {
       let cloudPosts = [];
@@ -274,12 +272,14 @@ function listenToCommunityPosts() {
       });
 
       if (cloudPosts.length > 0) {
-        // دمج السحاب مع المحلي
+        // تحديث الذاكرة المحلية دائماً بالبيانات الجديدة
         localStorage.setItem('sm_local_community_posts', JSON.stringify(cloudPosts));
-        renderCommunityPostsUI(cloudPosts);
+        
+        // 🚨 الشرط الذهبي: لا تقم بإعادة رسم واجهة البوستات إطلاقاً إلا لو كان الطالب واقف عند "منشورات وأسئلة الطلاب"!
+        if (currentCommunityView === 'posts') {
+          renderCommunityPostsUI(cloudPosts);
+        }
       }
-    }, (err) => {
-      console.log("جلب البوستات محلياً");
     });
   } catch(e) {
     console.error(e);
@@ -836,7 +836,8 @@ function listenToPrivateDmMessages(targetCode) {
   });
 }
 
-async function sendPrivateDirectMessage(targetCode) {
+async function sendPrivateDirectMessage(targetCode, targetName) {
+  if (!checkUserIsLoggedIn()) return;
   const inp = document.getElementById('privateDmMsgInp');
   const text = inp ? inp.value.trim() : '';
   if (!text) return;
@@ -846,16 +847,20 @@ async function sendPrivateDirectMessage(targetCode) {
   const msgPayload = {
     id: "dm_" + Date.now(),
     sender: user.code,
+    senderName: user.name,
+    senderAvatar: user.avatar,
     text: text,
     timestamp: new Date().toISOString()
   };
 
   if (window.fireDB && window.fireGetDoc && window.fireSetDoc) {
-    const dmRef = window.fireDoc(window.fireDB, "community_dms", chatId);
-    const docSnap = await window.fireGetDoc(dmRef);
-    let msgs = docSnap.exists() ? (docSnap.data() || {}) : {};
-    msgs[msgPayload.id] = msgPayload;
-    await window.fireSetDoc(dmRef, msgs, { merge: true });
+    try {
+      const dmRef = window.fireDoc(window.fireDB, "community_dms", chatId);
+      const docSnap = await window.fireGetDoc(dmRef);
+      let msgs = docSnap.exists() ? (docSnap.data() || {}) : {};
+      msgs[msgPayload.id] = msgPayload;
+      await window.fireSetDoc(dmRef, msgs, { merge: true });
+    } catch (e) {}
   }
 
   if (inp) inp.value = '';
@@ -1143,6 +1148,7 @@ async function rejectFriendRequest(fromCode) {
   }
 }
 // 📩 دالة عرض تبويب المحادثات الخاصة المنفصل بالكامل
+// 📩 عرض تبويب المحادثات الخاصة مع الصورة والاسم والرسالة الأخيرة
 async function renderMyPrivateDmsOnlyUI() {
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
@@ -1152,10 +1158,10 @@ async function renderMyPrivateDmsOnlyUI() {
   container.innerHTML = `
     <div class="athr-card">
       <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:10px; border-right:3px solid var(--gold); padding-right:6px;">
-        📩 المحادثات الخاصة النشطة (DMs):
+        💬 المحادثات الخاصة النشطة (DMs):
       </div>
       <div id="privateDmsFeedList" style="font-size:12px; color:var(--text2);">
-        جاري جلب محادثاتك...
+        جاري جلب المحادثات...
       </div>
     </div>
   `;
@@ -1165,7 +1171,6 @@ async function renderMyPrivateDmsOnlyUI() {
     return;
   }
 
-  // الاستماع للمحادثات الخاصة
   try {
     const dmsColl = window.fireCollection(window.fireDB, "community_dms");
     window.fireOnSnapshot(dmsColl, (snap) => {
@@ -1173,18 +1178,24 @@ async function renderMyPrivateDmsOnlyUI() {
 
       snap.forEach(docSnap => {
         const chatId = docSnap.id;
-        // التأكد إن اسم الشات بيحتوي على كود المستخدم
         if (chatId.includes(user.code)) {
           const msgsObj = docSnap.data() || {};
           const msgsArray = Object.values(msgsObj);
           if (msgsArray.length > 0) {
-            // ترتيب الرسائل لمعرفة آخر رسالة
-            msgsArray.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            msgsArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             const lastMsg = msgsArray[0];
             const otherCode = chatId.replace(user.code, '').replace('_', '');
+
+            // استخراج اسم وصورة الطرف الآخر من الرسالة
+            const isMeLast = lastMsg.sender === user.code;
+            const otherName = isMeLast ? "محادثة خاصة" : (lastMsg.senderName || "طالب متميز");
+            const otherAvatar = (!isMeLast && lastMsg.senderAvatar) ? lastMsg.senderAvatar : "https://via.placeholder.com/40";
+
             myDms.push({
               chatId: chatId,
               otherCode: otherCode,
+              otherName: otherName,
+              otherAvatar: otherAvatar,
               lastMsgText: lastMsg.text || 'مرفق ميديا',
               lastTime: lastMsg.timestamp
             });
@@ -1196,16 +1207,19 @@ async function renderMyPrivateDmsOnlyUI() {
       if (dmsBox) {
         if (myDms.length === 0) {
           dmsBox.innerHTML = `
-            <div style="text-align:center; padding:20px; color:var(--text2);">
+            <div style="text-align:center; padding:25px; color:var(--text2);">
               لا توجد محادثات خاصة حتى الآن! 🌸<br>
-              <small style="font-size:11px; color:var(--gold);">اضغط على بروفايل أي طالب في المجتمع وابدأ معه محادثة مباشرة.</small>
+              <small style="font-size:11px; color:var(--gold);">اضغط على اسم أو بروفايل أي طالب في المجتمع وابدأ معه محادثة مباشرة.</small>
             </div>`;
         } else {
           dmsBox.innerHTML = myDms.map(d => `
-            <div onclick="openDirectMessageModal('${d.otherCode}', 'محادثة خاصة')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
-              <div>
-<b style="color:var(--gold); font-size:13px;">💬 محادثة خاصة</b>                
-                <div style="font-size:11px; color:var(--text); margin-top:2px;">${d.lastMsgText}</div>
+            <div onclick="openDirectMessageModal('${d.otherCode}', '${d.otherName}')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <img src="${d.otherAvatar}" onclick="event.stopPropagation(); openImageViewer(this.src)" style="width:38px; height:38px; border-radius:50%; border:1px solid var(--gold); object-fit:cover;" title="اضغط للتكبير 🔍">
+                <div>
+                  <b style="color:var(--gold); font-size:13px;">${d.otherName}</b>
+                  <div style="font-size:11px; color:var(--text); margin-top:2px;">${d.lastMsgText}</div>
+                </div>
               </div>
               <span style="font-size:9px; color:var(--text2);">${formatCommunityTime(d.lastTime)}</span>
             </div>
@@ -1213,7 +1227,7 @@ async function renderMyPrivateDmsOnlyUI() {
         }
       }
     });
-  } catch(e) {
+  } catch (e) {
     console.error(e);
   }
 }
