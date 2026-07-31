@@ -19,56 +19,83 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
-// 📌 التبديل الصحيح والفعال بين التبويبات الفلترة
+// 📌 التبديل المظبوط الشامل بين التبويبات
 function switchCommunityMainView(viewType) {
   const postsView = document.getElementById('communityPostsSection');
   const chatView = document.getElementById('communityChatSection');
+  const createPostCard = document.querySelector('.create-post-card');
+  const categoryFilterBox = document.querySelector('#communityPostsSection > div:first-child');
 
-  // 1️⃣ إزالة اللون الذهبي من جميع الأزرار العلويّة
-  const buttons = document.querySelectorAll('#communityPage .day-btn');
-  buttons.forEach(b => b.classList.remove('active'));
+  // إزالة التفعيل من الكل
+  document.querySelectorAll('#communityPage .day-btn').forEach(b => b.classList.remove('active'));
 
-  // 2️⃣ إظهار قسم المنشورات وإخفاء الشات افتراضياً
-  if (postsView) postsView.style.display = 'block';
-  if (chatView) chatView.style.display = 'none';
-
-  // 3️⃣ تنفيذ الفلترة وتفعيل الزرار المضغوط
   if (viewType === 'chat') {
     if (postsView) postsView.style.display = 'none';
     if (chatView) chatView.style.display = 'block';
-    const btn = document.getElementById('mainViewChatBtn');
-    if (btn) btn.classList.add('active');
+    document.getElementById('mainViewChatBtn').classList.add('active');
     listenToCommunityPublicChat();
   } 
-  else if (viewType === 'saved') {
-    const btn = document.getElementById('mainViewSavedBtn');
-    if (btn) btn.classList.add('active');
-    filterSavedPostsOnly();
-  } 
-  else if (viewType === 'unanswered') {
-    const btn = document.getElementById('mainViewUnansweredBtn');
-    if (btn) btn.classList.add('active');
-    filterUnansweredPostsOnly();
-  } 
   else {
-    const btn = document.getElementById('mainViewPostsBtn');
-    if (btn) btn.classList.add('active');
-    listenToCommunityPosts();
+    if (postsView) postsView.style.display = 'block';
+    if (chatView) chatView.style.display = 'none';
+
+    if (viewType === 'saved') {
+      document.getElementById('mainViewSavedBtn').classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء كارت النشر
+      filterSavedPostsOnly();
+    } 
+    else if (viewType === 'unanswered') {
+      document.getElementById('mainViewUnansweredBtn').classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء كارت النشر
+      filterUnansweredPostsOnly();
+    } 
+    else {
+      document.getElementById('mainViewPostsBtn').classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'block'; // إظهار كارت النشر في الرئيسية
+      listenToCommunityPosts();
+    }
   }
 }
 
-// 🎯 دالة عرض الأسئلة المحفوظة فقط
+// 🔖 دالة الفلترة للبوستات المحفوظة
 function filterSavedPostsOnly() {
   const user = getCommunityUserData();
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
   const saved = localPosts.filter(p => p.savedBy && p.savedBy.includes(user.code));
+  
+  const container = document.getElementById('communityPostsFeed');
+  if (!container) return;
+
+  if (saved.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px; color:var(--text2); font-size:13px;">
+        <div style="font-size:35px; margin-bottom:8px;">📌</div>
+        لم تقم بحفظ أي أسئلة لليلة الامتحان بعد!<br>
+        <small style="font-size:11px; color:var(--gold);">اضغط على أزرار الدبوس 📌 فوق أي بوست يعجبك ليتحفظ هنا فوراً.</small>
+      </div>`;
+    return;
+  }
+  
   renderCommunityPostsUI(saved);
 }
 
-// 🎯 دالة عرض الأسئلة التي تحتاج إجابة فقط (بدون تعليقات)
+// 🎯 دالة الفلترة للأسئلة بدون إجابة
 function filterUnansweredPostsOnly() {
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-  const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0);
+  const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0 || !p.commentsList || p.commentsList.length === 0);
+  
+  const container = document.getElementById('communityPostsFeed');
+  if (!container) return;
+
+  if (unanswered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:40px 20px; color:var(--text2); font-size:13px;">
+        <div style="font-size:35px; margin-bottom:8px;">🎯</div>
+        عاش يا أبطال! لا توجد أسئلة معلقة بدون إجابات حالياً 🚀
+      </div>`;
+    return;
+  }
+
   renderCommunityPostsUI(unanswered);
 }
 
@@ -116,6 +143,7 @@ function togglePollCreator() {
 }
 
 // 6️⃣ نشر بوست جديد (مضمون وسريع بدون أخطاء)
+// 6️⃣ نشر بوست جديد وحفظه محلياً وسحابياً فوراً
 async function createNewCommunityPost() {
   const textInp = document.getElementById('communityPostTextInput');
   const isAnonCheck = document.getElementById('communityPostAnonCheck');
@@ -125,7 +153,6 @@ async function createNewCommunityPost() {
   const text = textInp ? textInp.value.trim() : '';
   const isAnonymous = isAnonCheck ? isAnonCheck.checked : false;
 
-  // جمع خيارات الاستطلاع بأمان
   let pollData = null;
   if (pollBox && pollBox.style.display !== 'none' && pollContainer) {
     const optInputs = pollContainer.querySelectorAll('.poll-opt-inp');
@@ -135,19 +162,18 @@ async function createNewCommunityPost() {
         opts.push({ text: inp.value.trim(), votes: 0, voters: [] });
       }
     });
-    if (opts.length >= 2) {
-      pollData = { options: opts };
-    }
+    if (opts.length >= 2) pollData = { options: opts };
   }
 
   if (!text && !currentPostMediaBase64 && !pollData) {
-    alert("من فضلك اكتب سؤالاً، ارفع صورة، أو أنشئ استطلاعاً على الأقل! 🙏");
+    alert("من فضلك اكتب سؤالاً، ارفع صورة، أو أنشئ استطلاعاً! 🙏");
     return;
   }
 
   const user = getCommunityUserData();
+  const postId = "post_" + Date.now();
   const postPayload = {
-    id: "post_" + Date.now(),
+    id: postId,
     authorCode: user.code,
     authorName: isAnonymous ? "طالب مجهول 🕵️" : user.name,
     authorAvatar: isAnonymous ? "https://via.placeholder.com/40/d4af37/000000?text=🔍" : user.avatar,
@@ -164,47 +190,62 @@ async function createNewCommunityPost() {
     timestamp: new Date().toISOString()
   };
 
-  try {
-    // 1. الحفظ المحلي المباشر أولاً لضمان عدم حدوث خطأ للشاشة
-    let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-    localPosts.unshift(postPayload);
-    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+  // 1. التحديث المحلي الفوري عشان ما يختفيش إطلاقاً
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  localPosts.unshift(postPayload);
+  localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+  renderCommunityPostsUI(localPosts);
 
-    // 2. المزامنة مع الفايربيس لو متاح
-    if (window.fireDB && window.fireSetDoc && window.fireDoc) {
-      window.fireSetDoc(window.fireDoc(window.fireDB, "community_posts", postPayload.id), postPayload).catch(e => console.log("Firebase sync fallback"));
+  // تصفيرة المدخلات
+  if (textInp) textInp.value = '';
+  currentPostMediaBase64 = null;
+  if (pollBox) pollBox.style.display = 'none';
+  const notice = document.getElementById('postMediaNotice');
+  if (notice) notice.style.display = 'none';
+  if (isAnonCheck) isAnonCheck.checked = false;
+
+  // 2. الرفع المباشر للفايربيس عشان يسمّع عند باقي الموبايلات
+  if (window.fireDB && window.fireSetDoc && window.fireDoc) {
+    try {
+      await window.fireSetDoc(window.fireDoc(window.fireDB, "community_posts", postId), postPayload);
+    } catch (e) {
+      console.log("تم الحفظ محلياً بانتظار مزامنة السحاب.");
     }
-
-    // 3. تحديث الواجهة وتصفير الحقول
-    renderCommunityPostsUI(localPosts);
-
-    if (textInp) textInp.value = '';
-    currentPostMediaBase64 = null;
-    if (pollBox) pollBox.style.display = 'none';
-    const notice = document.getElementById('postMediaNotice');
-    if (notice) notice.style.display = 'none';
-    if (isAnonCheck) isAnonCheck.checked = false;
-
-  } catch (err) {
-    console.error("Error creating post:", err);
-    alert("حدث خطأ بسيط، تم حفظ البوست محلياً!");
   }
 }
 
-// 7️⃣ جلب واستماع البوستات
+// 4️⃣ الاستماع الحي لكل البوستات المرفوعة على الفايربيس لجميع الطلاب
 function listenToCommunityPosts() {
-  if (!window.fireDB || !window.fireOnSnapshot) {
-    let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const container = document.getElementById('communityPostsFeed');
+  
+  // أخذ نسخة محلياً للعرض السريع
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  if (localPosts.length > 0) {
     renderCommunityPostsUI(localPosts);
-    return;
   }
 
-  window.fireOnSnapshot(window.fireDoc(window.fireDB, "community", "stream"), (docSnap) => {
-    if (docSnap.exists()) {
-      const postsData = docSnap.data();
-      renderCommunityPostsUI(Object.values(postsData || {}));
-    }
-  });
+  if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) return;
+
+  try {
+    // الاستماع المباشر للمجلد الحقيقي
+    const postsColl = window.fireCollection(window.fireDB, "community_posts");
+    window.fireOnSnapshot(postsColl, (querySnap) => {
+      let cloudPosts = [];
+      querySnap.forEach(docSnap => {
+        cloudPosts.push(docSnap.data());
+      });
+
+      if (cloudPosts.length > 0) {
+        // دمج السحاب مع المحلي
+        localStorage.setItem('sm_local_community_posts', JSON.stringify(cloudPosts));
+        renderCommunityPostsUI(cloudPosts);
+      }
+    }, (err) => {
+      console.log("جلب البوستات محلياً");
+    });
+  } catch(e) {
+    console.error(e);
+  }
 }
 
 // 5️⃣ رسم البوستات في الصفحة بشكل متكامل
@@ -332,24 +373,35 @@ function renderDynamicPollUI(post) {
   `;
 }
 
-// 🔟 تفاعلات الإعجاب واللاف والحفظ
+// 🔟 تفاعل الإعجاب اللحظي والشغال 100%
 async function togglePostReaction(postId, type) {
   const user = getCommunityUserData();
-  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
-    const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
-    const docSnap = await window.fireGetDoc(postRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const arrayKey = type === 'like' ? 'likes' : 'loves';
-      let arr = data[arrayKey] || [];
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
 
-      if (arr.includes(user.code)) {
-        arr = arr.filter(c => c !== user.code);
-      } else {
-        arr.push(user.code);
-      }
+  if (postIdx > -1) {
+    const arrayKey = type === 'like' ? 'likes' : 'loves';
+    if (!localPosts[postIdx][arrayKey]) localPosts[postIdx][arrayKey] = [];
 
-      await window.fireUpdateDoc(postRef, { [arrayKey]: arr });
+    let arr = localPosts[postIdx][arrayKey];
+    if (arr.includes(user.code)) {
+      localPosts[postIdx][arrayKey] = arr.filter(c => c !== user.code);
+    } else {
+      localPosts[postIdx][arrayKey].push(user.code);
+    }
+
+    // 1. تحديث محلي وإعادة رسم فورية
+    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+    renderCommunityPostsUI(localPosts);
+
+    // 2. مزامنة سحابية
+    if (window.fireDB && window.fireUpdateDoc && window.fireDoc) {
+      try {
+        const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+        await window.fireUpdateDoc(postRef, {
+          [arrayKey]: localPosts[postIdx][arrayKey]
+        });
+      } catch(e) {}
     }
   }
 }
