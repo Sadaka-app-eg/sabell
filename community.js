@@ -290,8 +290,7 @@ function renderCommunityPostsUI(postsList) {
   container.innerHTML = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(post => {
     const isLiked = post.likes && post.likes.includes(currentUser.code);
     const isSaved = post.savedBy && post.savedBy.includes(currentUser.code);
-    const isMyPost = post.authorCode === currentUser.code;
-
+const isMyPost = (post.authorCode === currentUser.code) || (post.authorName === currentUser.name);
     return `
       <div class="post-card ${post.pinned ? 'pinned-post' : ''}">
         <div class="post-header">
