@@ -19,27 +19,41 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
-// 2️⃣ التبديل بين قسم المنشورات وشات المجتمع المباشر
 function switchCommunityMainView(viewType) {
-  currentCommunityView = viewType;
   const postsView = document.getElementById('communityPostsSection');
   const chatView = document.getElementById('communityChatSection');
-  const tabPostsBtn = document.getElementById('mainViewPostsBtn');
-  const tabChatBtn = document.getElementById('mainViewChatBtn');
+  
+  // إزالة تفعيل كل الأزرار
+  document.querySelectorAll('#communityPage .day-btn').forEach(b => b.classList.remove('active'));
 
   if (viewType === 'chat') {
     if (postsView) postsView.style.display = 'none';
     if (chatView) chatView.style.display = 'block';
-    if (tabPostsBtn) tabPostsBtn.classList.remove('active');
-    if (tabChatBtn) tabChatBtn.classList.add('active');
+    document.getElementById('mainViewChatBtn').classList.add('active');
     listenToCommunityPublicChat();
+  } else if (viewType === 'saved') {
+    if (postsView) postsView.style.display = 'block';
+    if (chatView) chatView.style.display = 'none';
+    document.getElementById('mainViewSavedBtn').classList.add('active');
+    filterSavedPostsOnly(); // عرض البوستات المحفوظة فقط
+  } else if (viewType === 'unanswered') {
+    if (postsView) postsView.style.display = 'block';
+    if (chatView) chatView.style.display = 'none';
+    document.getElementById('mainViewUnansweredBtn').classList.add('active');
+    filterUnansweredPostsOnly(); // عرض الأسئلة بدون إجابات
   } else {
     if (postsView) postsView.style.display = 'block';
     if (chatView) chatView.style.display = 'none';
-    if (tabChatBtn) tabChatBtn.classList.remove('active');
-    if (tabPostsBtn) tabPostsBtn.classList.add('active');
+    document.getElementById('mainViewPostsBtn').classList.add('active');
     listenToCommunityPosts();
   }
+}
+
+// 🎯 دالة فلترة الأسئلة التي تحتاج إجابة
+function filterUnansweredPostsOnly() {
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0);
+  renderCommunityPostsUI(unanswered);
 }
 
 // 3️⃣ تغيير المادة من القائمة المنسدلة
