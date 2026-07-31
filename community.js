@@ -3,8 +3,7 @@
 // ===============================================
 
 let currentCommunityTab = "عام";
-let communityPostsUnsubscribe = null;
-let communityChatUnsubscribe = null;
+let currentCommunityView = "posts"; // 'posts' أو 'chat'
 let currentPostMediaBase64 = null;
 let currentCommentAudioBase64 = null;
 let commentAudioRecorder = null;
@@ -20,98 +19,135 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
-// 2️⃣ تبديل تبويب المادة/القسم العلوي
-function switchCommunityTab(tabName, btnEl) {
-  currentCommunityTab = tabName;
-  document.querySelectorAll('.community-nav-btn').forEach(btn => btn.classList.remove('active'));
-  if (btnEl) btnEl.classList.add('active');
+// 2️⃣ التبديل بين قسم المنشورات وشات المجتمع المباشر
+function switchCommunityMainView(viewType) {
+  currentCommunityView = viewType;
+  const postsView = document.getElementById('communityPostsSection');
+  const chatView = document.getElementById('communityChatSection');
+  const tabPostsBtn = document.getElementById('mainViewPostsBtn');
+  const tabChatBtn = document.getElementById('mainViewChatBtn');
 
-  const chatBox = document.getElementById('communityPublicChatBox');
-  const postsBox = document.getElementById('communityPostsFeed');
-
-  if (tabName === 'شات_عام') {
-    if (chatBox) chatBox.style.display = 'block';
-    if (postsBox) postsBox.style.display = 'none';
+  if (viewType === 'chat') {
+    if (postsView) postsView.style.display = 'none';
+    if (chatView) chatView.style.display = 'block';
+    if (tabPostsBtn) tabPostsBtn.classList.remove('active');
+    if (tabChatBtn) tabChatBtn.classList.add('active');
     listenToCommunityPublicChat();
   } else {
-    if (chatBox) chatBox.style.display = 'none';
-    if (postsBox) postsBox.style.display = 'block';
+    if (postsView) postsView.style.display = 'block';
+    if (chatView) chatView.style.display = 'none';
+    if (tabChatBtn) tabChatBtn.classList.remove('active');
+    if (tabPostsBtn) tabPostsBtn.classList.add('active');
     listenToCommunityPosts();
   }
 }
 
-// 3️⃣ نشر بوست جديد في المجتمع (نص / صورة / استطلاع)
+// 3️⃣ تغيير المادة من القائمة المنسدلة
+function changeCommunityCategorySelect(selectEl) {
+  currentCommunityTab = selectEl.value;
+  listenToCommunityPosts();
+}
+
+// 4️⃣ إضافة خيارات استطلاع ديناميكية (+)
+function addPollOptionInput() {
+  const container = document.getElementById('pollOptionsContainer');
+  if (!container) return;
+  
+  const currentInputs = container.querySelectorAll('.poll-opt-inp').length;
+  if (currentInputs >= 6) {
+    alert("أقصى عدد خيارات للاستطلاع هو 6 خيارات 🙏");
+    return;
+  }
+
+  const newIdx = currentInputs + 1;
+  const inputHtml = `<input type="text" class="poll-opt-inp" placeholder="الخيار ${newIdx}..." style="width:100%; padding:7px; border-radius:8px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:12px; margin-bottom:6px; font-family:'Amiri', serif;">`;
+  
+  container.insertAdjacentHTML('beforeend', inputHtml);
+}
+
+// 5️⃣ إظهار وإخفاء صندوق الاستطلاع
+function togglePollCreator() {
+  const box = document.getElementById('pollCreatorBox');
+  if (box) {
+    const isHidden = box.style.display === 'none' || !box.style.display;
+    box.style.display = isHidden ? 'block' : 'none';
+  }
+}
+
+// 6️⃣ نشر بوست جديد (نص / صورة / استطلاع لا نهائي)
 async function createNewCommunityPost() {
   const textInp = document.getElementById('communityPostTextInput');
   const isAnonCheck = document.getElementById('communityPostAnonCheck');
-  const pollOption1 = document.getElementById('communityPollOpt1');
-  const pollOption2 = document.getElementById('communityPollOpt2');
+  const pollBox = document.getElementById('pollCreatorBox');
+  const pollContainer = document.getElementById('pollOptionsContainer');
 
   const text = textInp ? textInp.value.trim() : '';
   const isAnonymous = isAnonCheck ? isAnonCheck.checked : false;
 
-  if (!text && !currentPostMediaBase64) {
-    alert("من فضلك اكتب سؤالاً أو ارفع صورة على الأقل 🙏");
+  // جمع خيارات الاستطلاع الديناميكية
+  let pollData = null;
+  if (pollBox && pollBox.style.display !== 'none' && pollContainer) {
+    const optInputs = pollContainer.querySelectorAll('.poll-opt-inp');
+    let opts = [];
+    optInputs.forEach(inp => {
+      if (inp.value.trim()) {
+        opts.push({ text: inp.value.trim(), votes: 0, voters: [] });
+      }
+    });
+    if (opts.length >= 2) {
+      pollData = { options: opts };
+    }
+  }
+
+  if (!text && !currentPostMediaBase64 && !pollData) {
+    alert("من فضلك اكتب سؤالاً، ارفع صورة، أو أنشئ استطلاعاً على الأقل! 🙏");
     return;
   }
 
   const user = getCommunityUserData();
-  const now = new Date();
-
-  // تجهيز بيانات الاستطلاع لو موجود
-  let pollData = null;
-  if (pollOption1 && pollOption2 && pollOption1.value.trim() && pollOption2.value.trim()) {
-    pollData = {
-      options: [
-        { text: pollOption1.value.trim(), votes: 0, voters: [] },
-        { text: pollOption2.value.trim(), votes: 0, voters: [] }
-      ]
-    };
-  }
-
   const postPayload = {
+    id: "post_" + Date.now(),
     authorCode: user.code,
     authorName: isAnonymous ? "طالب مجهول 🕵️" : user.name,
     authorAvatar: isAnonymous ? "https://via.placeholder.com/40/d4af37/000000?text=🔍" : user.avatar,
     authorBranch: user.branch,
-    category: currentCommunityTab === 'شات_عام' ? 'عام' : currentCommunityTab,
+    category: currentCommunityTab,
     text: text,
     image: currentPostMediaBase64,
     poll: pollData,
     likes: [],
     loves: [],
+    savedBy: [],
+    commentsList: [],
     commentsCount: 0,
-    timestamp: now.toISOString(),
-    pinned: false
+    timestamp: new Date().toISOString()
   };
 
   try {
     if (window.fireDB && window.fireSetDoc && window.fireDoc) {
-      const newPostRef = window.fireDoc(window.fireDB, "community_posts", "post_" + Date.now());
-      await window.fireSetDoc(newPostRef, postPayload);
+      await window.fireSetDoc(window.fireDoc(window.fireDB, "community_posts", postPayload.id), postPayload);
     } else {
-      // حفظ محلي احتياطي
       let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-      localPosts.unshift({ ...postPayload, id: "local_" + Date.now() });
+      localPosts.unshift(postPayload);
       localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
       renderCommunityPostsUI(localPosts);
     }
 
-    // تصفيرة المدخلات
+    // إعادة ضبط الحقول
     if (textInp) textInp.value = '';
-    if (isAnonCheck) isAnonCheck.checked = false;
-    if (pollOption1) pollOption1.value = '';
-    if (pollOption2) pollOption2.value = '';
     currentPostMediaBase64 = null;
-    document.getElementById('postMediaPreviewNotice').style.display = 'none';
+    if (pollBox) pollBox.style.display = 'none';
+    const notice = document.getElementById('postMediaNotice');
+    if (notice) notice.style.display = 'none';
+    if (isAnonCheck) isAnonCheck.checked = false;
 
   } catch (err) {
-    console.error("خطأ في نشر البوست:", err);
-    alert("حدث خطأ أثناء النشر، حاول مرة أخرى.");
+    console.error("خطأ في النشر:", err);
+    alert("حدث خطأ أثناء نشر البوست، حاول مجدداً.");
   }
 }
 
-// 4️⃣ الاستماع للبوستات حياً من الفايربيس
+// 7️⃣ جلب واستماع البوستات
 function listenToCommunityPosts() {
   if (!window.fireDB || !window.fireOnSnapshot) {
     let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
@@ -119,37 +155,25 @@ function listenToCommunityPosts() {
     return;
   }
 
-  if (communityPostsUnsubscribe) communityPostsUnsubscribe();
-
-  const postsRef = window.fireDoc(window.fireDB, "community_meta", "feed");
-  // استماع للبوستات عبر المجموعة الرئيسية
-  communityPostsUnsubscribe = window.fireOnSnapshot(window.fireDoc(window.fireDB, "system", "community_feed"), (docSnap) => {
-    // يمكن التعامل مع snap المباشر
-  }, err => {
-    console.log("استخدام النمط التفاعلي المباشر للبوستات");
-  });
-
-  // جلب حقيقي وتحديث مستمر
-  window.fireOnSnapshot(window.fireDoc(window.fireDB, "community", "posts_stream"), (docSnap) => {
+  window.fireOnSnapshot(window.fireDoc(window.fireDB, "community", "stream"), (docSnap) => {
     if (docSnap.exists()) {
-      const data = docSnap.data();
-      const allPosts = Object.values(data || {});
-      renderCommunityPostsUI(allPosts);
+      const postsData = docSnap.data();
+      renderCommunityPostsUI(Object.values(postsData || {}));
     }
   });
 }
 
-// 5️⃣ رسم البوستات في الصفحة (Compact Post Card)
+// 8️⃣ رسم البوستات في الصفحة
 function renderCommunityPostsUI(postsList) {
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
 
-  const filtered = currentCommunityTab === 'الكل' || currentCommunityTab === 'عام'
+  const filtered = currentCommunityTab === 'عام'
     ? postsList
     : postsList.filter(p => p.category === currentCommunityTab);
 
   if (!filtered || filtered.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text2); font-size:12px;">لا توجد مشاركات في قسم (${currentCommunityTab}) حتى الآن. كن أول من يضيف سؤالاً! 🚀</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text2); font-size:12px;">لا توجد مشاركات في قسم (${currentCommunityTab}) بعد. شارك أول سؤال! 🚀</div>`;
     return;
   }
 
@@ -158,29 +182,30 @@ function renderCommunityPostsUI(postsList) {
   container.innerHTML = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(post => {
     const isLiked = post.likes && post.likes.includes(currentUser.code);
     const isLoved = post.loves && post.loves.includes(currentUser.code);
-    const timeAgo = formatCommunityTime(post.timestamp);
+    const isSaved = post.savedBy && post.savedBy.includes(currentUser.code);
 
     return `
-      <div class="post-card ${post.pinned ? 'pinned-post' : ''}">
+      <div class="post-card">
         <div class="post-header">
-          <div class="post-user-info" onclick="openUserProfileModal('${post.authorCode}', '${post.authorName}', '${post.authorAvatar}', '${post.authorBranch}')" style="cursor:pointer;">
+          <div class="post-user-info" onclick="openUserProfileModal('${post.authorCode}', '${post.authorName}', '${post.authorAvatar}', '${post.authorBranch}')">
             <img src="${post.authorAvatar}" class="post-user-avatar">
             <div>
               <div class="post-user-name">
                 ${post.authorName}
                 <span class="post-user-badge">${post.authorBranch}</span>
               </div>
-              <div class="post-time">${timeAgo} • قسم (${post.category || 'عام'})</div>
+              <div class="post-time">قسم: (${post.category}) • ${formatCommunityTime(post.timestamp)}</div>
             </div>
           </div>
-          <button onclick="shareSinglePost('${post.id}')" style="background:transparent; border:none; color:var(--gold); font-size:14px; cursor:pointer;">🔗</button>
+          <button onclick="toggleSavePost('${post.id}')" style="background:transparent; border:none; color:${isSaved ? 'var(--gold)' : 'var(--text2)'}; font-size:16px; cursor:pointer;" title="حفظ البوست">
+            ${isSaved ? '🔖' : '📌'}
+          </button>
         </div>
 
         ${post.text ? `<div class="post-content-text">${post.text}</div>` : ''}
-
         ${post.image ? `<img src="${post.image}" class="post-media-img" onclick="openImageViewer(this.src)" title="اضغط للتكبير 🔍">` : ''}
-
-        ${post.poll ? renderPollWidgetUI(post) : ''}
+        
+        ${post.poll ? renderDynamicPollUI(post) : ''}
 
         <div class="post-reactions-bar">
           <button onclick="togglePostReaction('${post.id}', 'like')" class="reaction-btn ${isLiked ? 'active-like' : ''}">
@@ -194,13 +219,23 @@ function renderCommunityPostsUI(postsList) {
           </button>
         </div>
 
-        <!-- صندوق التعليقات المطوي -->
         <div id="commentsBox_${post.id}" class="comments-section" style="display:none;">
-          <div id="commentsList_${post.id}" style="margin-bottom:8px;"></div>
+          <div id="commentsList_${post.id}">
+            ${(post.commentsList || []).map(c => `
+              <div class="comment-item ${c.isBestAnswer ? 'best-answer' : ''}">
+                <img src="${c.authorAvatar}" class="comment-user-avatar">
+                <div class="comment-body">
+                  <div class="comment-user-name">${c.authorName} ${c.isBestAnswer ? '⭐ إجابة معتمدة' : ''}</div>
+                  ${c.text ? `<div class="comment-text">${c.text}</div>` : ''}
+                  ${c.audio ? `<audio controls src="${c.audio}" style="width:100%; height:30px; margin-top:4px;"></audio>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
           
-          <div style="display:flex; gap:4px; align-items:center;">
-            <input type="text" id="commentInput_${post.id}" placeholder="اكتب إجابتك أو تعليقك..." style="flex:1; padding:6px; border-radius:8px; background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:11px; outline:none; font-family:'Amiri', serif;">
-            <button onclick="submitPostComment('${post.id}')" class="btn-small" style="padding:5px 10px;">تعليق</button>
+          <div style="display:flex; gap:4px; margin-top:6px; align-items:center;">
+            <input type="text" id="commentInput_${post.id}" placeholder="اكتب ردك أو إجابتك..." style="flex:1; padding:6px; border-radius:8px; background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:11px; outline:none; font-family:'Amiri', serif;">
+            <button onclick="submitPostComment('${post.id}')" class="btn-small">إرسال</button>
             <button id="voiceCommentBtn_${post.id}" onclick="toggleCommentVoiceRecord('${post.id}')" class="btn-small" style="background:var(--card); border:1px solid var(--gold); color:var(--gold); padding:5px 8px;">🎙️</button>
           </div>
         </div>
@@ -209,15 +244,15 @@ function renderCommunityPostsUI(postsList) {
   }).join('');
 }
 
-// 6️⃣ رسم كارت الاستطلاعات والتصويت
-function renderPollWidgetUI(post) {
+// 9️⃣ رسم الاستطلاع الديناميكي بأي عدد من الخيارات
+function renderDynamicPollUI(post) {
   const currentUser = getCommunityUserData();
   let totalVotes = 0;
   post.poll.options.forEach(o => totalVotes += (o.votes || 0));
 
   return `
     <div style="background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px; margin-bottom:8px;">
-      <div style="font-size:11px; color:var(--gold); font-weight:bold; margin-bottom:6px;">📊 استطلاع رأي (إجمالي الأصوات: ${totalVotes}):</div>
+      <div style="font-size:11px; color:var(--gold); font-weight:bold; margin-bottom:6px;">📊 استطلاع رأي (${totalVotes} صوت):</div>
       ${post.poll.options.map((opt, idx) => {
         const pct = totalVotes > 0 ? Math.round(((opt.votes || 0) / totalVotes) * 100) : 0;
         const hasVoted = opt.voters && opt.voters.includes(currentUser.code);
@@ -236,10 +271,10 @@ function renderPollWidgetUI(post) {
   `;
 }
 
-// 7️⃣ تفاعل الإعجاب واللاف
+// 🔟 تفاعلات الإعجاب واللاف والحفظ
 async function togglePostReaction(postId, type) {
   const user = getCommunityUserData();
-  if (window.fireDB && window.fireGetDoc && window.fireSetDoc) {
+  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
     const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
     const docSnap = await window.fireGetDoc(postRef);
     if (docSnap.exists()) {
@@ -258,7 +293,27 @@ async function togglePostReaction(postId, type) {
   }
 }
 
-// 8️⃣ تصويت على الاستطلاع
+async function toggleSavePost(postId) {
+  const user = getCommunityUserData();
+  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
+    const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+    const docSnap = await window.fireGetDoc(postRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      let arr = data.savedBy || [];
+
+      if (arr.includes(user.code)) {
+        arr = arr.filter(c => c !== user.code);
+      } else {
+        arr.push(user.code);
+      }
+
+      await window.fireUpdateDoc(postRef, { savedBy: arr });
+    }
+  }
+}
+
+// 1️⃣1️⃣ التصويت على الاستطلاع
 async function voteOnCommunityPoll(postId, optionIdx) {
   const user = getCommunityUserData();
   if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
@@ -283,7 +338,7 @@ async function voteOnCommunityPoll(postId, optionIdx) {
   }
 }
 
-// 9️⃣ تسجيل وإضافة تعليق (صوتي أو نصي)
+// 1️⃣2️⃣ إضافة تعليق ونص/فويس
 async function submitPostComment(postId) {
   const inp = document.getElementById('commentInput_' + postId);
   const text = inp ? inp.value.trim() : '';
@@ -323,7 +378,7 @@ async function submitPostComment(postId) {
   currentCommentAudioBase64 = null;
 }
 
-// 🔟 تسجيل الفويس في التعليقات
+// 1️⃣3️⃣ تسجيل الفويس للتعليق
 async function toggleCommentVoiceRecord(postId) {
   const btn = document.getElementById('voiceCommentBtn_' + postId);
 
@@ -339,7 +394,7 @@ async function toggleCommentVoiceRecord(postId) {
         const reader = new FileReader();
         reader.onloadend = () => {
           currentCommentAudioBase64 = reader.result;
-          if (btn) btn.textContent = "✅ فويس جاهز!";
+          if (btn) btn.textContent = "✅ جاهز!";
         };
         reader.readAsDataURL(blob);
         stream.getTracks().forEach(t => t.stop());
@@ -347,7 +402,7 @@ async function toggleCommentVoiceRecord(postId) {
 
       commentAudioRecorder.start();
       isCommentRecording = true;
-      if (btn) btn.textContent = "🔴 تسجيل...";
+      if (btn) btn.textContent = "🔴...";
     } catch (e) {
       alert("يرجى السماح بالمايك للتسجيل 🎙️");
     }
@@ -357,7 +412,7 @@ async function toggleCommentVoiceRecord(postId) {
   }
 }
 
-// 1️⃣1️⃣ فتح وإغلاق كارت التعليقات
+// 1️⃣4️⃣ أداة عرض/إخفاء التعليقات
 function togglePostCommentsBox(postId) {
   const box = document.getElementById('commentsBox_' + postId);
   if (box) {
@@ -366,7 +421,7 @@ function togglePostCommentsBox(postId) {
   }
 }
 
-// 1️⃣2️⃣ فتح كارت البروفايل السريع وإرسال DMs
+// 1️⃣5️⃣ محادثات الـ DM والبروفايل السريع
 function openUserProfileModal(code, name, avatar, branch) {
   let modal = document.getElementById('communityProfileModal');
   if (!modal) {
@@ -384,7 +439,7 @@ function openUserProfileModal(code, name, avatar, branch) {
       
       <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button onclick="sendFriendRequestFromModal('${code}')" class="btn-small" style="flex:1; padding:8px;">➕ إضافة صديق</button>
-        <button onclick="openDirectMessageModal('${code}', '${name}')" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
+        <button onclick="alert('جاري فتح المحادثة المباشرة...')" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
       </div>
 
       <button onclick="document.getElementById('communityProfileModal').classList.remove('show')" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text2); padding:6px; border-radius:8px; font-size:11px;">إغلاق</button>
@@ -394,7 +449,30 @@ function openUserProfileModal(code, name, avatar, branch) {
   modal.classList.add('show');
 }
 
-// تنسيق الوقت البسيط
+// 1️⃣6️⃣ الشات العام المباشر
+function listenToCommunityPublicChat() {
+  const box = document.getElementById('communityChatMessagesBox');
+  if (!box) return;
+  box.innerHTML = `<div style="text-align:center; font-size:12px; color:var(--text2); padding:20px;">مرحباً بك في غرفة دردشة المجتمع المباشرة 💬</div>`;
+}
+
+// 1️⃣7️⃣ رفع الصورة المرفقة بالبوست
+function handlePostMediaUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    currentPostMediaBase64 = e.target.result;
+    const notice = document.getElementById('postMediaNotice');
+    if (notice) {
+      notice.style.display = 'block';
+      notice.textContent = "✅ تم اختيار الصورة بنجاح!";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// 1️⃣8️⃣ حساب الوقت المنقضي
 function formatCommunityTime(isoString) {
   if (!isoString) return 'الآن';
   const diff = Math.floor((new Date() - new Date(isoString)) / 1000);
@@ -402,20 +480,4 @@ function formatCommunityTime(isoString) {
   if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
   if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
   return `منذ ${Math.floor(diff / 86400)} يوم`;
-}
-
-// رفع صورة مع البوست
-function handlePostMediaUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    currentPostMediaBase64 = e.target.result;
-    const notice = document.getElementById('postMediaPreviewNotice');
-    if (notice) {
-      notice.style.display = 'block';
-      notice.textContent = "✅ تم تجهيز الصورة المرفقة بنجاح!";
-    }
-  };
-  reader.readAsDataURL(file);
 }
