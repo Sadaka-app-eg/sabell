@@ -1059,7 +1059,7 @@ async function renderSeparateFriendsSectionUI() {
             <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border);">
               <div>
                 <b style="color:var(--text); font-size:13px;">${r.fromName}</b>
-                <div style="font-size:10px; color:var(--text2);">كود: ${r.from}</div>
+                
               </div>
               <div style="display:flex; gap:6px;">
                 <button onclick="acceptFriendRequest('${r.from}', '${r.fromName}')" class="btn-small" style="padding:5px 12px;">قبول ✅</button>
@@ -1081,7 +1081,6 @@ async function renderSeparateFriendsSectionUI() {
             <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border);">
               <div>
                 <b style="color:var(--gold); font-size:13px;">🟢 ${f.name}</b>
-                <div style="font-size:10px; color:var(--text2);">كود: ${f.code}</div>
               </div>
               <button onclick="openDirectMessageModal('${f.code}', '${f.name}')" class="btn-small" style="background:var(--card); border:1px solid var(--gold); color:var(--gold); padding:6px 12px;">💬 محادثة</button>
             </div>
