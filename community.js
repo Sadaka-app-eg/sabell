@@ -9,7 +9,17 @@ let currentCommentAudioBase64 = null;
 let commentAudioRecorder = null;
 let commentAudioChunks = [];
 let isCommentRecording = false;
-
+// 🔐 التحقق من أن المستخدم مسجل دخول بجوجل
+function checkUserIsLoggedIn() {
+  const code = localStorage.getItem('sm_student_code') || window.getMyStudentCode();
+  // لو كود زائر أو مش مسجل
+  if (!code || code === 'SM-GUEST' || code.includes('GUEST')) {
+    alert("🔒 عفواً يا بطل! يجب تسجيل الدخول بجوجل أولاً لتتمكن من النشر والشات والمشاركة في المجتمع.");
+    if (window.loginWithGoogle) window.loginWithGoogle();
+    return false;
+  }
+  return true;
+}
 // 1️⃣ جلب بيانات الطالب الحالي
 function getCommunityUserData() {
   const code = window.getMyStudentCode ? window.getMyStudentCode() : (localStorage.getItem('sm_student_code') || 'SM-GUEST');
@@ -146,6 +156,7 @@ function togglePollCreator() {
 // 6️⃣ نشر بوست جديد (مضمون وسريع بدون أخطاء)
 // 6️⃣ نشر بوست جديد وحفظه محلياً وسحابياً فوراً
 async function createNewCommunityPost() {
+  if (!checkUserIsLoggedIn()) return; // 🔒 منع غير المسجلين من النشر
   const textInp = document.getElementById('communityPostTextInput');
   const isAnonCheck = document.getElementById('communityPostAnonCheck');
   const pollBox = document.getElementById('pollCreatorBox');
@@ -563,7 +574,7 @@ function openUserProfileModal(code, name, avatar, branch) {
   modal.classList.add('show');
 }
 
-// 1️⃣6️⃣ الشات العام المباشر
+// 💬 1. الاستماع الحي للشات العام + التفاعل بالقلب وإظهار الصور والفويسات
 function listenToCommunityPublicChat() {
   const box = document.getElementById('communityChatMessagesBox');
   if (!box) return;
@@ -573,7 +584,6 @@ function listenToCommunityPublicChat() {
     return;
   }
 
-  // الاستماع المباشر للرسائل
   window.fireOnSnapshot(window.fireDoc(window.fireDB, "community", "public_chat"), (docSnap) => {
     if (docSnap.exists()) {
       const messages = Object.values(docSnap.data() || {});
@@ -581,13 +591,23 @@ function listenToCommunityPublicChat() {
       
       box.innerHTML = messages.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp)).map(m => {
         const isMe = m.authorCode === user.code;
+        const lovesCount = (m.loves || []).length;
+        const hasLoved = m.loves && m.loves.includes(user.code);
+
         return `
-          <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+          <div style="display:flex; flex-direction:column; align-items:${isMe ? 'flex-end' : 'flex-start'}; margin-bottom:10px;">
             <span style="font-size:10px; color:var(--gold); margin-bottom:2px;">${m.authorName} (${m.authorBranch})</span>
-            <div style="background:${isMe ? 'var(--gold)' : 'var(--bg2)'}; color:${isMe ? '#111' : 'var(--text)'}; padding:8px 12px; border-radius:12px; max-width:80%; font-size:12px; border:1px solid var(--border);">
-              ${m.text}
+            <div style="background:${isMe ? 'var(--gold)' : 'var(--bg2)'}; color:${isMe ? '#111' : 'var(--text)'}; padding:8px 12px; border-radius:12px; max-width:80%; font-size:12px; border:1px solid var(--border); position:relative;">
+              ${m.text ? `<div>${m.text}</div>` : ''}
+              ${m.image ? `<img src="${m.image}" onclick="openImageViewer(this.src)" style="max-width:180px; max-height:160px; border-radius:8px; margin-top:4px; cursor:pointer;">` : ''}
+              ${m.audio ? `<audio controls src="${m.audio}" style="width:100%; height:32px; margin-top:4px;"></audio>` : ''}
+
+              <!-- ❤️ زرار التفاعل بالقلب على الرسالة -->
+              <button onclick="togglePublicChatMessageLove('${m.id}')" style="position:absolute; bottom:-8px; ${isMe ? 'left:-8px' : 'right:-8px'}; background:var(--bg2); border:1px solid var(--gold); border-radius:12px; padding:1px 6px; font-size:10px; cursor:pointer; color:var(--text);">
+                ${hasLoved ? '❤️' : '🤍'} ${lovesCount > 0 ? lovesCount : ''}
+              </button>
             </div>
-            <span style="font-size:9px; color:var(--text2); margin-top:2px;">${formatCommunityTime(m.timestamp)}</span>
+            <span style="font-size:9px; color:var(--text2); margin-top:4px;">${formatCommunityTime(m.timestamp)}</span>
           </div>
         `;
       }).join('');
@@ -595,11 +615,21 @@ function listenToCommunityPublicChat() {
     }
   });
 }
-// 2. دالة إرسال رسالة للشات العام (أضفها واربطها بزرار إرسال الشات)
+
+// 📩 2. إرسال النص/الصورة/الفويس للشات العام مع حماية تسجيل الدخول
+let publicChatImageBase64 = null;
+let publicChatAudioBase64 = null;
+let publicChatAudioRecorder = null;
+let publicChatAudioChunks = [];
+let isPublicChatRecording = false;
+
 async function sendPublicChatMessage() {
+  if (!checkUserIsLoggedIn()) return; // 🔒 منع الزوار
+
   const inp = document.getElementById('communityChatMsgInp');
   const text = inp ? inp.value.trim() : '';
-  if (!text) return;
+  
+  if (!text && !publicChatImageBase64 && !publicChatAudioBase64) return;
 
   const user = getCommunityUserData();
   const msgPayload = {
@@ -608,6 +638,9 @@ async function sendPublicChatMessage() {
     authorName: user.name,
     authorBranch: user.branch,
     text: text,
+    image: publicChatImageBase64,
+    audio: publicChatAudioBase64,
+    loves: [],
     timestamp: new Date().toISOString()
   };
 
@@ -619,7 +652,83 @@ async function sendPublicChatMessage() {
     await window.fireSetDoc(chatRef, msgs, { merge: true });
   }
 
+  // تصفيرة
   if (inp) inp.value = '';
+  publicChatImageBase64 = null;
+  publicChatAudioBase64 = null;
+  const btn = document.getElementById('publicChatVoiceBtn');
+  if (btn) btn.textContent = '🎙️';
+}
+
+// 📷 3. رفع صورة بالشات العام
+function handlePublicChatImageSend(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    publicChatImageBase64 = e.target.result;
+    sendPublicChatMessage(); // إرسال فور اختيار الصورة
+  };
+  reader.readAsDataURL(file);
+}
+
+// 🎙️ 4. تسجيل فويس للشات العام
+async function togglePublicChatVoiceRecord() {
+  if (!checkUserIsLoggedIn()) return;
+  const btn = document.getElementById('publicChatVoiceBtn');
+
+  if (!isPublicChatRecording) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      publicChatAudioRecorder = new MediaRecorder(stream);
+      publicChatAudioChunks = [];
+
+      publicChatAudioRecorder.ondataavailable = e => publicChatAudioChunks.push(e.data);
+      publicChatAudioRecorder.onstop = () => {
+        const blob = new Blob(publicChatAudioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          publicChatAudioBase64 = reader.result;
+          sendPublicChatMessage(); // إرسال الفويس فوراً عند الانتهاء
+        };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      publicChatAudioRecorder.start();
+      isPublicChatRecording = true;
+      if (btn) btn.textContent = "🔴...";
+    } catch (e) {
+      alert("يرجى السماح بالمايك للتسجيل 🎙️");
+    }
+  } else {
+    if (publicChatAudioRecorder) publicChatAudioRecorder.stop();
+    isPublicChatRecording = false;
+  }
+}
+
+// ❤️ 5. التفاعل بالقلب على أي رسالة شات عام
+async function togglePublicChatMessageLove(msgId) {
+  if (!checkUserIsLoggedIn()) return;
+  const user = getCommunityUserData();
+
+  if (window.fireDB && window.fireGetDoc && window.fireSetDoc) {
+    const chatRef = window.fireDoc(window.fireDB, "community", "public_chat");
+    const docSnap = await window.fireGetDoc(chatRef);
+    if (docSnap.exists()) {
+      let msgs = docSnap.data() || {};
+      if (msgs[msgId]) {
+        let loves = msgs[msgId].loves || [];
+        if (loves.includes(user.code)) {
+          loves = loves.filter(c => c !== user.code);
+        } else {
+          loves.push(user.code);
+        }
+        msgs[msgId].loves = loves;
+        await window.fireSetDoc(chatRef, msgs, { merge: true });
+      }
+    }
+  }
 }
 // 1️⃣7️⃣ رفع الصورة المرفقة بالبوست
 function handlePostMediaUpload(input) {
