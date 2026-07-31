@@ -587,8 +587,7 @@ function openUserProfileModal(code, name, avatar, branch) {
     <div class="modal-box user-profile-modal-box" onclick="event.stopPropagation();">
 <img src="${avatar}" class="profile-modal-avatar" onclick="openImageViewer(this.src)" style="cursor:pointer;" title="اضغط لتكبير الصورة 🔍">      
       <h3 style="color:var(--gold); font-size:16px;">${name}</h3>
-      <div style="font-size:11px; color:var(--text2); margin-bottom:12px;">شعبة: ${branch} • كود: ${code}</div>
-      
+<div style="font-size:11px; color:var(--text2); margin-bottom:12px;">الشعبة: ${branch}</div>      
       <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button onclick="sendFriendRequestFromModal('${code}')" class="btn-small" style="flex:1; padding:8px;">➕ إضافة صديق</button>
 <button onclick="document.getElementById('communityProfileModal').classList.remove('show'); openDirectMessageModal('${code}', '${name}');" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
@@ -1039,11 +1038,15 @@ async function renderSeparateFriendsSectionUI() {
         if (data.to === user.code && data.status === 'pending') {
           incomingReqs.push(data);
         }
-        if ((data.from === user.code || data.to === user.code) && data.status === 'accepted') {
-          const friendCode = data.from === user.code ? data.to : data.from;
-          const friendName = data.from === user.code ? (data.toName || data.to) : (data.fromName || data.from);
-          myFriendsSet.add(JSON.stringify({ code: friendCode, name: friendName }));
-        }
+   if ((data.from === user.code || data.to === user.code) && data.status === 'accepted') {
+  const isSender = data.from === user.code;
+  const friendCode = isSender ? data.to : data.from;
+  const friendName = isSender 
+    ? (data.toName && data.toName !== data.to ? data.toName : "طالب متميز") 
+    : (data.fromName && data.fromName !== data.from ? data.fromName : "طالب متميز");
+
+  myFriendsSet.add(JSON.stringify({ code: friendCode, name: friendName }));
+}
       });
 
       // رسم طلبات الصداقة
@@ -1098,8 +1101,9 @@ async function acceptFriendRequest(fromCode, fromName) {
 
   if (window.fireDB && window.fireSetDoc && window.fireDoc) {
     try {
-      const reqRef = window.fireDoc(window.fireDB, "friend_requests", `${fromCode}_${user.code}`);
-      await window.fireSetDoc(reqRef, {
+      // 1️⃣ تحديث مستند الطلب الأصلي
+      const reqRef1 = window.fireDoc(window.fireDB, "friend_requests", `${fromCode}_${user.code}`);
+      await window.fireSetDoc(reqRef1, {
         from: fromCode,
         fromName: fromName,
         to: user.code,
@@ -1107,7 +1111,19 @@ async function acceptFriendRequest(fromCode, fromName) {
         status: 'accepted',
         timestamp: new Date().toISOString()
       }, { merge: true });
-      alert("✅ تم قبول طلب الصداقة بنجاح!");
+
+      // 2️⃣ إنشاء مستند التأكيد العكسي لضمان ظهور الصداقة فوراً عند الطالب الآخر
+      const reqRef2 = window.fireDoc(window.fireDB, "friend_requests", `${user.code}_${fromCode}`);
+      await window.fireSetDoc(reqRef2, {
+        from: user.code,
+        fromName: user.name,
+        to: fromCode,
+        toName: fromName,
+        status: 'accepted',
+        timestamp: new Date().toISOString()
+      }, { merge: true });
+
+      alert("✅ تم قبول طلب الصداقة بنجاح وأصبحتم أصدقاء الآن!");
     } catch(e) {
       alert("حدث خطأ في القبول، حاول مجدداً.");
     }
@@ -1187,9 +1203,9 @@ async function renderMyPrivateDmsOnlyUI() {
             </div>`;
         } else {
           dmsBox.innerHTML = myDms.map(d => `
-            <div onclick="openDirectMessageModal('${d.otherCode}', 'طالب (كود: ${d.otherCode})')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
+            <div onclick="openDirectMessageModal('${d.otherCode}', 'محادثة خاصة')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
               <div>
-                <b style="color:var(--gold); font-size:13px;">💬 طالب (${d.otherCode})</b>
+<b style="color:var(--gold); font-size:13px;">💬 محادثة خاصة</b>                
                 <div style="font-size:11px; color:var(--text); margin-top:2px;">${d.lastMsgText}</div>
               </div>
               <span style="font-size:9px; color:var(--text2);">${formatCommunityTime(d.lastTime)}</span>
