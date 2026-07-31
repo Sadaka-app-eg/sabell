@@ -6,6 +6,7 @@
   <title>سبيل المجد | الثانوية العامة</title>
   <!-- رابط ملف الـ Manifest لتثبيت التطبيق PWA -->
 <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="community.css">
 <meta name="theme-color" content="#0b120c">
 <link rel="apple-touch-icon" href="icon1.png">
 <!-- إخفاء شريط المتصفح وتفعيل وضع ملء الشاشة للـ iOS و Android -->
@@ -559,9 +560,11 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     <div class="drawer-item" onclick="showPage('mistakesPage', this)">📝 دفتر أخطائي</div>
 <a href="lessons.html" class="drawer-item" style="text-decoration:none;">🎬 منصات المدرسين</a>
 <div class="drawer-item" onclick="showPage('emergencyPage', this); renderActiveEmergencyPlanUI();">
-  🚨 غُرْفَةُ الطَّوَارِئِ وَحَاسِبَةُ التَّرَاكُمَاتِ
+  🚨 غرفة الطوارئ وحاسبة التراكمات
 </div>
-    
+    <div class="drawer-item" onclick="showPage('communityPage', this); listenToCommunityPosts();">
+  🌐 مجتمع سبيل المجد
+</div>
     <div class="drawer-item" onclick="showPage('subjectTreePage', this); renderSubjectTreePage();">🌳 شجرة المواد والدروس</div>
     <div class="drawer-item" onclick="showPage('studyBuddyPage', this); renderStudyBuddyPage();">🤝 شريك المذاكرة</div>
 <div class="drawer-item" onclick="showPage('aiAssistantPage')">🎯 المساعد الشخصي والتوجيه</div>    
@@ -1269,7 +1272,50 @@ transition: opacity 0.3s ease, visibility 0.3s ease;
     </div>
   </div>
 </div>
+<!-- ==================== 🌐 صفحة مجتمع سبيل المجد ==================== -->
+<div class="page" id="communityPage">
+  <!-- شريط المواد والأقسام العلوي -->
+  <div class="community-nav-bar">
+    <button class="community-nav-btn active" onclick="switchCommunityTab('عام', this)">🌐 العامة</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('عربي', this)">📖 عربي</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('إنجليزي', this)">🇬🇧 إنجليزي</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('فيزياء', this)">⚡ فيزياء</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('كيمياء', this)">🧪 كيمياء</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('أحياء', this)">🧬 أحياء</button>
+    <button class="community-nav-btn" onclick="switchCommunityTab('رياضيات', this)">📐 رياضيات</button>
+  </div>
 
+  <!-- كارت إضافة بوست سريع -->
+  <div class="create-post-card">
+    <div class="create-post-header">
+      <textarea id="communityPostTextInput" class="create-post-input" placeholder="اسأل سؤالاً، انشر فكرة، أو شارك زملائك تجربة..."></textarea>
+    </div>
+
+    <!-- حقول إضافية اختيارية للاستطلاع -->
+    <div id="pollInputsBox" style="display:none; margin-bottom:8px;">
+      <input type="text" id="communityPollOpt1" placeholder="الخيار الأول (مثلاً: أ)" style="width:100%; padding:5px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:11px; margin-bottom:4px;">
+      <input type="text" id="communityPollOpt2" placeholder="الخيار الثاني (مثلاً: ب)" style="width:100%; padding:5px; border-radius:6px; background:var(--bg); border:1px solid var(--border); color:var(--text); font-size:11px;">
+    </div>
+
+    <div id="postMediaPreviewNotice" style="font-size:11px; color:var(--green); display:none; margin-bottom:6px;"></div>
+
+    <div class="create-post-actions">
+      <div style="display:flex; gap:8px;">
+        <button class="post-action-btn" onclick="document.getElementById('communityPostImgInp').click()">🖼️ صورة</button>
+        <button class="post-action-btn" onclick="document.getElementById('pollInputsBox').style.display='block'">📊 استطلاع</button>
+        <label style="font-size:11px; color:var(--text2); display:flex; align-items:center; gap:4px; cursor:pointer;">
+          <input type="checkbox" id="communityPostAnonCheck"> مجهول 🕵️
+        </label>
+      </div>
+
+      <button onclick="createNewCommunityPost()" class="btn-small">نشر ✨</button>
+    </div>
+    <input type="file" id="communityPostImgInp" accept="image/*" style="display:none;" onchange="handlePostMediaUpload(this)">
+  </div>
+
+  <!-- خلاصة المشاركات والبوستات -->
+  <div id="communityPostsFeed"></div>
+</div>
  <script>
     // ================= 📚 دليل المواد الشامل =================
     const subjectFullDetailsData = {
@@ -2620,6 +2666,7 @@ function shareParentLink() {
 <script src="shareApp.js" defer></script>
 <script src="studyBuddy.js" defer></script>
   <script src="emergency.js" defer></script>
+  <script src="community.js" defer></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
