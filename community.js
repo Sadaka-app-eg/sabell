@@ -19,50 +19,53 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
-// 📌 التبديل المظبوط الشامل بين التبويبات
+// 📌 التبديل الصارم والنهائي بين التبويبات بدون تداخل
 function switchCommunityMainView(viewType) {
   const postsView = document.getElementById('communityPostsSection');
   const chatView = document.getElementById('communityChatSection');
   const createPostCard = document.querySelector('.create-post-card');
-  const categoryFilterBox = document.querySelector('#communityPostsSection > div:first-child');
 
-  // إزالة التفعيل من الكل
+  // 1️⃣ إزالة التفعيل عن باقي الأزرار
   document.querySelectorAll('#communityPage .day-btn').forEach(b => b.classList.remove('active'));
 
+  // 2️⃣ التبديل بين الشات المباشر والمنشورات
   if (viewType === 'chat') {
     if (postsView) postsView.style.display = 'none';
     if (chatView) chatView.style.display = 'block';
-    document.getElementById('mainViewChatBtn').classList.add('active');
+    const btn = document.getElementById('mainViewChatBtn');
+    if (btn) btn.classList.add('active');
     listenToCommunityPublicChat();
-  } 
-  else {
+  } else {
     if (postsView) postsView.style.display = 'block';
     if (chatView) chatView.style.display = 'none';
 
     if (viewType === 'saved') {
-      document.getElementById('mainViewSavedBtn').classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء كارت النشر
+      const btn = document.getElementById('mainViewSavedBtn');
+      if (btn) btn.classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء صندوق النشر
       filterSavedPostsOnly();
     } 
     else if (viewType === 'unanswered') {
-      document.getElementById('mainViewUnansweredBtn').classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء كارت النشر
+      const btn = document.getElementById('mainViewUnansweredBtn');
+      if (btn) btn.classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء صندوق النشر
       filterUnansweredPostsOnly();
     } 
     else {
-      document.getElementById('mainViewPostsBtn').classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'block'; // إظهار كارت النشر في الرئيسية
+      const btn = document.getElementById('mainViewPostsBtn');
+      if (btn) btn.classList.add('active');
+      if (createPostCard) createPostCard.style.display = 'block'; // إظهار صندوق النشر
       listenToCommunityPosts();
     }
   }
 }
 
-// 🔖 دالة الفلترة للبوستات المحفوظة
+// 🔖 عرض الأسئلة المحفوظة فقط
 function filterSavedPostsOnly() {
   const user = getCommunityUserData();
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
   const saved = localPosts.filter(p => p.savedBy && p.savedBy.includes(user.code));
-  
+
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
 
@@ -71,19 +74,18 @@ function filterSavedPostsOnly() {
       <div style="text-align:center; padding:40px 20px; color:var(--text2); font-size:13px;">
         <div style="font-size:35px; margin-bottom:8px;">📌</div>
         لم تقم بحفظ أي أسئلة لليلة الامتحان بعد!<br>
-        <small style="font-size:11px; color:var(--gold);">اضغط على أزرار الدبوس 📌 فوق أي بوست يعجبك ليتحفظ هنا فوراً.</small>
+        <small style="font-size:11px; color:var(--gold);">اضغط على علامة الدبوس 📌 فوق أي بوست ليتحفظ هنا.</small>
       </div>`;
-    return;
+  } else {
+    renderCommunityPostsUI(saved);
   }
-  
-  renderCommunityPostsUI(saved);
 }
 
-// 🎯 دالة الفلترة للأسئلة بدون إجابة
+// 🎯 عرض الأسئلة بدون إجابات
 function filterUnansweredPostsOnly() {
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
   const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0 || !p.commentsList || p.commentsList.length === 0);
-  
+
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
 
@@ -91,12 +93,11 @@ function filterUnansweredPostsOnly() {
     container.innerHTML = `
       <div style="text-align:center; padding:40px 20px; color:var(--text2); font-size:13px;">
         <div style="font-size:35px; margin-bottom:8px;">🎯</div>
-        عاش يا أبطال! لا توجد أسئلة معلقة بدون إجابات حالياً 🚀
+        لا توجد أسئلة معلقة بدون إجابات حالياً! 🚀
       </div>`;
-    return;
+  } else {
+    renderCommunityPostsUI(unanswered);
   }
-
-  renderCommunityPostsUI(unanswered);
 }
 
 // 🎯 دالة فلترة الأسئلة التي تحتاج إجابة
