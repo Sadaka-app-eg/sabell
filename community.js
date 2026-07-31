@@ -10,11 +10,11 @@ let commentAudioRecorder = null;
 let commentAudioChunks = [];
 let isCommentRecording = false;
 // 🔐 التحقق من أن المستخدم مسجل دخول بجوجل
+// 🔐 التحقق من أن المستخدم مسجل دخول بجوجل
 function checkUserIsLoggedIn() {
-  const code = localStorage.getItem('sm_student_code') || window.getMyStudentCode();
-  // لو كود زائر أو مش مسجل
+  const code = localStorage.getItem('sm_student_code') || (window.getMyStudentCode ? window.getMyStudentCode() : 'SM-GUEST');
   if (!code || code === 'SM-GUEST' || code.includes('GUEST')) {
-    alert("🔒 عفواً يا بطل! يجب تسجيل الدخول بجوجل أولاً لتتمكن من النشر والشات والمشاركة في المجتمع.");
+    alert("🔒 عفواً يا بطل! يجب تسجيل الدخول بجوجل أولاً لتتمكن من النشر والتفاعل في المجتمع.");
     if (window.loginWithGoogle) window.loginWithGoogle();
     return false;
   }
@@ -29,16 +29,15 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
-// 📌 التبديل الصارم والنهائي بين التبويبات بدون تداخل
 function switchCommunityMainView(viewType) {
+  currentCommunityView = viewType;
   const postsView = document.getElementById('communityPostsSection');
   const chatView = document.getElementById('communityChatSection');
   const createPostCard = document.querySelector('.create-post-card');
+  const categoryFilterBox = document.querySelector('#communityPostsSection > div:first-child');
 
-  // 1️⃣ إزالة التفعيل عن باقي الأزرار
   document.querySelectorAll('#communityPage .day-btn').forEach(b => b.classList.remove('active'));
 
-  // 2️⃣ التبديل بين الشات المباشر والمنشورات
   if (viewType === 'chat') {
     if (postsView) postsView.style.display = 'none';
     if (chatView) chatView.style.display = 'block';
@@ -52,19 +51,22 @@ function switchCommunityMainView(viewType) {
     if (viewType === 'saved') {
       const btn = document.getElementById('mainViewSavedBtn');
       if (btn) btn.classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء صندوق النشر
+      if (createPostCard) createPostCard.style.display = 'none';
+      if (categoryFilterBox) categoryFilterBox.style.display = 'none';
       filterSavedPostsOnly();
     } 
     else if (viewType === 'unanswered') {
       const btn = document.getElementById('mainViewUnansweredBtn');
       if (btn) btn.classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'none'; // إخفاء صندوق النشر
+      if (createPostCard) createPostCard.style.display = 'none';
+      if (categoryFilterBox) categoryFilterBox.style.display = 'none';
       filterUnansweredPostsOnly();
     } 
     else {
       const btn = document.getElementById('mainViewPostsBtn');
       if (btn) btn.classList.add('active');
-      if (createPostCard) createPostCard.style.display = 'block'; // إظهار صندوق النشر
+      if (createPostCard) createPostCard.style.display = 'block';
+      if (categoryFilterBox) categoryFilterBox.style.display = 'flex';
       listenToCommunityPosts();
     }
   }
@@ -110,12 +112,7 @@ function filterUnansweredPostsOnly() {
   }
 }
 
-// 🎯 دالة فلترة الأسئلة التي تحتاج إجابة
-function filterUnansweredPostsOnly() {
-  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
-  const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0);
-  renderCommunityPostsUI(unanswered);
-}
+
 
 // 3️⃣ تغيير المادة من القائمة المنسدلة
 function changeCommunityCategorySelect(selectEl) {
@@ -387,6 +384,7 @@ function renderDynamicPollUI(post) {
 
 // 🔟 تفاعل الإعجاب اللحظي والشغال 100%
 async function togglePostReaction(postId, type) {
+  if (!checkUserIsLoggedIn()) return;
   const user = getCommunityUserData();
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
   const postIdx = localPosts.findIndex(p => p.id === postId);
