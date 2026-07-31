@@ -326,3 +326,30 @@
   transition: transform 0.15s;
 }
 .reaction-emoji-btn:active { transform: scale(1.3); }
+/* 📱 التنسيق الملكي لشريط التبويبات العلوي على الموبايل */
+#communityPage .day-btn {
+  font-family: 'Amiri', serif !important;
+  font-size: 10.5px !important;
+  font-weight: bold !important;
+  padding: 6px 10px !important;
+  border-radius: 20px !important;
+  white-space: nowrap !important; /* يمنع انكسار الكلمات وتداخلها */
+  flex-shrink: 0 !important; /* يمنع انكماش الأزرار وضغطها */
+  margin-left: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+/* شريط التمرير الأفقي الناعم */
+#communityPage > div:first-child {
+  display: flex !important;
+  gap: 4px !important;
+  overflow-x: auto !important;
+  padding: 4px 2px 8px !important;
+  margin-bottom: 8px !important;
+  -webkit-overflow-scrolling: touch !important; /* سكرول ناعم جداً على الآيفون والاندرويد */
+  scrollbar-width: none !important; /* إخفاء شريط السكرول المزعج */
+}
+
+#communityPage > div:first-child::-webkit-scrollbar {
+  display: none !important;
+}
