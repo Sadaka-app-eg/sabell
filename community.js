@@ -19,34 +19,57 @@ function getCommunityUserData() {
   return { code, name, avatar, branch };
 }
 
+// 📌 التبديل الصحيح والفعال بين التبويبات الفلترة
 function switchCommunityMainView(viewType) {
   const postsView = document.getElementById('communityPostsSection');
   const chatView = document.getElementById('communityChatSection');
-  
-  // إزالة تفعيل كل الأزرار
-  document.querySelectorAll('#communityPage .day-btn').forEach(b => b.classList.remove('active'));
 
+  // 1️⃣ إزالة اللون الذهبي من جميع الأزرار العلويّة
+  const buttons = document.querySelectorAll('#communityPage .day-btn');
+  buttons.forEach(b => b.classList.remove('active'));
+
+  // 2️⃣ إظهار قسم المنشورات وإخفاء الشات افتراضياً
+  if (postsView) postsView.style.display = 'block';
+  if (chatView) chatView.style.display = 'none';
+
+  // 3️⃣ تنفيذ الفلترة وتفعيل الزرار المضغوط
   if (viewType === 'chat') {
     if (postsView) postsView.style.display = 'none';
     if (chatView) chatView.style.display = 'block';
-    document.getElementById('mainViewChatBtn').classList.add('active');
+    const btn = document.getElementById('mainViewChatBtn');
+    if (btn) btn.classList.add('active');
     listenToCommunityPublicChat();
-  } else if (viewType === 'saved') {
-    if (postsView) postsView.style.display = 'block';
-    if (chatView) chatView.style.display = 'none';
-    document.getElementById('mainViewSavedBtn').classList.add('active');
-    filterSavedPostsOnly(); // عرض البوستات المحفوظة فقط
-  } else if (viewType === 'unanswered') {
-    if (postsView) postsView.style.display = 'block';
-    if (chatView) chatView.style.display = 'none';
-    document.getElementById('mainViewUnansweredBtn').classList.add('active');
-    filterUnansweredPostsOnly(); // عرض الأسئلة بدون إجابات
-  } else {
-    if (postsView) postsView.style.display = 'block';
-    if (chatView) chatView.style.display = 'none';
-    document.getElementById('mainViewPostsBtn').classList.add('active');
+  } 
+  else if (viewType === 'saved') {
+    const btn = document.getElementById('mainViewSavedBtn');
+    if (btn) btn.classList.add('active');
+    filterSavedPostsOnly();
+  } 
+  else if (viewType === 'unanswered') {
+    const btn = document.getElementById('mainViewUnansweredBtn');
+    if (btn) btn.classList.add('active');
+    filterUnansweredPostsOnly();
+  } 
+  else {
+    const btn = document.getElementById('mainViewPostsBtn');
+    if (btn) btn.classList.add('active');
     listenToCommunityPosts();
   }
+}
+
+// 🎯 دالة عرض الأسئلة المحفوظة فقط
+function filterSavedPostsOnly() {
+  const user = getCommunityUserData();
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const saved = localPosts.filter(p => p.savedBy && p.savedBy.includes(user.code));
+  renderCommunityPostsUI(saved);
+}
+
+// 🎯 دالة عرض الأسئلة التي تحتاج إجابة فقط (بدون تعليقات)
+function filterUnansweredPostsOnly() {
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const unanswered = localPosts.filter(p => !p.commentsCount || p.commentsCount === 0);
+  renderCommunityPostsUI(unanswered);
 }
 
 // 🎯 دالة فلترة الأسئلة التي تحتاج إجابة
@@ -184,7 +207,7 @@ function listenToCommunityPosts() {
   });
 }
 
-// 8️⃣ رسم البوستات في الصفحة
+// 5️⃣ رسم البوستات في الصفحة بشكل متكامل
 function renderCommunityPostsUI(postsList) {
   const container = document.getElementById('communityPostsFeed');
   if (!container) return;
@@ -194,7 +217,7 @@ function renderCommunityPostsUI(postsList) {
     : postsList.filter(p => p.category === currentCommunityTab);
 
   if (!filtered || filtered.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text2); font-size:12px;">لا توجد مشاركات في قسم (${currentCommunityTab}) بعد. شارك أول سؤال! 🚀</div>`;
+    container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text2); font-size:12px;">لا توجد مشاركات في قسم (${currentCommunityTab}) بعد. كن أول من ينشر! 🚀</div>`;
     return;
   }
 
@@ -202,11 +225,11 @@ function renderCommunityPostsUI(postsList) {
 
   container.innerHTML = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(post => {
     const isLiked = post.likes && post.likes.includes(currentUser.code);
-    const isLoved = post.loves && post.loves.includes(currentUser.code);
     const isSaved = post.savedBy && post.savedBy.includes(currentUser.code);
+    const isMyPost = post.authorCode === currentUser.code;
 
     return `
-      <div class="post-card">
+      <div class="post-card ${post.pinned ? 'pinned-post' : ''}">
         <div class="post-header">
           <div class="post-user-info" onclick="openUserProfileModal('${post.authorCode}', '${post.authorName}', '${post.authorAvatar}', '${post.authorBranch}')">
             <img src="${post.authorAvatar}" class="post-user-avatar">
@@ -218,9 +241,14 @@ function renderCommunityPostsUI(postsList) {
               <div class="post-time">قسم: (${post.category}) • ${formatCommunityTime(post.timestamp)}</div>
             </div>
           </div>
-          <button onclick="toggleSavePost('${post.id}')" style="background:transparent; border:none; color:${isSaved ? 'var(--gold)' : 'var(--text2)'}; font-size:16px; cursor:pointer;" title="حفظ البوست">
-            ${isSaved ? '🔖' : '📌'}
-          </button>
+
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button onclick="toggleSavePost('${post.id}')" style="background:transparent; border:none; color:${isSaved ? 'var(--gold)' : 'var(--text2)'}; font-size:15px; cursor:pointer;" title="حفظ البوست">
+              ${isSaved ? '🔖' : '📌'}
+            </button>
+            <button onclick="shareSinglePost('${post.id}')" style="background:transparent; border:none; color:var(--gold); font-size:14px; cursor:pointer;" title="مشاركة البوست">🚀</button>
+            ${isMyPost ? `<button onclick="deleteCommunityPost('${post.id}')" style="background:transparent; border:none; color:#ff6b6b; font-size:14px; cursor:pointer;" title="حذف البوست">🗑️</button>` : ''}
+          </div>
         </div>
 
         ${post.text ? `<div class="post-content-text">${post.text}</div>` : ''}
@@ -228,18 +256,26 @@ function renderCommunityPostsUI(postsList) {
         
         ${post.poll ? renderDynamicPollUI(post) : ''}
 
-        <div class="post-reactions-bar">
-          <button onclick="togglePostReaction('${post.id}', 'like')" class="reaction-btn ${isLiked ? 'active-like' : ''}">
+        <!-- شريط التفاعلات المنقح -->
+        <div class="post-reactions-bar" style="position:relative;">
+          <button onclick="togglePostReaction('${post.id}', 'like')" oncontextmenu="event.preventDefault(); toggleReactionsPopover('${post.id}')" class="reaction-btn ${isLiked ? 'active-like' : ''}">
             ${isLiked ? '👍 مفيد' : '👍 إعجاب'} (${(post.likes || []).length})
           </button>
-          <button onclick="togglePostReaction('${post.id}', 'love')" class="reaction-btn ${isLoved ? 'active-love' : ''}">
-            ${isLoved ? '❤️ عبقري' : '❤️ إبداع'} (${(post.loves || []).length})
-          </button>
+
+          <!-- قائمة التفاعلات المنسدلة عند الضغط المطول -->
+          <div id="reactionsPop_${post.id}" class="reactions-popover">
+            <button class="reaction-emoji-btn" onclick="togglePostReaction('${post.id}', 'like')">👍</button>
+            <button class="reaction-emoji-btn" onclick="togglePostReaction('${post.id}', 'love')">❤️</button>
+            <button class="reaction-emoji-btn" onclick="togglePostReaction('${post.id}', 'idea')">💡</button>
+            <button class="reaction-emoji-btn" onclick="togglePostReaction('${post.id}', 'clap')">👏</button>
+          </div>
+
           <button onclick="togglePostCommentsBox('${post.id}')" class="reaction-btn">
-            💬 التعليقات (${post.commentsCount || 0})
+            💬 التعليقات (${post.commentsCount || (post.commentsList ? post.commentsList.length : 0)})
           </button>
         </div>
 
+        <!-- صندوق التعليقات المطوي -->
         <div id="commentsBox_${post.id}" class="comments-section" style="display:none;">
           <div id="commentsList_${post.id}">
             ${(post.commentsList || []).map(c => `
@@ -248,16 +284,20 @@ function renderCommunityPostsUI(postsList) {
                 <div class="comment-body">
                   <div class="comment-user-name">${c.authorName} ${c.isBestAnswer ? '⭐ إجابة معتمدة' : ''}</div>
                   ${c.text ? `<div class="comment-text">${c.text}</div>` : ''}
+                  ${c.image ? `<img src="${c.image}" onclick="openImageViewer(this.src)" style="max-height:120px; border-radius:8px; margin-top:4px; cursor:pointer;">` : ''}
                   ${c.audio ? `<audio controls src="${c.audio}" style="width:100%; height:30px; margin-top:4px;"></audio>` : ''}
                 </div>
               </div>
             `).join('')}
           </div>
           
+          <!-- مدخلات التعليق النصي والمايك والصورة -->
           <div style="display:flex; gap:4px; margin-top:6px; align-items:center;">
             <input type="text" id="commentInput_${post.id}" placeholder="اكتب ردك أو إجابتك..." style="flex:1; padding:6px; border-radius:8px; background:var(--bg); color:var(--text); border:1px solid var(--border); font-size:11px; outline:none; font-family:'Amiri', serif;">
             <button onclick="submitPostComment('${post.id}')" class="btn-small">إرسال</button>
-            <button id="voiceCommentBtn_${post.id}" onclick="toggleCommentVoiceRecord('${post.id}')" class="btn-small" style="background:var(--card); border:1px solid var(--gold); color:var(--gold); padding:5px 8px;">🎙️</button>
+            <button onclick="document.getElementById('commentImgInp_${post.id}').click()" class="btn-small" style="background:var(--card); border:1px solid var(--border); color:var(--text); padding:5px 7px;" title="إرفاق صورة">📷</button>
+            <button id="voiceCommentBtn_${post.id}" onclick="toggleCommentVoiceRecord('${post.id}')" class="btn-small" style="background:var(--card); border:1px solid var(--gold); color:var(--gold); padding:5px 7px;" title="تسجيل فويس">🎙️</button>
+            <input type="file" id="commentImgInp_${post.id}" accept="image/*" style="display:none;" onchange="handleCommentImageUpload('${post.id}', this)">
           </div>
         </div>
       </div>
@@ -659,4 +699,106 @@ function filterSavedPostsOnly() {
   let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
   const saved = localPosts.filter(p => p.savedBy && p.savedBy.includes(user.code));
   renderCommunityPostsUI(saved);
+}
+// 🗑️ 1. دالة حذف البوست
+async function deleteCommunityPost(postId) {
+  if (!confirm("هل أنت متأكد من حذف هذا البوست؟")) return;
+
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  localPosts = localPosts.filter(p => p.id !== postId);
+  localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+  renderCommunityPostsUI(localPosts);
+
+  if (window.fireDB && window.fireDeleteDoc && window.fireDoc) {
+    try {
+      await window.fireDeleteDoc(window.fireDoc(window.fireDB, "community_posts", postId));
+    } catch(e) {}
+  }
+}
+
+// 🚀 2. دالة مشاركة البوست
+function shareSinglePost(postId) {
+  const text = `شوف السؤال ده على تطبيق سبيل المجد! 🚀`;
+  if (navigator.share) {
+    navigator.share({ title: 'مشاركة سؤال', text: text, url: window.location.href });
+  } else {
+    navigator.clipboard.writeText(window.location.href);
+    alert("✅ تم نسخ رابط المشاركة!");
+  }
+}
+
+// 🎭 3. فتح قائمة التفاعلات عند الضغط المطول
+function toggleReactionsPopover(postId) {
+  const pop = document.getElementById('reactionsPop_' + postId);
+  if (pop) pop.classList.toggle('show');
+}
+
+// 📷 4. رفع صورة داخل التعليق
+let commentImagesMap = {};
+function handleCommentImageUpload(postId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    commentImagesMap[postId] = e.target.result;
+    alert("✅ تم تجهيز الصورة المرفقة بالتعليق!");
+  };
+  reader.readAsDataURL(file);
+}
+
+// 💬 5. تعديل دالة إضافة التعليق لدعم الصور فوراً
+async function submitPostComment(postId) {
+  const inp = document.getElementById('commentInput_' + postId);
+  const text = inp ? inp.value.trim() : '';
+  const commentImg = commentImagesMap[postId] || null;
+
+  if (!text && !currentCommentAudioBase64 && !commentImg) {
+    alert("اكتب تعليقاً، ارفع صورة، أو سجّل فويساً للإجابة 🙏");
+    return;
+  }
+
+  const user = getCommunityUserData();
+  const commentPayload = {
+    id: "comment_" + Date.now(),
+    authorName: user.name,
+    authorAvatar: user.avatar,
+    text: text,
+    image: commentImg,
+    audio: currentCommentAudioBase64,
+    timestamp: new Date().toISOString(),
+    isBestAnswer: false
+  };
+
+  // 1. التحديث المحلي المباشر
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
+  if (postIdx > -1) {
+    if (!localPosts[postIdx].commentsList) localPosts[postIdx].commentsList = [];
+    localPosts[postIdx].commentsList.push(commentPayload);
+    localPosts[postIdx].commentsCount = localPosts[postIdx].commentsList.length;
+    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+    renderCommunityPostsUI(localPosts);
+  }
+
+  // تصفيرة الحقول
+  if (inp) inp.value = '';
+  currentCommentAudioBase64 = null;
+  delete commentImagesMap[postId];
+
+  // 2. المزامنة مع السحاب
+  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
+    try {
+      const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+      const docSnap = await window.fireGetDoc(postRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const comments = data.commentsList || [];
+        comments.push(commentPayload);
+        await window.fireUpdateDoc(postRef, {
+          commentsList: comments,
+          commentsCount: comments.length
+        });
+      }
+    } catch(e) {}
+  }
 }
