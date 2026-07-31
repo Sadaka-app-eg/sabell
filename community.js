@@ -76,6 +76,19 @@ function switchCommunityMainView(viewType) {
       if (categoryFilterBox) categoryFilterBox.style.display = 'none';
       filterUnansweredPostsOnly();
     } 
+      else if (viewType === 'dms') {
+  const btn = document.getElementById('mainViewDmsBtn');
+  if (btn) btn.classList.add('active');
+  if (createPostCard) createPostCard.style.display = 'none';
+  renderMyPrivateDmsAndRequestsUI();
+}
+        else if (viewType === 'friends') {
+  const btn = document.getElementById('mainViewFriendsBtn');
+  if (btn) btn.classList.add('active');
+  if (createPostCard) createPostCard.style.display = 'none';
+  if (categoryFilterBox) categoryFilterBox.style.display = 'none';
+  renderSeparateFriendsSectionUI(); // عرض تبويب الأصدقاء المنفصل
+}
     else {
       const btn = document.getElementById('mainViewPostsBtn');
       if (btn) btn.classList.add('active');
@@ -83,6 +96,7 @@ function switchCommunityMainView(viewType) {
       if (categoryFilterBox) categoryFilterBox.style.display = 'flex';
       listenToCommunityPosts();
     }
+    
   }
 }
 
@@ -395,7 +409,6 @@ function renderDynamicPollUI(post) {
   `;
 }
 
-// 🔟 تفاعل الإعجاب اللحظي والشغال 100%
 async function togglePostReaction(postId, type) {
   if (!checkUserIsLoggedIn()) return;
   const user = getCommunityUserData();
@@ -404,25 +417,27 @@ async function togglePostReaction(postId, type) {
 
   if (postIdx > -1) {
     const arrayKey = type === 'like' ? 'likes' : 'loves';
-    if (!localPosts[postIdx][arrayKey]) localPosts[postIdx][arrayKey] = [];
-
-    let arr = localPosts[postIdx][arrayKey];
-    if (arr.includes(user.code)) {
-      localPosts[postIdx][arrayKey] = arr.filter(c => c !== user.code);
-    } else {
-      localPosts[postIdx][arrayKey].push(user.code);
+    if (!Array.isArray(localPosts[postIdx][arrayKey])) {
+      localPosts[postIdx][arrayKey] = [];
     }
 
-    // 1. تحديث محلي وإعادة رسم فورية
+    let arr = localPosts[postIdx][arrayKey];
+    const userIndex = arr.indexOf(user.code);
+
+    if (userIndex > -1) {
+      arr.splice(userIndex, 1);
+    } else {
+      arr.push(user.code);
+    }
+
     localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
     renderCommunityPostsUI(localPosts);
 
-    // 2. مزامنة سحابية
     if (window.fireDB && window.fireUpdateDoc && window.fireDoc) {
       try {
         const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
         await window.fireUpdateDoc(postRef, {
-          [arrayKey]: localPosts[postIdx][arrayKey]
+          [arrayKey]: arr
         });
       } catch(e) {}
     }
@@ -575,7 +590,8 @@ function openUserProfileModal(code, name, avatar, branch) {
       
       <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button onclick="sendFriendRequestFromModal('${code}')" class="btn-small" style="flex:1; padding:8px;">➕ إضافة صديق</button>
-        <button onclick="alert('جاري فتح المحادثة المباشرة...')" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
+<button onclick="document.getElementById('communityProfileModal').classList.remove('show'); openDirectMessageModal('${code}', '${name}');" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
+        
       </div>
 
       <button onclick="document.getElementById('communityProfileModal').classList.remove('show')" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text2); padding:6px; border-radius:8px; font-size:11px;">إغلاق</button>
@@ -973,5 +989,215 @@ async function submitPostComment(postId) {
         });
       }
     } catch(e) {}
+  }
+}
+// 👥 عرض تبويب الأصدقاء وطلبات الصداقة المنفصل
+async function renderSeparateFriendsSectionUI() {
+  const container = document.getElementById('communityPostsFeed');
+  if (!container) return;
+
+  const user = getCommunityUserData();
+
+  container.innerHTML = `
+    <!-- 1. وعاء طلبات الصداقة الواردة -->
+    <div class="athr-card" style="margin-bottom:12px;">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:10px; border-right:3px solid var(--gold); padding-right:6px;">
+        📩 طلبات الصداقة الواردة:
+      </div>
+      <div id="friendsRequestsFeedBox" style="font-size:12px; color:var(--text2);">
+        جاري تحميل الطلبات...
+      </div>
+    </div>
+
+    <!-- 2. وعاء قائمة الأصدقاء الحاليين -->
+    <div class="athr-card">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:10px; border-right:3px solid var(--gold); padding-right:6px;">
+        👥 قائمة أصدقائك:
+      </div>
+      <div id="myFriendsListFeedBox" style="font-size:12px; color:var(--text2);">
+        جاري جلب قائمة الأصدقاء...
+      </div>
+    </div>
+  `;
+
+  if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) {
+    document.getElementById('friendsRequestsFeedBox').innerHTML = "يرجى الاتصال بالإنترنت لعرض الطلبات.";
+    document.getElementById('myFriendsListFeedBox').innerHTML = "لا يوجد أصدقاء مسجلين محلياً.";
+    return;
+  }
+
+  // 1️⃣ الاستماع الحي لطلبات الصداقة الواردة
+  try {
+    const reqColl = window.fireCollection(window.fireDB, "friend_requests");
+    window.fireOnSnapshot(reqColl, (snap) => {
+      let incomingReqs = [];
+      let myFriendsSet = new Set();
+
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.to === user.code && data.status === 'pending') {
+          incomingReqs.push(data);
+        }
+        if ((data.from === user.code || data.to === user.code) && data.status === 'accepted') {
+          const friendCode = data.from === user.code ? data.to : data.from;
+          const friendName = data.from === user.code ? (data.toName || data.to) : (data.fromName || data.from);
+          myFriendsSet.add(JSON.stringify({ code: friendCode, name: friendName }));
+        }
+      });
+
+      // رسم طلبات الصداقة
+      const reqBox = document.getElementById('friendsRequestsFeedBox');
+      if (reqBox) {
+        if (incomingReqs.length === 0) {
+          reqBox.innerHTML = "<div style='text-align:center; padding:10px; color:var(--text2);'>لا توجد طلبات صداقة جديدة حالياً. 🌸</div>";
+        } else {
+          reqBox.innerHTML = incomingReqs.map(r => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border);">
+              <div>
+                <b style="color:var(--text); font-size:13px;">${r.fromName}</b>
+                <div style="font-size:10px; color:var(--text2);">كود: ${r.from}</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button onclick="acceptFriendRequest('${r.from}', '${r.fromName}')" class="btn-small" style="padding:5px 12px;">قبول ✅</button>
+                <button onclick="rejectFriendRequest('${r.from}')" class="btn-small" style="background:transparent; border:1px solid #ff6b6b; color:#ff6b6b; padding:5px 10px;">رفض</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      // رسم قائمة الأصدقاء
+      const friendsBox = document.getElementById('myFriendsListFeedBox');
+      if (friendsBox) {
+        const friendsList = Array.from(myFriendsSet).map(s => JSON.parse(s));
+        if (friendsList.length === 0) {
+          friendsBox.innerHTML = "<div style='text-align:center; padding:10px; color:var(--text2);'>لم تضف أصدقاء بعد. اضغط على اسم أي طالب في المنشورات لإرسال طلب صداقة! 🚀</div>";
+        } else {
+          friendsBox.innerHTML = friendsList.map(f => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border);">
+              <div>
+                <b style="color:var(--gold); font-size:13px;">🟢 ${f.name}</b>
+                <div style="font-size:10px; color:var(--text2);">كود: ${f.code}</div>
+              </div>
+              <button onclick="openDirectMessageModal('${f.code}', '${f.name}')" class="btn-small" style="background:var(--card); border:1px solid var(--gold); color:var(--gold); padding:6px 12px;">💬 محادثة</button>
+            </div>
+          `).join('');
+        }
+      }
+    });
+  } catch(e) {
+    console.error(e);
+  }
+}
+
+// 🤝 قبول طلب الصداقة
+async function acceptFriendRequest(fromCode, fromName) {
+  if (!checkUserIsLoggedIn()) return;
+  const user = getCommunityUserData();
+
+  if (window.fireDB && window.fireSetDoc && window.fireDoc) {
+    try {
+      const reqRef = window.fireDoc(window.fireDB, "friend_requests", `${fromCode}_${user.code}`);
+      await window.fireSetDoc(reqRef, {
+        from: fromCode,
+        fromName: fromName,
+        to: user.code,
+        toName: user.name,
+        status: 'accepted',
+        timestamp: new Date().toISOString()
+      }, { merge: true });
+      alert("✅ تم قبول طلب الصداقة بنجاح!");
+    } catch(e) {
+      alert("حدث خطأ في القبول، حاول مجدداً.");
+    }
+  }
+}
+
+// ❌ رفض طلب الصداقة
+async function rejectFriendRequest(fromCode) {
+  if (!checkUserIsLoggedIn()) return;
+  const user = getCommunityUserData();
+
+  if (window.fireDB && window.fireDeleteDoc && window.fireDoc) {
+    try {
+      const reqRef = window.fireDoc(window.fireDB, "friend_requests", `${fromCode}_${user.code}`);
+      await window.fireDeleteDoc(reqRef);
+      alert("تم رفض طلب الصداقة.");
+    } catch(e) {}
+  }
+}
+// 📩 دالة عرض تبويب المحادثات الخاصة المنفصل بالكامل
+async function renderMyPrivateDmsOnlyUI() {
+  const container = document.getElementById('communityPostsFeed');
+  if (!container) return;
+
+  const user = getCommunityUserData();
+
+  container.innerHTML = `
+    <div class="athr-card">
+      <div style="font-size:13px; font-weight:bold; color:var(--gold); margin-bottom:10px; border-right:3px solid var(--gold); padding-right:6px;">
+        📩 المحادثات الخاصة النشطة (DMs):
+      </div>
+      <div id="privateDmsFeedList" style="font-size:12px; color:var(--text2);">
+        جاري جلب محادثاتك...
+      </div>
+    </div>
+  `;
+
+  if (!window.fireDB || !window.fireOnSnapshot || !window.fireCollection) {
+    document.getElementById('privateDmsFeedList').innerHTML = "يرجى الاتصال بالإنترنت لعرض محادثاتك الخاصّة.";
+    return;
+  }
+
+  // الاستماع للمحادثات الخاصة
+  try {
+    const dmsColl = window.fireCollection(window.fireDB, "community_dms");
+    window.fireOnSnapshot(dmsColl, (snap) => {
+      let myDms = [];
+
+      snap.forEach(docSnap => {
+        const chatId = docSnap.id;
+        // التأكد إن اسم الشات بيحتوي على كود المستخدم
+        if (chatId.includes(user.code)) {
+          const msgsObj = docSnap.data() || {};
+          const msgsArray = Object.values(msgsObj);
+          if (msgsArray.length > 0) {
+            // ترتيب الرسائل لمعرفة آخر رسالة
+            msgsArray.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const lastMsg = msgsArray[0];
+            const otherCode = chatId.replace(user.code, '').replace('_', '');
+            myDms.push({
+              chatId: chatId,
+              otherCode: otherCode,
+              lastMsgText: lastMsg.text || 'مرفق ميديا',
+              lastTime: lastMsg.timestamp
+            });
+          }
+        }
+      });
+
+      const dmsBox = document.getElementById('privateDmsFeedList');
+      if (dmsBox) {
+        if (myDms.length === 0) {
+          dmsBox.innerHTML = `
+            <div style="text-align:center; padding:20px; color:var(--text2);">
+              لا توجد محادثات خاصة حتى الآن! 🌸<br>
+              <small style="font-size:11px; color:var(--gold);">اضغط على بروفايل أي طالب في المجتمع وابدأ معه محادثة مباشرة.</small>
+            </div>`;
+        } else {
+          dmsBox.innerHTML = myDms.map(d => `
+            <div onclick="openDirectMessageModal('${d.otherCode}', 'طالب (كود: ${d.otherCode})')" style="display:flex; justify-content:space-between; align-items:center; background:var(--bg2); padding:10px 12px; border-radius:12px; margin-bottom:8px; border:1px solid var(--border); cursor:pointer;">
+              <div>
+                <b style="color:var(--gold); font-size:13px;">💬 طالب (${d.otherCode})</b>
+                <div style="font-size:11px; color:var(--text); margin-top:2px;">${d.lastMsgText}</div>
+              </div>
+              <span style="font-size:9px; color:var(--text2);">${formatCommunityTime(d.lastTime)}</span>
+            </div>
+          `).join('');
+        }
+      }
+    });
+  } catch(e) {
+    console.error(e);
   }
 }
