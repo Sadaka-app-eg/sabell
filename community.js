@@ -65,12 +65,16 @@ function addPollOptionInput() {
   container.insertAdjacentHTML('beforeend', inputHtml);
 }
 
-// 5️⃣ إظهار وإخفاء صندوق الاستطلاع
+// 📊 فتح وإغلاق صندوق إنشاء الاستطلاع
 function togglePollCreator() {
   const box = document.getElementById('pollCreatorBox');
   if (box) {
-    const isHidden = box.style.display === 'none' || !box.style.display;
-    box.style.display = isHidden ? 'block' : 'none';
+    // لو مخفي افتحه، ولو مفتوح اقفله
+    if (box.style.display === 'none' || box.style.display === '') {
+      box.style.display = 'block';
+    } else {
+      box.style.display = 'none';
+    }
   }
 }
 
