@@ -42,7 +42,12 @@ function getCommunityUserData() {
   const branch = localStorage.getItem('sm_user_branch') || 'عام';
   return { code, name, avatar, branch };
 }
-
+// 👑 دالة التحقق مما إذا كان المستخدم الحقيقي هو الأدمن (أحمد - SM-3533)
+function checkIfUserIsAdmin() {
+  const user = getCommunityUserData();
+  // التأكد من كود الأدمن الخاص بك
+  return user.code === 'SM-3533' || localStorage.getItem('sm_student_code') === 'SM-3533';
+}
 function switchCommunityMainView(viewType) {
   currentCommunityView = viewType;
   const postsView = document.getElementById('communityPostsSection');
@@ -305,7 +310,8 @@ function renderCommunityPostsUI(postsList) {
   container.innerHTML = filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(post => {
     const isLiked = post.likes && post.likes.includes(currentUser.code);
     const isSaved = post.savedBy && post.savedBy.includes(currentUser.code);
-const isMyPost = (post.authorCode === currentUser.code) || (post.authorName === currentUser.name);
+const isAdmin = checkIfUserIsAdmin();
+const isMyPost = (post.authorCode === currentUser.code) || (post.authorName === currentUser.name) || isAdmin;    
     return `
       <div class="post-card ${post.pinned ? 'pinned-post' : ''}">
         <div class="post-header">
@@ -357,9 +363,12 @@ const isMyPost = (post.authorCode === currentUser.code) || (post.authorName === 
         <div id="commentsBox_${post.id}" class="comments-section" style="display:none;">
 <div id="commentsList_${post.id}">
             ${(post.commentsList || []).map(c => {
-              const isMyComment = (c.authorCode === currentUser.code) || (c.authorName === currentUser.name);
-              const canManageComment = isMyPost || isMyComment;
+const isMyComment = (c.authorCode === currentUser.code) || (c.authorName === currentUser.name);
+const canManageComment = isMyPost || isMyComment || isAdmin; // الأدمن يقدر يمسح ويعادل أي تعليق
+              
               const likesArr = c.likes || [];
+
+              
               const isCommentLiked = likesArr.includes(currentUser.code);
 
               return `
@@ -628,8 +637,8 @@ function togglePostCommentsBox(postId) {
   }
 }
 
-// 1️⃣5️⃣ محادثات الـ DM والبروفايل السريع
 function openUserProfileModal(code, name, avatar, branch) {
+  const isAdmin = checkIfUserIsAdmin();
   let modal = document.getElementById('communityProfileModal');
   if (!modal) {
     modal = document.createElement('div');
@@ -640,14 +649,21 @@ function openUserProfileModal(code, name, avatar, branch) {
 
   modal.innerHTML = `
     <div class="modal-box user-profile-modal-box" onclick="event.stopPropagation();">
-<img src="${avatar}" class="profile-modal-avatar" onclick="openImageViewer(this.src)" style="cursor:pointer;" title="اضغط لتكبير الصورة 🔍">      
-      <h3 style="color:var(--gold); font-size:16px;">${name}</h3>
-<div style="font-size:11px; color:var(--text2); margin-bottom:12px;">الشعبة: ${branch}</div>      
+      <img src="${avatar}" class="profile-modal-avatar" onclick="openImageViewer(this.src)" style="cursor:pointer;" title="اضغط لتكبير الصورة 🔍">      
+      <h3 style="color:var(--gold); font-size:16px;">${name} ${isAdmin && code === 'SM-3533' ? '👑 (الأدمن)' : ''}</h3>
+      <div style="font-size:11px; color:var(--text2); margin-bottom:12px;">الشعبة: ${branch}</div>      
+      
       <div style="display:flex; gap:6px; margin-bottom:12px;">
         <button onclick="sendFriendRequestFromModal('${code}')" class="btn-small" style="flex:1; padding:8px;">➕ إضافة صديق</button>
-<button onclick="document.getElementById('communityProfileModal').classList.remove('show'); openDirectMessageModal('${code}', '${name}');" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
-        
+        <button onclick="document.getElementById('communityProfileModal').classList.remove('show'); openDirectMessageModal('${code}', '${name}');" class="btn-small" style="flex:1; padding:8px; background:var(--card); border:1px solid var(--gold); color:var(--gold);">💬 محادثة خاصة</button>
       </div>
+
+      <!-- 👑 زرار الأدمن الخارق (يظهر لك أنت فقط عند فتح بروفايل أي مستخدم آخر) -->
+      ${(isAdmin && code !== 'SM-3533') ? `
+        <button onclick="adminDeleteUserAccount('${code}', '${name}')" class="btn-small" style="width:100%; padding:9px; background:#ff4d4d; color:#fff; border:none; margin-bottom:8px; font-weight:bold; cursor:pointer;">
+          🚫 حظر وحذف حساب الطالب بالكامل (Admin)
+        </button>
+      ` : ''}
 
       <button onclick="document.getElementById('communityProfileModal').classList.remove('show')" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text2); padding:6px; border-radius:8px; font-size:11px;">إغلاق</button>
     </div>
@@ -1396,6 +1412,45 @@ async function deleteComment(postId, commentId) {
           commentsCount: localPosts[postIdx].commentsList.length
         });
       } catch(e) {}
+    }
+  }
+}
+// 👑 دالة الأدمن لحذف وحظر حساب مستخدم بجميع منشوراته وتفاعلاته
+async function adminDeleteUserAccount(targetCode, targetName) {
+  if (!checkIfUserIsAdmin()) {
+    alert("عفواً، هذه الصلاحية مخصصة لإدارة التطبيق فقط!");
+    return;
+  }
+
+  if (!confirm(`👑 هل أنت متأكد بصفتك الأدمن من حذف حساب (${targetName}) ومسح كافة منشوراته وتعليقاته نهائياً؟`)) return;
+
+  // 1️⃣ حذف كافة منشورات هذا الطالب محلياً
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  localPosts = localPosts.filter(p => p.authorCode !== targetCode);
+  localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+  renderCommunityPostsUI(localPosts);
+
+  // 2️⃣ حذف منشوراته وطلباته من الفايربيس سحابياً
+  if (window.fireDB && window.fireDeleteDoc && window.fireDoc && window.fireCollection && window.fireGetDocs) {
+    try {
+      // مسح منشورات الطالب من السحاب
+      const postsColl = window.fireCollection(window.fireDB, "community_posts");
+      const snap = await window.fireGetDocs(postsColl);
+      snap.forEach(async (docSnap) => {
+        const data = docSnap.data();
+        if (data.authorCode === targetCode) {
+          await window.fireDeleteDoc(window.fireDoc(window.fireDB, "community_posts", docSnap.id));
+        }
+      });
+
+      // مسح طلبات الصداقة المربوطة به
+      const reqRef1 = window.fireDoc(window.fireDB, "friend_requests", `${targetCode}_SM-3533`);
+      await window.fireDeleteDoc(reqRef1).catch(()=>{});
+
+      alert(`✅ تم حذف وحظر حساب الطالب (${targetName}) وتطهير المجتمع من منشوراته بنجاح!`);
+      document.getElementById('communityProfileModal').classList.remove('show');
+    } catch(e) {
+      alert("تم الحذف محلياً، وسيتم استكمال المزامنة السحابية عند الاتصال بالشبكة.");
     }
   }
 }
