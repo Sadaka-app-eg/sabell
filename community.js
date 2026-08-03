@@ -355,18 +355,52 @@ const isMyPost = (post.authorCode === currentUser.code) || (post.authorName === 
 
         <!-- صندوق التعليقات المطوي -->
         <div id="commentsBox_${post.id}" class="comments-section" style="display:none;">
-          <div id="commentsList_${post.id}">
-            ${(post.commentsList || []).map(c => `
-              <div class="comment-item ${c.isBestAnswer ? 'best-answer' : ''}">
-                <img src="${c.authorAvatar}" class="comment-user-avatar">
-                <div class="comment-body">
-                  <div class="comment-user-name">${c.authorName} ${c.isBestAnswer ? '⭐ إجابة معتمدة' : ''}</div>
-                  ${c.text ? `<div class="comment-text">${c.text}</div>` : ''}
+<div id="commentsList_${post.id}">
+            ${(post.commentsList || []).map(c => {
+              const isMyComment = (c.authorCode === currentUser.code) || (c.authorName === currentUser.name);
+              const canManageComment = isMyPost || isMyComment;
+              const likesArr = c.likes || [];
+              const isCommentLiked = likesArr.includes(currentUser.code);
+
+              return `
+                <div class="comment-item ${c.isBestAnswer ? 'best-answer' : ''}" id="comment_${post.id}_${c.id}" style="margin-bottom:8px; background:var(--bg2); padding:8px 10px; border-radius:10px; border:1px solid var(--border);">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                      <img src="${c.authorAvatar}" class="comment-user-avatar" style="width:28px; height:28px; border-radius:50%;">
+                      <div>
+                        <div class="comment-user-name" style="font-weight:bold; font-size:12px; color:var(--gold);">
+                          ${c.authorName} ${c.isBestAnswer ? '⭐ إجابة معتمدة' : ''}
+                        </div>
+                        <span style="font-size:9px; color:var(--text2);">${formatCommunityTime(c.timestamp)}</span>
+                      </div>
+                    </div>
+
+                    <!-- أزرار الإدارة (تعديل وحذف) -->
+                    ${canManageComment ? `
+                      <div style="display:flex; gap:4px;">
+                        ${isMyComment ? `<button onclick="editComment('${post.id}', '${c.id}')" style="background:transparent; border:none; color:var(--gold); font-size:11px; cursor:pointer;" title="تعديل">✏️</button>` : ''}
+                        <button onclick="deleteComment('${post.id}', '${c.id}')" style="background:transparent; border:none; color:#ff6b6b; font-size:11px; cursor:pointer;" title="حذف">🗑️</button>
+                      </div>
+                    ` : ''}
+                  </div>
+
+                  <!-- نص التعليق ومحتواه -->
+                  <div id="commentText_${post.id}_${c.id}" class="comment-text" style="font-size:12px; color:var(--text); margin-top:4px; line-height:1.5;">${c.text || ''}</div>
                   ${c.image ? `<img src="${c.image}" onclick="openImageViewer(this.src)" style="max-height:120px; border-radius:8px; margin-top:4px; cursor:pointer;">` : ''}
                   ${c.audio ? `<audio controls src="${c.audio}" style="width:100%; height:30px; margin-top:4px;"></audio>` : ''}
+
+                  <!-- شريط تفاعلات التعليق (إعجاب ورد) -->
+                  <div style="display:flex; gap:12px; align-items:center; margin-top:6px; font-size:10px;">
+                    <button onclick="toggleCommentLike('${post.id}', '${c.id}')" style="background:transparent; border:none; color:${isCommentLiked ? 'var(--gold)' : 'var(--text2)'}; cursor:pointer; font-weight:bold;">
+                      👍 ${isCommentLiked ? 'أعجبني' : 'إعجاب'} (${likesArr.length})
+                    </button>
+                    <button onclick="prepareReplyToComment('${post.id}', '${c.authorName}')" style="background:transparent; border:none; color:var(--gold); cursor:pointer;">
+                      💬 رد
+                    </button>
+                  </div>
                 </div>
-              </div>
-            `).join('')}
+              `;
+            }).join('')}
           </div>
           
           <!-- مدخلات التعليق النصي والمايك والصورة -->
@@ -490,44 +524,65 @@ async function voteOnCommunityPoll(postId, optionIdx) {
   }
 }
 
-// 1️⃣2️⃣ إضافة تعليق ونص/فويس
+// 💬 إضافة تعليق جديد (مع تسجيل الكود)
 async function submitPostComment(postId) {
+  if (!checkUserIsLoggedIn()) return;
+
   const inp = document.getElementById('commentInput_' + postId);
   const text = inp ? inp.value.trim() : '';
+  const commentImg = commentImagesMap[postId] || null;
 
-  if (!text && !currentCommentAudioBase64) {
-    alert("اكتب تعليقاً أو سجّل فويساً للإجابة 🙏");
+  if (!text && !currentCommentAudioBase64 && !commentImg) {
+    alert("اكتب تعليقاً، ارفع صورة، أو سجّل فويساً للإجابة 🙏");
     return;
   }
 
   const user = getCommunityUserData();
   const commentPayload = {
     id: "comment_" + Date.now(),
+    authorCode: user.code,
     authorName: user.name,
     authorAvatar: user.avatar,
     text: text,
+    image: commentImg,
     audio: currentCommentAudioBase64,
+    likes: [],
     timestamp: new Date().toISOString(),
     isBestAnswer: false
   };
 
-  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc) {
-    const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
-    const docSnap = await window.fireGetDoc(postRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      const comments = data.commentsList || [];
-      comments.push(commentPayload);
-
-      await window.fireUpdateDoc(postRef, {
-        commentsList: comments,
-        commentsCount: comments.length
-      });
-    }
+  // 1. التحديث المحلي السريع
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
+  if (postIdx > -1) {
+    if (!localPosts[postIdx].commentsList) localPosts[postIdx].commentsList = [];
+    localPosts[postIdx].commentsList.push(commentPayload);
+    localPosts[postIdx].commentsCount = localPosts[postIdx].commentsList.length;
+    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+    renderCommunityPostsUI(localPosts);
   }
 
+  // تصفيرة
   if (inp) inp.value = '';
   currentCommentAudioBase64 = null;
+  delete commentImagesMap[postId];
+
+  // 2. المزامنة مع الفايربيس
+  if (window.fireDB && window.fireGetDoc && window.fireUpdateDoc && window.fireDoc) {
+    try {
+      const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+      const docSnap = await window.fireGetDoc(postRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const comments = data.commentsList || [];
+        comments.push(commentPayload);
+        await window.fireUpdateDoc(postRef, {
+          commentsList: comments,
+          commentsCount: comments.length
+        });
+      }
+    } catch(e) {}
+  }
 }
 
 // 1️⃣3️⃣ تسجيل الفويس للتعليق
@@ -1239,5 +1294,108 @@ async function renderMyPrivateDmsOnlyUI() {
     });
   } catch (e) {
     console.error(e);
+  }
+}
+// 👍 1. التفاعل بالإعجاب على تعليق محدد
+async function toggleCommentLike(postId, commentId) {
+  if (!checkUserIsLoggedIn()) return;
+  const user = getCommunityUserData();
+
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
+
+  if (postIdx > -1 && localPosts[postIdx].commentsList) {
+    const cIdx = localPosts[postIdx].commentsList.findIndex(c => c.id === commentId);
+    if (cIdx > -1) {
+      let likes = localPosts[postIdx].commentsList[cIdx].likes || [];
+      const userIdx = likes.indexOf(user.code);
+
+      if (userIdx > -1) {
+        likes.splice(userIdx, 1);
+      } else {
+        likes.push(user.code);
+      }
+
+      localPosts[postIdx].commentsList[cIdx].likes = likes;
+      localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+      renderCommunityPostsUI(localPosts);
+
+      // المزامنة مع السحاب
+      if (window.fireDB && window.fireUpdateDoc && window.fireDoc) {
+        try {
+          const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+          await window.fireUpdateDoc(postRef, {
+            commentsList: localPosts[postIdx].commentsList
+          });
+        } catch(e) {}
+      }
+    }
+  }
+}
+
+// 💬 2. التحضير للرد على تعليق (إضافة Mention)
+function prepareReplyToComment(postId, authorName) {
+  const inp = document.getElementById('commentInput_' + postId);
+  if (inp) {
+    inp.value = `@${authorName} `;
+    inp.focus();
+  }
+}
+
+// ✏️ 3. تعديل التعليق
+async function editComment(postId, commentId) {
+  if (!checkUserIsLoggedIn()) return;
+
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
+
+  if (postIdx > -1 && localPosts[postIdx].commentsList) {
+    const cIdx = localPosts[postIdx].commentsList.findIndex(c => c.id === commentId);
+    if (cIdx > -1) {
+      const oldText = localPosts[postIdx].commentsList[cIdx].text || '';
+      const newText = prompt("تعديل التعليق:", oldText);
+
+      if (newText !== null && newText.trim() !== '') {
+        localPosts[postIdx].commentsList[cIdx].text = newText.trim();
+        localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+        renderCommunityPostsUI(localPosts);
+
+        if (window.fireDB && window.fireUpdateDoc && window.fireDoc) {
+          try {
+            const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+            await window.fireUpdateDoc(postRef, {
+              commentsList: localPosts[postIdx].commentsList
+            });
+          } catch(e) {}
+        }
+      }
+    }
+  }
+}
+
+// 🗑️ 4. حذف التعليق (لصاحب التعليق أو صاحب البوست الاصلي)
+async function deleteComment(postId, commentId) {
+  if (!checkUserIsLoggedIn()) return;
+  if (!confirm("هل أنت متأكد من حذف هذا التعليق؟")) return;
+
+  let localPosts = JSON.parse(localStorage.getItem('sm_local_community_posts') || '[]');
+  const postIdx = localPosts.findIndex(p => p.id === postId);
+
+  if (postIdx > -1 && localPosts[postIdx].commentsList) {
+    localPosts[postIdx].commentsList = localPosts[postIdx].commentsList.filter(c => c.id !== commentId);
+    localPosts[postIdx].commentsCount = localPosts[postIdx].commentsList.length;
+
+    localStorage.setItem('sm_local_community_posts', JSON.stringify(localPosts));
+    renderCommunityPostsUI(localPosts);
+
+    if (window.fireDB && window.fireUpdateDoc && window.fireDoc) {
+      try {
+        const postRef = window.fireDoc(window.fireDB, "community_posts", postId);
+        await window.fireUpdateDoc(postRef, {
+          commentsList: localPosts[postIdx].commentsList,
+          commentsCount: localPosts[postIdx].commentsList.length
+        });
+      } catch(e) {}
+    }
   }
 }
